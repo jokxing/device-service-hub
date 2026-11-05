@@ -1,0 +1,20 @@
+{
+  "name": "device-service-hub",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "test:business": "node --test scripts/test-business-rules.mjs",
+    "verify:ui": "node scripts/verify-ui.mjs",
+    "format": "prettier --write apps/web/src scripts/verify-ui.mjs scripts/test-business-rules.mjs",
+    "dev": "npm run dev --workspace apps/web",
+    "build": "npm run build --workspace apps/web",
+    "preview": "npm run preview --workspace apps/web"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1",
+    "prettier": "^3.9.10"
+  }
+}

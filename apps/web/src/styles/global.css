@@ -1,0 +1,146 @@
+@import "tailwindcss/theme.css";
+
+@import "tailwindcss/utilities.css";
+
+@import "./tokens.css";
+
+@source "../**/*.{ts,tsx}";
+
+:root {
+  font-size: var(--font-size-body);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  color: #263247;
+  background: #f5f7fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 4px;
+}
+
+button {
+  border: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ant-table-wrapper .ant-table {
+  font-size: var(--font-size-body);
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  font-size: var(--font-size-secondary);
+  font-weight: 400;
+  white-space: nowrap;
+  border-top: 1px solid #eff2f7;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th::before {
+  display: none;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th:first-child {
+  padding-left: 22px;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td:first-child {
+  padding-left: 22px;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  border-bottom-color: #f0f2f6;
+}
+
+.muted {
+  color: var(--text-secondary);
+  font-size: var(--font-size-secondary);
+}
+
+.ant-table-wrapper .ant-btn-link {
+  font-size: var(--font-size-secondary);
+  padding: 0;
+}
+
+.ant-table-wrapper .ant-pagination {
+  padding: 1px 22px 4px;
+}
+
+.ant-pagination-total-text {
+  margin-right: auto !important;
+  color: var(--text-secondary);
+  font-size: var(--font-size-secondary);
+}
+
+.ant-pagination .ant-pagination-item {
+  font-size: var(--font-size-caption);
+}
+
+.ant-pagination .ant-pagination-item-active {
+  background: #eff5ff;
+  border-color: #dce8ff;
+}
+
+.ant-select-placeholder {
+  color: #a8b2c1 !important;
+}
+
+@media (min-width: 1600px) {
+  main {
+    padding-top: 40px;
+  }
+  .ant-table-wrapper .ant-table {
+    font-size: var(--font-size-secondary);
+  }
+}
+
+@media (max-width: 1180px) {
+  main {
+    padding: 24px 22px 0;
+  }
+}
+
+@media (max-width: 760px) {
+  nav {
+    padding: 0 9px;
+  }
+  main {
+    padding: 24px 15px 0;
+  }
+  h1 {
+    font-size: 24px;
+  }
+  .card-title {
+    padding: 17px 15px;
+  }
+  .ant-table-wrapper .ant-pagination {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}

@@ -1,0 +1,6 @@
+.help-content p {
+  font-size: var(--font-size-secondary);
+  line-height: 1.9;
+  color: #7a879b;
+  margin: 15px 0;
+}
