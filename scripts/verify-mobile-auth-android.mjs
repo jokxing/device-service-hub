@@ -1,3 +1,4 @@
+import { openAndroidUi } from "./lib/android-ui.mjs";
 import assert from "node:assert/strict";
 import { openLocalAndroid } from "./lib/android-local.mjs";
 import { openLocalApi } from "./lib/local-api.mjs";
@@ -5,72 +6,7 @@ const android = openLocalAndroid();
 const local = openLocalApi();
 const db = await local.connectDatabase();
 const sessions = new Set();
-const pause = () => new Promise((resolve) => setTimeout(resolve, 900));
-async function waitFor(text) {
-  for (let attempt = 0; attempt < 12; attempt++) {
-    const xml = android.hierarchy();
-    if (xml.includes(text)) return xml;
-    await pause();
-  }
-  throw new Error("Expected native screen text missing: " + text);
-}
-function nodeFor(xml, label) {
-  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return (
-    xml.match(
-      new RegExp('<node[^>]*content-desc="' + escaped + '"[^>]*>'),
-    )?.[0] ??
-    xml.match(new RegExp('<node[^>]*text="' + escaped + '"[^>]*>'))?.[0]
-  );
-}
-function tapNode(node) {
-  const bounds = node?.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
-  assert.ok(bounds, "Native control must be visible");
-  android.run([
-    "shell",
-    "input",
-    "tap",
-    String(Math.round((Number(bounds[1]) + Number(bounds[3])) / 2)),
-    String(Math.round((Number(bounds[2]) + Number(bounds[4])) / 2)),
-  ]);
-}
-async function tap(label) {
-  tapNode(nodeFor(await waitFor(label), label));
-  await pause();
-}
-async function enter(label, value) {
-  assert.ok(
-    /^[a-zA-Z0-9._@-]+$/.test(value),
-    "Automation requires shell-safe local account input; use manual verification for other characters",
-  );
-  await tap(label);
-  android.run(["shell", "input", "keyevent", "123"]);
-  android.run(["shell", "input", "keyevent", ...Array(128).fill("67")]);
-  try {
-    android.run(["shell", "input", "text", value]);
-  } catch {
-    throw new Error("Could not enter account input");
-  }
-}
-async function launch(route) {
-  android.run(["reverse", "tcp:8081", "tcp:8081"]);
-  android.run(["reverse", "tcp:3001", "tcp:3001"]);
-  android.run(["shell", "am", "force-stop", "host.exp.exponent"]);
-  // MuMu finishes removing the previous task asynchronously after force-stop.
-  await pause();
-  android.run([
-    "shell",
-    "am",
-    "start",
-    "-W",
-    "-a",
-    "android.intent.action.VIEW",
-    "-d",
-    "exp://127.0.0.1:8081/--/" + route,
-    "-p",
-    "host.exp.exponent",
-  ]);
-}
+const { waitFor, tap, enter, launch, pause } = openAndroidUi(android);
 async function sessionIds(userId) {
   return (
     await db.query('SELECT "id" FROM "Session" WHERE "userId"=$1', [userId])

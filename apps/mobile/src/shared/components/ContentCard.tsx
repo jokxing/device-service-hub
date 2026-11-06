@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { colors, fontSizes, spacing } from "../theme";
+import { colors, fontSizes, spacing, radii } from "../theme";
 
 export default function ContentCard({
   title,
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: radii.card,
     gap: spacing.md,
   },
   title: { color: colors.text, fontSize: fontSizes.section, fontWeight: "600" },

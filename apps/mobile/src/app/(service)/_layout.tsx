@@ -10,6 +10,18 @@ export default function ServiceLayout() {
     <Stack key={user.id}>
       <Stack.Screen name="devices/index" options={{ title: "我的设备" }} />
       <Stack.Screen
+        name="devices/[id]/repair"
+        options={{ title: "提交报修", headerBackTitle: "返回" }}
+      />
+      <Stack.Screen
+        name="tickets/index"
+        options={{ title: "我的报修", headerBackTitle: "返回" }}
+      />
+      <Stack.Screen
+        name="tickets/[id]"
+        options={{ title: "报修详情", headerBackTitle: "返回" }}
+      />
+      <Stack.Screen
         name="devices/[id]"
         options={{ title: "设备详情", headerBackTitle: "返回" }}
       />

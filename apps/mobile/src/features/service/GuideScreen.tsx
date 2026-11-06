@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import Screen from "../../shared/components/Screen";
 import ContentCard from "../../shared/components/ContentCard";
-import { colors, fontSizes, spacing } from "../../shared/theme";
+import { colors, fontSizes, spacing, lineHeights } from "../../shared/theme";
 import { ROLE_GUIDES } from "./content";
 
 export default function GuideScreen() {
@@ -28,18 +28,32 @@ export default function GuideScreen() {
           先核对处理说明与设备实际情况，再确认完成。确认后工单结束，当前不支持撤销或重新打开。
         </Text>
       </ContentCard>
-      <Text style={styles.note}>移动端报修、扫码与拍照上传尚未开放。</Text>
+      <Text style={styles.note}>
+        当前支持文字报修与本人记录；扫码与拍照上传尚未开放。
+      </Text>
     </Screen>
   );
 }
 const styles = StyleSheet.create({
-  intro: { color: colors.muted, fontSize: fontSizes.body, lineHeight: 25 },
-  body: { color: colors.text, fontSize: fontSizes.body, lineHeight: 25 },
+  intro: {
+    color: colors.muted,
+    fontSize: fontSizes.body,
+    lineHeight: lineHeights.relaxed,
+  },
+  body: {
+    color: colors.text,
+    fontSize: fontSizes.body,
+    lineHeight: lineHeights.relaxed,
+  },
   role: { gap: spacing.xs },
   roleTitle: {
     color: colors.text,
     fontSize: fontSizes.body,
     fontWeight: "600",
   },
-  note: { color: colors.muted, fontSize: fontSizes.caption, lineHeight: 22 },
+  note: {
+    color: colors.muted,
+    fontSize: fontSizes.caption,
+    lineHeight: lineHeights.caption,
+  },
 });

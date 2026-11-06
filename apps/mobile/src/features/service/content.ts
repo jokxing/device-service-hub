@@ -1,4 +1,5 @@
 import type { Role } from "@device-service-hub/contracts";
+import { ROLE_LABELS } from "../../shared/constants/roles";
 
 export const SERVICE_STEPS = [
   {
@@ -22,17 +23,17 @@ export const ROLE_GUIDES: ReadonlyArray<{
 }> = [
   {
     role: "reporter",
-    title: "报修用户",
+    title: ROLE_LABELS.reporter,
     description: "查看授权设备、提交报修、跟进本人记录并确认维修完成。",
   },
   {
     role: "admin",
-    title: "管理员",
+    title: ROLE_LABELS.admin,
     description: "在管理后台查看和分派工单，跟进处理记录。",
   },
   {
     role: "technician",
-    title: "维修人员",
+    title: ROLE_LABELS.technician,
     description: "查看当前分派给自己的任务，接单并提交处理结果。",
   },
 ];

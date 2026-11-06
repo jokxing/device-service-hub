@@ -30,7 +30,7 @@ try {
     .waitFor();
   await page.reload({ waitUntil: "networkidle" });
   await page
-    .getByText("移动端报修、扫码与拍照上传尚未开放。", { exact: true })
+    .getByText("当前支持文字报修与本人记录；扫码与拍照上传尚未开放。", { exact: true })
     .waitFor();
   await page.screenshot({
     path: path.join(screenshots, "mobile-web-guide.png"),

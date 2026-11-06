@@ -10,11 +10,13 @@
 - 每次只完成当前确认的一步。范围外的问题先说明，不顺带扩建系统。
 - 沿用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules、npm workspaces 和根锁文件。
 - 未获当前任务明确授权，不更换技术栈、重组目录、添加状态库或组件库、批量升级依赖。
-- 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复与授权设备查询；真实图片上传、改派、退回/再次提交、微前端和支付尚未实现，不提前扩展范围。
+- 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复、授权设备查询、文字报修、本人记录与确认完成；真实图片上传、改派、退回/再次提交、微前端和支付尚未实现，不提前扩展范围。
 - Git 提交、推送、部署和仓库可见性修改需要明确授权。
 - `apps/portal` 已交付登录、授权设备查询、文字报修、本人记录与完成确认，修改前阅读 [PORTAL.md](docs/PORTAL.md)。使用 App Router；Server Components 负责设备/本人记录查询，Client Components 承担表单与确认交互。图片上传、RN 与微前端仍需按步确认。
 - 不读取无关项目或私有业务资料，不复制来源或授权不明确的代码与素材。
 - 移动端任务阅读 [MOBILE.md](docs/MOBILE.md)。使用 Expo SDK 57 兼容依赖与 Expo Router；src/app 只组装路由，业务页面留 features，原生颜色/字号/间距留 shared/theme。保留现有 Web React 版本，不全局替换 React 或把 Web 组件/CSS/存储直接搬入 RN。
+- RN 业务接口路径和传输类型集中在对应 `features/<业务>/api.ts`；页面使用业务 Hook，Hook 保持读取取消与账号切换清理。共享请求只负责传输，不认识设备或工单。会话 Provider 提供统一鉴权读取与写入入口，业务 API 通过参数使用它，不自行读取或保存凭据。
+- RN 角色名称使用 `shared/constants/roles.ts`，页面专属说明留在业务模块；可复用视觉变量使用 `shared/theme.ts`。模块较小时平铺，文件增多后按实际职责细分，不预建空目录、万能工具文件或跨端 UI 抽象。
 
 ## 目录与复用边界
 
@@ -80,6 +82,8 @@
 - 门户确认变更执行 `run verify:portal-confirmations`。入口共用 canConfirmTicket，弹窗复用本应用 MutationModal；保留原 requestId/expectedVersion，成功后读取实际完成记录。取消请求不等于回滚，关闭重开前先核对不明结果；不顺带增加撤销、退回或重新打开。
 - RN 变更执行 `run check:mobile`、`run build:mobile`，界面/路由执行 `run verify:mobile-ui`；有可用模拟器时执行 `run verify:mobile-android` 并核对截图。Android JS bundle、Expo Go、模拟器、真机和独立 APK 分别记录，不将 Web 预览记为 native 验证。
 - RN 认证或设备接口变更执行 `run verify:mobile-api`、`run verify:mobile-auth-android`；复用 AuthService 与 DevicesService。Web 保持 Cookie/Origin，原生端只用专用 Bearer 适配，凭据存 SecureStore；RN Web 不开放原生登录。
+- RN 文字报修变更执行 `run verify:mobile-tickets`、`run verify:mobile-tickets-android`；沿用 TicketsService 与 DTO，不复制幂等和归属规则。提交 UUID 由 Expo Crypto 生成，同一内容结果不明时保留编号重试，离页取消不等于回滚。设备和工单读取共用 useApiResource。
+- RN 确认变更执行 `run verify:mobile-confirmations`、`run verify:mobile-confirmations-android`，复用 TicketConfirmationsService 和 ConfirmTicketDto；入口使用 canConfirmTicket，弹窗使用原生 MutationModal。窗口内保持原 requestId/expectedVersion，关闭后重新读取实际状态，提交期间禁用取消与重复操作。
 - Expo 和 DotSlash 用户缓存必须由本地启动脚本明确指向项目 .local，不能只依赖 APPDATA/TEMP。Android 工具路径与 serial 放被忽略的 .local/android-device.json，不写进公共文件；未确认前不安装完整 SDK、生成原生工程或调用 EAS 云构建。
 - 不提交 `.local`、`node_modules`、构建产物、真实 `.env`、凭据或个人操作记录。公开文档不包含个人绝对路径或对话过程。
 - 公开文档采用产品与工程交付表述，突出业务建模、架构取舍、数据权限、并发一致性、可维护性及验证证据，不加入学习任务、练习安排或教程式要求。十余年前端经历不等同于十余年 React/RN 经历；不虚构生产规模、客户案例或性能指标。

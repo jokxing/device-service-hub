@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
-import { colors, fontSizes, spacing } from "../theme";
+import { colors, fontSizes, spacing, radii, controlSizes } from "../theme";
 export default function ActionButton({
   title,
   onPress,
@@ -39,8 +39,8 @@ export default function ActionButton({
 const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.primary,
-    borderRadius: 10,
-    minHeight: 48,
+    borderRadius: radii.control,
+    minHeight: controlSizes.minHeight,
     padding: spacing.sm,
     alignItems: "center",
     justifyContent: "center",

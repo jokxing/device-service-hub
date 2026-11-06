@@ -4,7 +4,14 @@ import { Redirect } from "expo-router";
 import Screen from "../../shared/components/Screen";
 import ContentCard from "../../shared/components/ContentCard";
 import ActionButton from "../../shared/components/ActionButton";
-import { colors, fontSizes, spacing } from "../../shared/theme";
+import {
+  colors,
+  fontSizes,
+  spacing,
+  lineHeights,
+  radii,
+  controlSizes,
+} from "../../shared/theme";
 import { useAction } from "../../shared/hooks/useAction";
 import { useNativeSession } from "./sessionContext";
 import SessionFeedback from "./SessionFeedback";
@@ -72,17 +79,25 @@ export default function LoginScreen() {
   );
 }
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 26, fontWeight: "700" },
-  muted: { color: colors.muted, fontSize: fontSizes.body, lineHeight: 24 },
+  title: {
+    color: colors.text,
+    fontSize: fontSizes.pageTitle,
+    fontWeight: "700",
+  },
+  muted: {
+    color: colors.muted,
+    fontSize: fontSizes.body,
+    lineHeight: lineHeights.body,
+  },
   field: { gap: spacing.xs },
   label: { color: colors.text, fontSize: fontSizes.body },
   input: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.input,
     padding: spacing.sm,
-    minHeight: 48,
-    fontSize: 16,
+    minHeight: controlSizes.minHeight,
+    fontSize: fontSizes.input,
     color: colors.text,
   },
   error: { color: colors.danger, fontSize: fontSizes.body },

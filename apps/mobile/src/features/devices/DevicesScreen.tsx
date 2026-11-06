@@ -1,21 +1,19 @@
 import { Text } from "react-native";
 import { useRouter } from "expo-router";
-import type { DeviceSummary } from "@device-service-hub/contracts";
 import Screen from "../../shared/components/Screen";
 import ContentCard from "../../shared/components/ContentCard";
 import ActionButton from "../../shared/components/ActionButton";
 import { useAction } from "../../shared/hooks/useAction";
 import { useNativeSession } from "../auth/sessionContext";
-import { ROLE_GUIDES } from "../service/content";
-import { useDeviceResource } from "./useDeviceResource";
+import { ROLE_LABELS } from "../../shared/constants/roles";
+import { useDevices } from "./useDeviceResource";
 import { deviceStyles as styles } from "./deviceStyles";
 
 export default function DevicesScreen() {
   const router = useRouter();
   const { user, signOut } = useNativeSession();
   const action = useAction();
-  const { data, error, loading, reload } =
-    useDeviceResource<DeviceSummary[]>("/mobile/devices");
+  const { data, error, loading, reload } = useDevices();
   return (
     <Screen
       footer={
@@ -35,9 +33,15 @@ export default function DevicesScreen() {
       }
     >
       <Text style={styles.identity}>
-        {user?.name} ·{" "}
-        {ROLE_GUIDES.find((item) => item.role === user?.role)?.title}
+        {user?.name} · {user ? ROLE_LABELS[user.role] : ""}
       </Text>
+      {user?.role === "reporter" && (
+        <ActionButton
+          title="我的报修"
+          secondary
+          onPress={() => router.push("/tickets")}
+        />
+      )}
       {loading && <Text style={styles.text}>正在读取设备…</Text>}
       {error && (
         <Text accessibilityRole="alert" style={styles.error}>

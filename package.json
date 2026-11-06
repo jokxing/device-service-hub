@@ -55,7 +55,11 @@
     "verify:portal-confirmations": "node scripts/verify-portal-confirmations.mjs",
     "build": "npm run build:web && npm run build:api && npm run build:portal",
     "build:web": "npm run build --workspace apps/web",
-    "preview": "npm run preview --workspace apps/web"
+    "preview": "npm run preview --workspace apps/web",
+    "verify:mobile-tickets": "node scripts/verify-mobile-tickets.mjs",
+    "verify:mobile-tickets-android": "node scripts/verify-mobile-tickets-android.mjs",
+    "verify:mobile-confirmations": "node scripts/verify-mobile-confirmations.mjs",
+    "verify:mobile-confirmations-android": "node scripts/verify-mobile-confirmations-android.mjs"
   },
   "overrides": {
     "react-native-gesture-handler": "2.32.0",

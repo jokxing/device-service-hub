@@ -3,7 +3,13 @@ import { StyleSheet, Text, View } from "react-native";
 import Screen from "../../shared/components/Screen";
 import ContentCard from "../../shared/components/ContentCard";
 import ActionButton from "../../shared/components/ActionButton";
-import { colors, fontSizes, spacing } from "../../shared/theme";
+import {
+  colors,
+  fontSizes,
+  spacing,
+  lineHeights,
+  radii,
+} from "../../shared/theme";
 import { SERVICE_STEPS } from "./content";
 
 export default function HomeScreen() {
@@ -46,7 +52,7 @@ export default function HomeScreen() {
         onPress={() => router.push("/guide")}
       />
       <Text style={styles.notice}>
-        当前支持账号登录与授权设备查询，报修和拍照上传将在后续版本接入。
+        当前支持登录、授权设备查询、文字报修与本人记录；扫码和拍照上传尚未开放。
       </Text>
     </Screen>
   );
@@ -55,11 +61,15 @@ const styles = StyleSheet.create({
   heading: { gap: spacing.xs, paddingTop: spacing.sm },
   brand: { color: colors.muted, fontSize: fontSizes.caption, letterSpacing: 2 },
   title: { color: colors.text, fontSize: fontSizes.title, fontWeight: "700" },
-  subtitle: { color: colors.muted, fontSize: fontSizes.body, lineHeight: 24 },
+  subtitle: {
+    color: colors.muted,
+    fontSize: fontSizes.body,
+    lineHeight: lineHeights.body,
+  },
   hero: {
     padding: spacing.lg,
     backgroundColor: colors.primarySoft,
-    borderRadius: 14,
+    borderRadius: radii.card,
     gap: spacing.sm,
   },
   heroTitle: {
@@ -67,13 +77,17 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.section,
     fontWeight: "600",
   },
-  heroText: { color: colors.text, fontSize: fontSizes.body, lineHeight: 25 },
+  heroText: {
+    color: colors.text,
+    fontSize: fontSizes.body,
+    lineHeight: lineHeights.relaxed,
+  },
   step: { flexDirection: "row", alignItems: "flex-start", gap: spacing.sm },
   number: {
     width: 30,
     height: 30,
     backgroundColor: colors.primarySoft,
-    borderRadius: 9,
+    borderRadius: radii.badge,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -82,7 +96,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body,
     fontWeight: "600",
   },
-  stepBody: { flex: 1, gap: 4 },
+  stepBody: { flex: 1, gap: spacing.xxs },
   stepTitle: {
     color: colors.text,
     fontSize: fontSizes.body,
@@ -91,7 +105,11 @@ const styles = StyleSheet.create({
   description: {
     color: colors.muted,
     fontSize: fontSizes.caption,
-    lineHeight: 22,
+    lineHeight: lineHeights.caption,
   },
-  notice: { color: colors.muted, fontSize: fontSizes.caption, lineHeight: 22 },
+  notice: {
+    color: colors.muted,
+    fontSize: fontSizes.caption,
+    lineHeight: lineHeights.caption,
+  },
 });

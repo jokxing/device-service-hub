@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { AppState } from "react-native";
-import type {
-  NativeLoginResponse,
-  PublicUser,
-  SessionResponse,
-} from "@device-service-hub/contracts";
+import type { PublicUser } from "@device-service-hub/contracts";
 import { ApiError, apiRequest } from "../../shared/api/http";
 import {
   readCredential,
@@ -14,6 +10,7 @@ import {
 } from "./credentialStore";
 import { SessionContext } from "./sessionContext";
 import type { NativeSession } from "./sessionContext";
+import { getNativeSession, loginNative, logoutNative } from "./api";
 
 export default function SessionProvider({ children }: PropsWithChildren) {
   const [status, setStatus] = useState<NativeSession["status"]>("loading");
@@ -52,9 +49,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
         return;
       }
       token.current = stored;
-      const data = await apiRequest<SessionResponse>("/mobile/auth/me", {
-        token: stored,
-      });
+      const data = await getNativeSession(stored);
       if (current === revision.current) {
         setUser(data.user);
         setStatus("authenticated");
@@ -86,10 +81,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     busy.current = current;
     let issued: string | undefined;
     try {
-      const result = await apiRequest<NativeLoginResponse>(
-        "/mobile/auth/login",
-        { method: "POST", body: { username: username.trim(), password } },
-      );
+      const result = await loginNative(username, password);
       issued = result.accessToken;
       if (!/^[a-f0-9]{64}$/.test(issued))
         throw new Error("登录响应无效，请重试");
@@ -103,11 +95,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       setUser(result.user);
       setStatus("authenticated");
     } catch (error) {
-      if (issued)
-        await apiRequest("/mobile/auth/logout", {
-          method: "POST",
-          token: issued,
-        }).catch(() => {});
+      if (issued) await logoutNative(issued).catch(() => {});
       throw error;
     } finally {
       if (busy.current === current) busy.current = null;
@@ -118,22 +106,25 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     const current = ++revision.current;
     busy.current = current;
     try {
-      if (token.current)
-        await apiRequest("/mobile/auth/logout", {
-          method: "POST",
-          token: token.current,
-        });
+      if (token.current) await logoutNative(token.current);
       await clear();
     } finally {
       if (busy.current === current) busy.current = null;
     }
   }
-  const request = useCallback(
-    async <T,>(route: string, signal?: AbortSignal): Promise<T> => {
+  const authorized = useCallback(
+    async <T,>(
+      route: string,
+      options: {
+        signal?: AbortSignal;
+        method?: "GET" | "POST";
+        body?: unknown;
+      },
+    ): Promise<T> => {
       const activeToken = token.current;
       if (!activeToken) throw new ApiError(401, "请先登录");
       try {
-        return await apiRequest<T>(route, { token: activeToken, signal });
+        return await apiRequest<T>(route, { ...options, token: activeToken });
       } catch (error) {
         if (
           error instanceof ApiError &&
@@ -146,9 +137,19 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     },
     [clear],
   );
+  const request = useCallback(
+    <T,>(route: string, signal?: AbortSignal) =>
+      authorized<T>(route, { signal }),
+    [authorized],
+  );
+  const post = useCallback(
+    <T,>(route: string, body: unknown, signal?: AbortSignal) =>
+      authorized<T>(route, { method: "POST", body, signal }),
+    [authorized],
+  );
   return (
     <SessionContext.Provider
-      value={{ status, user, signIn, signOut, restore, request }}
+      value={{ status, user, signIn, signOut, restore, request, post }}
     >
       {children}
     </SessionContext.Provider>

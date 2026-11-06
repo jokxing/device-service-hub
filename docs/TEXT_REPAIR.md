@@ -43,6 +43,8 @@
 
 ## 工程边界
 
+RN 使用 `/devices/[id]/repair`、`/tickets`、`/tickets/[id]` 连接原生传输适配 `/api/mobile/tickets`、`/mine`、`/:id`。复用本节既有 DTO、TicketsService、本人归属与防重规则，凭据通过原生会话 Provider 注入；没有增加移动端专用工单表。Expo Crypto 生成 UUID v4，同内容结果不明时沿用编号，离页后先查询本人记录。详情展示现有处理记录，移动端完成确认另行交付。原生测试和界面范围见 [MOBILE.md](MOBILE.md)。
+
 - `modules/tickets` 包含 Controller、DTO、Service、常量、投影和序列化/摘要方法；未增加通用 Repository。
 - `packages/contracts` 共享创建输入、记录、分页、状态和优先级类型；DTO 继续承担服务端运行时校验。
 - ServiceLayout 共用真实身份、退出与导航；Web 的 `useApiResource` 负责读取请求取消和失效处理，不依赖具体业务模块。

@@ -1,4 +1,13 @@
 import { API_BASE_URL } from "./config";
+export type AuthenticatedRead = <T>(
+  route: string,
+  signal?: AbortSignal,
+) => Promise<T>;
+export type AuthenticatedPost = <T>(
+  route: string,
+  body: unknown,
+  signal?: AbortSignal,
+) => Promise<T>;
 export class ApiError extends Error {
   constructor(
     public readonly status: number,

@@ -9,10 +9,12 @@ import { TaskTicketsController } from "./task-tickets.controller";
 import { TaskTicketsService } from "./task-tickets.service";
 import { TaskResultsService } from "./task-results.service";
 import { TicketConfirmationsService } from "./ticket-confirmations.service";
+import { NativeTicketsController } from "./native-tickets.controller";
 
 @Module({
   imports: [DatabaseModule, AuthModule],
   controllers: [
+    NativeTicketsController,
     TicketsController,
     AdminTicketsController,
     TaskTicketsController,

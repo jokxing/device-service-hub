@@ -17,6 +17,8 @@ Next.js 门户已在 `/tickets/[id]` 接入同一确认接口，通过服务端�
 
 ## 权限与状态约束
 
+RN 已通过 POST `/api/mobile/tickets/:id/confirm` 接入同一服务与 DTO。原生详情使用 canConfirmTicket 决定入口，MutationModal 展示结果摘要和结束提示，窗口内重试保留原编号与版本，关闭后重新查询实际记录。原生会话与验证边界见 [MOBILE.md](MOBILE.md)；不改变以下角色、归属、事务和终结状态规则。
+
 - 未登录返回 401，管理员与维修人员不能代确认，返回 403。
 - 工单 ID 与当前会话报修人 ID 必须匹配；未知或他人工单统一返回 404，包括旧意图重放。
 - 唯一新增状态操作为 **confirming → completed**，须有真实处理结果、版本匹配且无已有确认记录。

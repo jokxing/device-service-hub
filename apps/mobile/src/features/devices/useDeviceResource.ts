@@ -1,37 +1,29 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useApiResource } from "../../shared/hooks/useApiResource";
+import type { AuthenticatedRead } from "../../shared/api/http";
 import { useNativeSession } from "../auth/sessionContext";
-export function useDeviceResource<T>(route: string) {
+import { getDevice, listDevices } from "./api";
+function useDeviceResource<T>(
+  load: (request: AuthenticatedRead, signal: AbortSignal) => Promise<T>,
+) {
   const { request } = useNativeSession();
-  const [data, setData] = useState<T | null>(null),
-    [error, setError] = useState("");
-  const [loading, setLoading] = useState(true),
-    [revision, setRevision] = useState(0);
-  useEffect(() => {
-    let active = true;
-    const controller = new AbortController();
-    setLoading(true);
-    setData(null);
-    setError("");
-    request<T>(route, controller.signal)
-      .then((value) => {
-        if (active) setData(value);
-      })
-      .catch((error) => {
-        if (active)
-          setError(error instanceof Error ? error.message : "读取设备失败");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [route, revision, request]);
-  return {
-    data,
-    error,
-    loading,
-    reload: () => setRevision((value) => value + 1),
-  };
+  return useApiResource(
+    useCallback(
+      (signal: AbortSignal) => load(request, signal),
+      [load, request],
+    ),
+  );
+}
+
+export function useDevices() {
+  return useDeviceResource(listDevices);
+}
+
+export function useDevice(id: string) {
+  const load = useCallback(
+    (request: AuthenticatedRead, signal: AbortSignal) =>
+      getDevice(request, id, signal),
+    [id],
+  );
+  return useDeviceResource(load);
 }
