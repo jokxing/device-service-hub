@@ -9,6 +9,7 @@ import {
   LogoutOutlined,
   QuestionCircleOutlined,
   ToolOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { Link, NavLink } from "react-router-dom";
 import { PAGE_META, ROUTES } from "../app/routes";
@@ -52,6 +53,13 @@ export default function Sidebar({ activeTicketCount, onHelp }: Props) {
         工作空间 <span>个人实践</span>
       </div>
       <nav className={layoutStyles.navigation} aria-label="主导航">
+        <NavLink
+          to={ROUTES.serviceDevices}
+          className={layoutStyles["nav-item"]}
+        >
+          <SafetyCertificateOutlined />
+          设备服务入口
+        </NavLink>
         {navigation.map((item) => (
           <NavLink
             key={item.to}

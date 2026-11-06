@@ -1,4 +1,6 @@
 export const ROUTES = {
+  login: "/login",
+  serviceDevices: "/service/devices",
   tickets: "/tickets",
   devices: "/devices",
   records: "/records",

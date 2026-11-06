@@ -3,14 +3,29 @@
   "private": true,
   "version": "0.1.0",
   "workspaces": [
-    "apps/web"
+    "apps/web",
+    "apps/api",
+    "packages/contracts"
   ],
   "scripts": {
+    "db:local:setup": "node scripts/postgres-local.mjs setup",
+    "db:local:start": "node scripts/postgres-local.mjs start",
+    "db:local:stop": "node scripts/postgres-local.mjs stop",
+    "db:local:status": "node scripts/postgres-local.mjs status",
+    "dev:api": "npm run build:api && npm run dev --workspace apps/api",
+    "db:generate": "npm run db:generate --workspace apps/api",
+    "db:migrate": "npm run db:migrate --workspace apps/api",
+    "db:seed": "npm run build:api && npm run db:seed --workspace apps/api",
+    "build:api": "npm run db:generate && npm run build --workspace apps/api",
+    "verify:api": "node scripts/verify-api.mjs",
+    "verify:api:restart": "node scripts/verify-api.mjs --after-restart",
+    "verify:connected-ui": "node scripts/verify-connected-ui.mjs",
     "test:business": "node --test scripts/test-business-rules.mjs",
     "verify:ui": "node scripts/verify-ui.mjs",
-    "format": "prettier --write apps/web/src scripts/verify-ui.mjs scripts/test-business-rules.mjs",
+    "format": "prettier --write apps/web/src apps/api/src apps/api/prisma.config.ts packages/contracts/src \"scripts/**/*.mjs\"",
     "dev": "npm run dev --workspace apps/web",
-    "build": "npm run build --workspace apps/web",
+    "build": "npm run build:web && npm run build:api",
+    "build:web": "npm run build --workspace apps/web",
     "preview": "npm run preview --workspace apps/web"
   },
   "devDependencies": {

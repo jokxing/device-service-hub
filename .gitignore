@@ -2,5 +2,8 @@ node_modules/
 dist/
 .local/
 .env
+.env.*
+!.env.example
 *.local
 *.tsbuildinfo
+apps/api/src/generated/

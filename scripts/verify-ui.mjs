@@ -1,45 +1,8 @@
 import path from "node:path";
-import fs from "node:fs/promises";
 import assert from "node:assert/strict";
-import { fileURLToPath } from "node:url";
-import { chromium } from "playwright";
+import { openLocalBrowser } from "./lib/browser.mjs";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const local = path.join(root, ".local");
-for (const dir of [
-  "temp",
-  "appdata",
-  "localappdata",
-  "browser-profile",
-  "browser-cache",
-])
-  await fs.mkdir(path.join(local, dir), { recursive: true });
-process.env.TEMP = process.env.TMP = path.join(local, "temp");
-process.env.APPDATA = path.join(local, "appdata");
-process.env.LOCALAPPDATA = path.join(local, "localappdata");
-const screenshots = path.join(root, "docs", "screenshots");
-await fs.mkdir(screenshots, { recursive: true });
-const context = await chromium.launchPersistentContext(
-  path.join(local, "browser-profile"),
-  {
-    executablePath:
-      "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-    headless: true,
-    acceptDownloads: false,
-    viewport: { width: 1440, height: 1100 },
-    deviceScaleFactor: 1,
-    args: [
-      `--disk-cache-dir=${path.join(local, "browser-cache")}`,
-      "--disable-crash-reporter",
-      "--no-first-run",
-      "--disable-background-networking",
-    ],
-  },
-);
-const page = await context.newPage();
-page.setDefaultTimeout(10000);
-const errors = [];
-page.on("pageerror", (error) => errors.push(error.message));
+const { context, page, screenshots, errors } = await openLocalBrowser();
 async function selectRole(label) {
   await page
     .locator(

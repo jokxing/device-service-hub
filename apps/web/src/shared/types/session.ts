@@ -1,4 +1,5 @@
-export type Role = "admin" | "reporter" | "technician";
+import type { Role } from "@device-service-hub/contracts";
+export type { Role } from "@device-service-hub/contracts";
 
 export interface Actor {
   role: Role;

@@ -1,0 +1,119 @@
+# 后端结构与维护约定
+
+后端使用 NestJS 11 + Prisma 7 + PostgreSQL，采用业务模块内分层的单体结构。当前只实现登录、会话和设备查询，接口运行方式见 [API_SETUP.md](API_SETUP.md)。AI 协作入口为根目录 [AGENTS.md](../AGENTS.md)。
+
+## 目录职责
+
+```text
+apps/api/
+├─ prisma/
+│  ├─ schema.prisma
+│  └─ migrations/
+├─ prisma.config.ts
+└─ src/
+   ├─ main.ts
+   ├─ app.module.ts
+   ├─ config/
+   │  └─ env.config.ts
+   ├─ common/
+   │  ├─ decorators/current-user.decorator.ts
+   │  ├─ middleware/response-headers.middleware.ts
+   │  └─ types/authenticated-request.type.ts
+   ├─ database/
+   │  ├─ database.module.ts
+   │  ├─ database.service.ts
+   │  └─ seed.ts
+   ├─ modules/
+   │  ├─ auth/
+   │  │  ├─ auth.module.ts
+   │  │  ├─ auth.controller.ts
+   │  │  ├─ auth.service.ts
+   │  │  ├─ auth.select.ts
+   │  │  ├─ dto/login.dto.ts
+   │  │  ├─ guards/
+   │  │  ├─ constants/
+   │  │  ├─ types/
+   │  │  └─ utils/
+   │  └─ devices/
+   │     ├─ devices.module.ts
+   │     ├─ devices.controller.ts
+   │     ├─ devices.service.ts
+   │     └─ devices.select.ts
+   └─ generated/prisma/
+```
+
+目录对应现有职责，不预建工单、支付或空的 Filter、Interceptor、Repository。
+
+| 层或机制 | 职责与边界 |
+| --- | --- |
+| `main.ts` | 启动、注册解析器/中间件/全局校验、监听端口；不写内联业务逻辑 |
+| `app.module.ts`、业务 Module | 组织依赖注入、注册控制器和 Provider、显式导出跨模块能力 |
+| Controller | 路由、入参、HTTP 状态和 Cookie；调用服务，不查询数据库或计算授权条件 |
+| Service | 用例、数据归属、业务约束、事务边界；不接收 Express Request/Response |
+| DTO | 请求的运行时校验；前后端共享接口不能代替 DTO 校验 |
+| Guard | Origin 与会话访问检查；在控制器方法执行前拦截请求 |
+| Middleware | 通用请求/响应处理；当前包括框架解析器和独立响应头函数 |
+| 参数装饰器 | 从已认证请求读取用户，不从客户端字段推断身份 |
+| DatabaseService | Prisma 连接及生命周期；不承载具体业务权限 |
+| `.select.ts` | 所属模块的数据库字段白名单；复用查询投影，控制敏感字段输出 |
+| `config` | 环境配置读取和校验，不在业务文件里重复解析环境变量 |
+| `common` | 跨模块的通用能力，不依赖具体业务模块 |
+
+业务常量、内部类型和工具归所属模块。会话 Cookie 名称和时长在 `auth/constants`，令牌与 Cookie 操作在 `auth/utils`，查询字段在 `auth.select.ts`，不再混放在一个类型文件内。
+
+## 请求处理链
+
+受保护设备请求的主要路径：
+
+```text
+JSON/Cookie 解析、响应头中间件
+  → OriginGuard
+  → SessionGuard（读取 Cookie、校验数据库会话、设置 actor）
+  → 参数解析与适用的 Pipe / CurrentUser
+  → DevicesController
+  → DevicesService（构造当前用户的数据范围）
+  → Prisma → PostgreSQL
+```
+
+登录请求通过 DTO 校验后进入 AuthService；它不要求已有会话。Controller 只负责把内部创建结果转换为公开响应并设置 HttpOnly Cookie。
+
+- `@CurrentUser()` 只读取 Guard 写入的 actor，缺少 actor 时拒绝请求，不能代替 `SessionGuard`。
+- Controller 不使用客户端的角色或用户 ID 决定身份。
+- 设备列表和详情使用同一个数据范围函数；授权条件进入数据库查询，不先读取所有数据再在前端过滤。
+- 不存在和未授权设备维持相同的 404 行为。
+- Cookie 创建与清理复用相同路径和安全选项，令牌摘要方法也复用统一定义。
+
+NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常响应处理。目前沿用框架异常机制；出现明确需求后再加入对应实现，不把所有横切逻辑塞进 Middleware。
+
+## 数据访问与事务
+
+当前 Service 直接使用 Prisma，规模足够清晰，不要求每个模块机械增加 Repository。
+
+出现重复复杂查询、可独立维护的数据访问职责时，可增加模块内部 Repository。业务流程和授权决策仍属于 Service；Repository 不接受 HTTP 对象，不反向调用 Controller。
+
+未来工单涉及多表更新时，由一个业务用例确定事务边界，相关查询共用同一个事务客户端。不能让多个 Repository 各自提交，造成部分成功。
+
+数据库模型和迁移归 `prisma/`。接口投影归业务模块，公开传输类型归 `packages/contracts`；该包不输出 Prisma 模型、密码哈希、会话令牌或授权名单。
+
+## TypeScript 与依赖约定
+
+- DTO 使用 class 和验证装饰器，并可 `implements` 共享请求接口，兼顾运行时校验与编译期约束。
+- 普通类型使用 `import type`；参与 NestJS 运行时反射的 DTO、注入的 Service、Module 和 Guard 必须保留值导入，不能机械改成类型导入。
+- Controller 的公开结果和 Service 的关键结果使用明确的返回类型。
+- 查询字段使用 `as const satisfies Prisma.<模型>Select` 检查，不重复维护相同白名单。
+- `common` 可以依赖共享传输类型，不能依赖 `modules/auth` 等具体模块。业务模块通过 Module 导出能力协作，不直接修改其他模块状态。
+- 不引入 BaseService、通用 Repository、微服务或事件总线来包装当前几个简单接口。
+
+## 修改与验证
+
+1. 新功能先明确接口、角色数据范围、状态约束及异常分支，再放入所属模块。
+2. 结构移动后更新所有导入，包括种子脚本；清理旧编译产物，避免误运行旧路径代码。清理只允许本项目 `apps/api/dist`，不能触及数据库数据目录。
+3. 执行 `npm run build`，然后对独立本地数据库执行 `npm run verify:api`，真实页面调用链执行 `npm run verify:connected-ui`。
+4. 仅在业务规则变化时补充关键测试，不为文件搬迁堆重复测试。接口、身份来源和返回字段没有授权不得顺带更改。
+5. 同步架构、启动文档和 AI 入口规范；公开文档不记录本机凭据或个人盘符。
+
+当前 Windows 环境通过 `.\scripts\npm-local.ps1 run <脚本名>` 执行命令，继续使用项目内缓存和临时目录。
+
+## 验证记录
+
+2026-11-06：结构整理后，Web/API 构建、真实 API 权限与会话检查、真实设备入口浏览器回归均通过。响应头校验覆盖了提取后的中间件；浏览器检查覆盖登录、设备详情、四账号数据范围、刷新和退出。数据库 Schema、迁移历史和接口路径未修改，没有新增业务接口。

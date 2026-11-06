@@ -1,0 +1,47 @@
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px 20px;
+  background: #f5f7fa;
+}
+.card {
+  width: 100%;
+  max-width: 420px;
+}
+.heading {
+  margin-bottom: 26px;
+}
+.heading h1 {
+  margin: 10px 0;
+  font-size: 25px;
+  color: #263247;
+}
+.heading p {
+  color: var(--text-secondary);
+  font-size: var(--font-size-body);
+  line-height: 1.8;
+}
+.logo {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-size: 23px;
+}
+.footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: var(--font-size-secondary);
+}
+.feedback {
+  max-width: 700px;
+  margin: 80px auto;
+  padding: 20px;
+}
+.loading {
+  min-height: 100px;
+}

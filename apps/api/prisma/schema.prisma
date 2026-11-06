@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  reporter
+  technician
+}
+
+model User {
+  id           String   @id
+  username     String   @unique
+  name         String
+  role         Role
+  passwordHash String
+  active       Boolean  @default(true)
+  sessions     Session[]
+  deviceAccess DeviceAccess[]
+}
+
+model Device {
+  id       String @id
+  code     String @unique
+  name     String
+  category String
+  location String
+  model    String
+  enabled  Boolean @default(true)
+  access   DeviceAccess[]
+}
+
+model DeviceAccess {
+  userId   String
+  deviceId String
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  @@id([userId, deviceId])
+  @@index([deviceId])
+}
+
+model Session {
+  id        String @id @default(uuid())
+  tokenHash String @unique
+  userId    String
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  @@index([userId])
+  @@index([expiresAt])
+}

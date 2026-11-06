@@ -1,18 +1,22 @@
 import { Button, Table, Tag } from "antd";
-import type { Device } from "../types";
+import type { DeviceTableRow } from "../types";
 interface Props {
-  visibleDevices: Device[];
+  visibleDevices: DeviceTableRow[];
   onView: (id: string) => void;
 }
 export default function DeviceTable({ visibleDevices, onView }: Props) {
   return (
-    <Table<Device>
+    <Table<DeviceTableRow>
       rowKey="id"
       dataSource={visibleDevices}
       pagination={false}
       scroll={{ x: 760 }}
       columns={[
-        { title: "设备编号", dataIndex: "id" },
+        {
+          title: "设备编号",
+          key: "code",
+          render: (_, device) => device.code ?? device.id,
+        },
         { title: "设备名称", dataIndex: "name" },
         { title: "类别", dataIndex: "category" },
         { title: "安装位置", dataIndex: "location" },
