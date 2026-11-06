@@ -6,6 +6,7 @@
     "apps/web",
     "apps/api",
     "apps/portal",
+    "apps/mobile",
     "packages/contracts"
   ],
   "scripts": {
@@ -35,9 +36,18 @@
     "verify:connected-ui": "node scripts/verify-connected-ui.mjs",
     "test:business": "node --test scripts/test-business-rules.mjs",
     "verify:ui": "node scripts/verify-ui.mjs",
-    "format": "prettier --write apps/web/src apps/portal/src apps/portal/next.config.ts apps/portal/tsconfig.json apps/api/src apps/api/prisma.config.ts packages/contracts/src \"scripts/**/*.mjs\"",
+    "format": "prettier --write apps/web/src apps/portal/src apps/portal/next.config.ts apps/portal/tsconfig.json apps/mobile/src apps/mobile/app.json apps/mobile/tsconfig.json apps/mobile/metro.config.cjs apps/api/src apps/api/prisma.config.ts packages/contracts/src \"scripts/**/*.mjs\"",
     "dev": "npm run dev --workspace apps/web",
     "dev:portal": "npm run dev --workspace apps/portal",
+    "dev:mobile": "npm run start --workspace apps/mobile",
+    "dev:mobile:web": "npm run web --workspace apps/mobile",
+    "check:mobile": "npm run check --workspace apps/mobile",
+    "build:mobile": "npm run build --workspace apps/mobile",
+    "verify:mobile-ui": "node scripts/verify-mobile-ui.mjs",
+    "open:mobile:android": "node scripts/open-mobile-android.mjs",
+    "verify:mobile-android": "node scripts/verify-mobile-android.mjs",
+    "verify:mobile-api": "node scripts/verify-mobile-api.mjs",
+    "verify:mobile-auth-android": "node scripts/verify-mobile-auth-android.mjs",
     "start:portal": "npm run start --workspace apps/portal",
     "build:portal": "npm run build --workspace apps/portal",
     "verify:portal": "node scripts/verify-portal.mjs",
@@ -46,6 +56,11 @@
     "build": "npm run build:web && npm run build:api && npm run build:portal",
     "build:web": "npm run build --workspace apps/web",
     "preview": "npm run preview --workspace apps/web"
+  },
+  "overrides": {
+    "react-native-gesture-handler": "2.32.0",
+    "react-native-reanimated": "4.5.1",
+    "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
     "playwright": "^1.64.1",

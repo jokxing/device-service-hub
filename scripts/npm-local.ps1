@@ -16,6 +16,14 @@ $env:npm_config_globalconfig = Join-Path $localRoot 'global.npmrc'
 $env:PLAYWRIGHT_BROWSERS_PATH = Join-Path $localRoot 'browsers'
 $env:PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = '1'
 $env:NEXT_TELEMETRY_DISABLED = '1'
+# Expo CLI 57 uses this process-level override for its user settings/cache directory.
+$env:__UNSAFE_EXPO_HOME_DIRECTORY = Join-Path $localRoot 'expo'
+$env:EXPO_NO_TELEMETRY = '1'
+$env:ANDROID_USER_HOME = Join-Path $localRoot 'android-user'
+$env:ANDROID_AVD_HOME = Join-Path $localRoot 'android-avd'
+$env:GRADLE_USER_HOME = Join-Path $localRoot 'gradle'
+$env:DOTSLASH_CACHE = Join-Path $localRoot 'dotslash'
+$env:BROWSER = 'none'
 Set-Location -LiteralPath $projectRoot
 & 'E:\nodejs\npm.cmd' @NpmArgs
 exit $LASTEXITCODE

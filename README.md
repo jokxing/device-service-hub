@@ -6,14 +6,14 @@
 
 核心流程：**设备查询 → 提交报修 → 管理员分派 → 维修人员接单处理 → 报修用户确认 → 查看维修记录**。
 
-目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的最小文字业务闭环：登录与授权设备查询 → 报修 → 首次分派 → 维修人员接单 → 提交处理结果 → 报修用户确认完成。Next.js 用户门户已接入登录、授权设备查询、文字报修、本人记录与完成确认；移动客户端尚未实现。
+目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的最小文字业务闭环：登录与授权设备查询 → 报修 → 首次分派 → 维修人员接单 → 提交处理结果 → 报修用户确认完成。Next.js 用户门户已接入同一报修与确认流程。RN 客户端已接入真实登录、SecureStore 会话恢复与授权设备列表/详情。
 
 ## 工程设计
 
 - **业务与权限建模**：区分报修用户、管理员和维修人员的操作与数据范围；会话身份、设备授权和工单归属由服务端校验。
 - **并发一致性**：报修通过用户与提交编号的唯一约束防重；分派采用版本条件更新，并在同一事务中写入操作记录，处理重复请求与多人竞争。
 - **可维护架构**：前端按布局、页面、业务模块和公共能力分工；后端按控制器、服务、DTO、鉴权和查询投影组织，保持事务边界清晰。
-- **接口契约**：npm workspaces 管理前后端和共享传输类型；共享包不暴露 ORM 实体、会话或界面实现，为后续门户与移动端保留边界。
+- **接口契约**：npm workspaces 管理前后端和共享传输类型；共享包不暴露 ORM 实体、内部会话记录或界面实现，为后续门户与移动端保留边界。
 - **交互一致性**：筛选与分页同步 URL，桌面表格与移动卡片适配同一业务数据，统一标题、间距和操作反馈。
 - **质量验证**：关键链路覆盖越权、并发冲突、响应丢失重试和重启持久化；迁移前备份，临时测试数据定向清理。
 
@@ -43,6 +43,8 @@
 
 [门户确认框](docs/screenshots/portal-confirmation-dialog-mobile.png) · [门户完成详情](docs/screenshots/portal-completed-ticket-mobile.png)
 
+[RN 设备列表](docs/screenshots/mobile-android-devices.png) · [RN 设备详情](docs/screenshots/mobile-android-device-detail.png) · [RN 模拟器首页](docs/screenshots/mobile-android-home.png) · [RN 模拟器须知](docs/screenshots/mobile-android-guide.png) · [RN 浏览器预览](docs/screenshots/mobile-web-home.png)
+
 ## 已实现
 
 - 工单工作台：状态统计、关键词与状态筛选、分页、详情时间线及 CSV 导出。
@@ -63,9 +65,9 @@
 
 前端使用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules；后端使用 NestJS 11、Prisma 7 和 PostgreSQL 17。使用 npm workspaces 管理应用。
 
-工作区包含 `apps/web`、`apps/api`、Next.js App Router 门户 `apps/portal` 和仅提供传输类型的 `packages/contracts`；React Native 客户端按后续功能进度增加。
+工作区包含 `apps/web`、`apps/api`、Next.js App Router 门户 `apps/portal`、Expo/RN 客户端 `apps/mobile` 和仅提供传输类型的 `packages/contracts`。移动端使用 SDK 57、Expo Router、React Native 原生组件与 StyleSheet，按 SDK 兼容组合独立管理 React 版本。
 
-演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 和微前端尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
+演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 已接通原生鉴权与设备查询，移动端报修与微前端尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
 
 ## 快速开始
 
@@ -90,6 +92,8 @@ Web 构建产物输出到 `apps/web/dist`。部署前需为前端路由配置 HT
 
 门户启动使用 `npm run dev:portal`，访问 `http://127.0.0.1:3000/login`。会话与来源配置、生产构建及验证命令见 [Next.js 门户](docs/PORTAL.md)。
 
+RN 启动使用 `npm run dev:mobile:web`，浏览器预览为 `http://127.0.0.1:8081`；Android 模拟器可通过 ADB reverse 在 Expo Go 中运行。`npm run check:mobile` 检查依赖与类型，`npm run build:mobile` 导出 Android JS bundle 与 Web 预览。启动、缓存及验证边界见 [移动端说明](docs/MOBILE.md)。当前未生成本项目独立 APK/AAB，未验证实体手机。
+
 报修入口、数据范围和防重复提交说明见 [文字报修与本人记录](docs/TEXT_REPAIR.md)。
 
 管理员使用 `/service/admin/tickets` 查看和首次分派，权限、并发规则与工程实现见 [管理员首次分派](docs/ADMIN_ASSIGNMENT.md)。
@@ -112,7 +116,7 @@ Web 构建产物输出到 `apps/web/dist`。部署前需为前端路由配置 HT
 
 演示浏览器核对命令为 `npm run verify:ui`，需先启动开发服务。真实链路使用 `npm run verify:api` 和 `npm run verify:connected-ui`，需要数据库及 API。浏览器脚本默认使用 Windows 已安装的 Edge，可通过 `DSH_BROWSER_PATH` 指定其他现有浏览器。
 
-真实链路已验证未登录、跨用户访问、伪造角色字段、退出、会话过期与账号停用，以及浏览器登录、详情、刷新和四账号数据范围；不包含 Android、iOS 或实体业务设备验证。
+真实链路已验证未登录、跨用户访问、伪造角色字段、退出、会话过期与账号停用，以及浏览器登录、详情、刷新和四账号数据范围；RN 登录与设备查询另经 Android 模拟器 + Expo Go 验证，见 [移动端说明](docs/MOBILE.md)；iOS、实体手机及业务硬件未验证。
 
 API 与 PostgreSQL 实际重启后，原会话和授权设备仍可读取，持久化复核通过。
 

@@ -1,4 +1,4 @@
-/** Transport types only. Never export database entities, password hashes or sessions. */
+/** Transport types only. Never export ORM entities, password hashes or internal session records. */
 export type Role = "admin" | "reporter" | "technician";
 export interface PublicUser {
   id: string;
@@ -13,6 +13,10 @@ export interface LoginInput {
 export interface LoginResponse {
   user: PublicUser;
   expiresAt: string;
+}
+/** Credential response for explicit native transport only; never cache in browser storage. */
+export interface NativeLoginResponse extends LoginResponse {
+  accessToken: string;
 }
 export interface SessionResponse {
   user: PublicUser;

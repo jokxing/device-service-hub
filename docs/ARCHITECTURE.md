@@ -1,6 +1,6 @@
 # Web 结构与维护约定
 
-本说明描述 Web 组织方式。完整工单流程保留内存演示；真实服务入口已连接 NestJS、PostgreSQL，实现登录、设备查询、文字报修、分派、接单、处理结果与本人确认完成。运行方式见 [API_SETUP.md](API_SETUP.md)，业务边界见各功能文档。RN 尚未实施。
+本说明描述 Web 组织方式。完整工单流程保留内存演示；真实服务入口已连接 NestJS、PostgreSQL，实现登录、设备查询、文字报修、分派、接单、处理结果与本人确认完成。运行方式见 [API_SETUP.md](API_SETUP.md)。RN 独立工程已接通原生鉴权、会话恢复与授权设备查询，边界及验证见 [MOBILE.md](MOBILE.md)。
 
 本文件解释现有结构与设计取舍；AI 协作执行规则见根目录 [AGENTS.md](../AGENTS.md)，避免重复维护多套规范。
 
@@ -113,4 +113,4 @@ App → DemoProvider → AppLayout → 页面 → 业务组件
 - 真实业务回归分别见 `verify:tickets[-ui]`、`verify:assignment[-ui]`、`verify:tasks[-ui]`、`verify:results[-ui]`、`verify:confirmations[-ui]`。共享种子账号的总数断言可能互相干扰，API 套件串行执行；不要通过放宽断言消除干扰。
 - 缓存与浏览器临时数据保存在项目内 `.local` 目录，目录已配置忽略。
 
-Web 演示阶段的构建、5 项关键规则及浏览器回归已通过；新增真实 API 链路的实际验证范围单独记录在 `API_SETUP.md`，不混用验证结论。尚未进行 RN 或实体业务设备验证。
+Web 演示阶段的构建、5 项关键规则及浏览器回归已通过；真实 API 验证范围记录在 `API_SETUP.md`，RN 原生认证、设备查询及公开页面浏览器验证记录在 `MOBILE.md`，不混用验证结论。尚未进行实体业务设备通信验证。

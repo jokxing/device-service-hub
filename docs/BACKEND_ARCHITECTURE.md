@@ -126,3 +126,11 @@ NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常�
 ## 验证记录
 
 2026-11-06：结构整理后，Web/API 构建、真实 API 权限与会话检查、真实设备入口浏览器回归均通过。响应头校验覆盖了提取后的中间件；浏览器检查覆盖登录、设备详情、四账号数据范围、刷新和退出。数据库 Schema、迁移历史和接口路径未修改，没有新增业务接口。
+
+## 原生客户端传输
+
+`/api/mobile/auth/*` 与 `/api/mobile/devices/*` 是 RN 的专用控制器，复用 AuthService、DevicesService 与同一 Session 表。NativeSessionGuard 读取不透明 Bearer、调用现有认证逻辑并注入 actor；服务层继续独立约束设备归属。
+
+OriginGuard 仅对明确标注 NativeClient 的控制器使用原生传输约束，拒绝 Origin、Cookie 与 Fetch Metadata 标头；其他 Web 接口仍使用原 Cookie/Origin 策略，不接受 Bearer 替代 Cookie。原生登录返回的短期凭据仅存 SecureStore，数据库保留摘要；注销可重复调用并撤销会话，不额外创建移动端用户或业务表。原生传输不能证明设备真实性。
+
+验证命令与模拟器范围见 [MOBILE.md](MOBILE.md)。

@@ -1,6 +1,6 @@
 import type { PublicUser } from "@device-service-hub/contracts";
 
-/** Internal service result; raw token is used only to issue the HttpOnly cookie. */
+/** Internal result; transport controllers issue a Web cookie or native credential. Never log. */
 export interface CreatedSession {
   token: string;
   actor: PublicUser;

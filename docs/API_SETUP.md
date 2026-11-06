@@ -79,11 +79,13 @@ npm run dev
 | GET | `/api/devices` | 返回当前用户可见的设备 |
 | GET | `/api/devices/:id` | 返回授权范围内的设备详情 |
 
-密码使用独立随机盐与 scrypt；数据库只存密码哈希。会话使用随机令牌，数据库存令牌摘要和过期时间；响应正文不包含令牌或密码哈希。Cookie 使用 HttpOnly、SameSite=Strict，修改请求还校验 Origin；生产环境配置启用 Secure，但当前只验证本地 HTTP。
+密码使用独立随机盐与 scrypt；数据库只存密码哈希。会话使用随机令牌，数据库存令牌摘要和过期时间；Web 响应正文不包含令牌或密码哈希。Cookie 使用 HttpOnly、SameSite=Strict，修改请求还校验 Origin；生产环境配置启用 Secure，但当前只验证本地 HTTP。
 
 每次查询检查会话过期时间和账号启用状态。客户端提交角色、伪造用户头或更换设备 ID 均不能扩大访问范围。公开设备响应不包含授权名单。
 
-接口类型位于 `packages/contracts`，只输出传输类型，不导出 ORM 模型、密码、会话或 Web UI。Prisma Client 自动生成在 `apps/api/src/generated`，不提交生成产物。
+接口类型位于 `packages/contracts`，只输出传输类型，不导出 ORM 模型、密码、内部会话记录或 Web UI。Prisma Client 自动生成在 `apps/api/src/generated`，不提交生成产物。
+
+RN 使用专用 `/api/mobile/auth/login`、`me`、`logout` 及 `/api/mobile/devices`、`/:id`。原生登录返回短期不透明 Bearer，由 SecureStore 保存；复用相同会话表与身份/设备服务。原生控制器拒绝浏览器 Origin、Cookie 和 Fetch Metadata 标头，既有 Web 不改用 Bearer。模拟器通过 ADB reverse 连接本机 3001，不开放局域网服务。验证执行 `verify:mobile-api`、`verify:mobile-auth-android`，详细边界见 [MOBILE.md](MOBILE.md)。
 
 ## 验证
 
