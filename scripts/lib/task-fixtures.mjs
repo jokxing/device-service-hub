@@ -63,6 +63,19 @@ export function taskFixtures(local, db, prefix) {
       },
     });
     assert.equal(result.response.status, 201);
+    if (stage === "confirming") {
+      result = await local.request(`/tasks/${result.value.id}/result`, {
+        cookie: owner.cookie,
+        method: "POST",
+        body: {
+          requestId: randomUUID(),
+          expectedVersion: 2,
+          description:
+            "已检查接线与制冷回路，清理滤网。\n连续试运行 30 分钟正常，提交用户验收。",
+        },
+      });
+      assert.equal(result.response.status, 201);
+    }
     return result.value;
   }
   async function cleanup() {

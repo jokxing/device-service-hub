@@ -6,14 +6,15 @@
 
 React + TypeScript + Vite 已有模块拆分、路由、表单及完整工单内存演示。NestJS + Prisma + PostgreSQL 已实现真实登录、授权设备查询、文字报修和本人记录，包含会话、数据归属、参数校验与并发防重。
 
-管理员真实列表、首次分派、维修人员本人任务/接单及文字处理结果已实现；改派、确认/退回和图片上传尚未完成；Next.js、RN、微前端尚未创建。保留现有代码与迁移，演示能力和真实能力分别记录。
+首次分派、维修任务/接单、文字结果和报修用户确认完成已实现，最小文字闭环已贯通；改派、退回/再次提交和图片上传尚未完成；Next.js、RN、微前端尚未创建。保留现有代码与迁移，演示能力和真实能力分别记录。
 
 ## 阶段一：React 后台业务闭环
 
 - 小步顺序：管理员真实列表与分派 → 维修人员接单处理 → 用户确认与操作历史。先完成文字最小闭环，不等待所有设备维护、统计和附件功能完成。
 - 完成标准：三角色通过真实 API 完成同一工单闭环，刷新后可追溯；服务端拦截越权、非法迁移和并发冲突，关键路径有必要测试。
 - 工程重点：组件职责与状态归属、异步请求取消、权限展示、运行时参数校验和服务端事务一致性。
-- 风险：内存演示与真实授权必须隔离。首次分派、接单和文字处理结果已完成，规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)、[TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)、[TASK_RESULTS.md](TASK_RESULTS.md)。后续交付单元为用户确认，退回及再次提交另行定义。
+- 当前里程碑：最小文字闭环已完成，状态与各操作记录可刷新回看，规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)、[TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)、[TASK_RESULTS.md](TASK_RESULTS.md)、[TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)。下一阶段为 Next.js 门户，新增应用需另行确认，不自动扩展退回或附件。
+- 风险：内存演示与真实授权持续隔离；退回与再次提交需要结果批次及历史保留设计，不能覆盖原处理说明。
 
 ## 阶段二：Next.js Web 门户
 

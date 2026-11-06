@@ -1,6 +1,6 @@
 # 本地登录与设备查询
 
-真实链路包括：浏览器登录 → NestJS → PostgreSQL 会话与设备授权 → 设备查询 → 文字报修 → 本人记录 → 首次分派 → 接单 → 提交文字处理结果并进入待确认。用户确认与退回仍保留独立内存演示。规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)、[ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)、[TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)、[TASK_RESULTS.md](TASK_RESULTS.md)。
+真实链路包括：浏览器登录 → NestJS → PostgreSQL 会话与设备授权 → 设备查询 → 文字报修 → 首次分派 → 接单 → 文字处理结果 → 报修用户确认完成。退回与再次提交仍保留独立内存演示。规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)、[ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)、[TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)、[TASK_RESULTS.md](TASK_RESULTS.md)、[TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)。
 
 后端目录、Controller/Service/Guard 等职责，以及新增功能的放置约定见 [BACKEND_ARCHITECTURE.md](BACKEND_ARCHITECTURE.md)。
 
@@ -99,7 +99,7 @@ npm run verify:ui
 - `verify:ui` 回归原有演示流程，`test:business` 验证已有工单纯规则。
 - `verify:api` 在 `.local` 保存一个待复核会话。重启 API 和数据库后执行 `npm run verify:api:restart`，检查会话及授权设备仍可读取；复核后撤销测试会话并删除临时文件。
 
-已实现文字工单创建、本人查询、首次分派、维修任务/接单和文字处理结果；尚未实现设备维护、用户管理、图片上传、改派、用户确认/退回、RN、报价或支付。自动化检查不等于用户已完成人工验收，也不代表生产部署。
+已实现文字报修、本人查询、首次分派、维修任务/接单、文字结果和用户确认完成；尚未实现设备维护、用户管理、图片上传、改派、退回/再次提交、RN、报价或支付。自动化检查不等于用户已完成人工验收，也不代表生产部署。
 
 设备查询链路为“设备页面 → devicesApi → SessionGuard → DevicesService → Prisma”。数据范围进入服务端查询条件，列表与详情复用同一授权策略；前端角色展示不构成访问控制。
 

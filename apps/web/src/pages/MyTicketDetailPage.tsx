@@ -1,5 +1,6 @@
-import { useCallback } from "react";
-import { Alert, Button, Spin } from "antd";
+import { useCallback, useState } from "react";
+import { Alert, Button, Space, Spin } from "antd";
+import type { ReporterTicketRecord } from "@device-service-hub/contracts";
 import { useParams } from "react-router-dom";
 import { ROUTES } from "../app/routes";
 import { useSession } from "../features/auth/sessionContext";
@@ -10,9 +11,11 @@ import ServicePageHeader from "../shared/components/ServicePageHeader";
 import { connectedTicketsApi } from "../features/tickets/api";
 
 import TicketRecordDetails from "../features/tickets/components/TicketRecordDetails";
+import ConfirmTicketModal from "../features/tickets/components/ConfirmTicketModal";
+import { canConfirmTicket } from "../features/tickets/reporterRules";
 import styles from "../features/tickets/connected.module.css";
 
-export default function MyTicketDetailPage() {
+function MyTicketDetailContent() {
   const { id = "" } = useParams();
   const { clearSession } = useSession();
   const load = useCallback(
@@ -20,6 +23,8 @@ export default function MyTicketDetailPage() {
     [id],
   );
   const { data, error, loading, refresh } = useApiResource(load, clearSession);
+  const [ticketToConfirm, setTicketToConfirm] =
+    useState<ReporterTicketRecord>();
   return (
     <>
       <ServicePageHeader
@@ -30,9 +35,20 @@ export default function MyTicketDetailPage() {
       <ContentCard
         title={data?.code ?? "报修记录"}
         extra={
-          <Button onClick={refresh} loading={loading}>
-            刷新
-          </Button>
+          <Space wrap>
+            <Button onClick={refresh} loading={loading}>
+              刷新
+            </Button>
+            {data && canConfirmTicket(data) && (
+              <Button
+                type="primary"
+                aria-label="确认完成"
+                onClick={() => setTicketToConfirm(data)}
+              >
+                确认完成
+              </Button>
+            )}
+          </Space>
         }
       >
         {error ? (
@@ -47,6 +63,22 @@ export default function MyTicketDetailPage() {
           </div>
         )}
       </ContentCard>
+      {ticketToConfirm && (
+        <ConfirmTicketModal
+          key={ticketToConfirm.id}
+          ticket={ticketToConfirm}
+          onClose={() => setTicketToConfirm(undefined)}
+          onConfirmed={() => {
+            setTicketToConfirm(undefined);
+            refresh();
+          }}
+        />
+      )}
     </>
   );
+}
+
+export default function MyTicketDetailPage() {
+  const { id } = useParams();
+  return <MyTicketDetailContent key={id} />;
 }

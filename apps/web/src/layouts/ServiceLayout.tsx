@@ -77,7 +77,7 @@ export default function ServiceLayout() {
         title="已连接本地服务与数据库"
         description={
           <>
-            支持报修、分派、接单与文字处理结果；用户确认和图片上传尚未开放。
+            支持报修、分派、接单、处理结果与用户确认；退回和图片上传尚未开放。
             <Link to={ROUTES.tickets}>工单演示工作台</Link> 使用独立的演示数据。
           </>
         }

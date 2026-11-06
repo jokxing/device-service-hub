@@ -28,6 +28,8 @@
     "verify:tasks-ui": "node scripts/verify-tasks-ui.mjs",
     "verify:results": "node scripts/verify-results.mjs",
     "verify:results-ui": "node scripts/verify-results-ui.mjs",
+    "verify:confirmations": "node scripts/verify-confirmations.mjs",
+    "verify:confirmations-ui": "node scripts/verify-confirmations-ui.mjs",
     "verify:connected-ui": "node scripts/verify-connected-ui.mjs",
     "test:business": "node --test scripts/test-business-rules.mjs",
     "verify:ui": "node scripts/verify-ui.mjs",

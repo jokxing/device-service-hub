@@ -13,6 +13,9 @@ export const TICKET_PUBLIC_SELECT = {
   acceptance: {
     select: { actor: { select: { id: true, name: true } }, createdAt: true },
   },
+  confirmation: {
+    select: { actor: { select: { id: true, name: true } }, createdAt: true },
+  },
   result: {
     select: {
       description: true,
@@ -40,6 +43,15 @@ export const TASK_TICKET_SELECT = {
   ...TICKET_PUBLIC_SELECT,
   version: true,
 } as const satisfies Prisma.TicketSelect;
+
+export const REPORTER_TICKET_SELECT = {
+  ...TICKET_PUBLIC_SELECT,
+  version: true,
+} as const satisfies Prisma.TicketSelect;
+
+export type ReporterTicketRow = Prisma.TicketGetPayload<{
+  select: typeof REPORTER_TICKET_SELECT;
+}>;
 
 export type TaskTicketRow = Prisma.TicketGetPayload<{
   select: typeof TASK_TICKET_SELECT;

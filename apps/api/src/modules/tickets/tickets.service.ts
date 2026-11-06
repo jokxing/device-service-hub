@@ -8,13 +8,18 @@ import type {
   PublicUser,
   TicketPage,
   TicketRecord,
+  ReporterTicketRecord,
 } from "@device-service-hub/contracts";
 import { Prisma } from "../../generated/prisma/client";
 import { DatabaseService } from "../../database/database.service";
 import type { CreateTicketDto } from "./dto/create-ticket.dto";
 import type { TicketsQueryDto } from "./dto/tickets-query.dto";
-import { TICKET_PUBLIC_SELECT } from "./tickets.select";
-import { ticketPayloadHash, toTicketRecord } from "./utils/ticket-payload";
+import { TICKET_PUBLIC_SELECT, REPORTER_TICKET_SELECT } from "./tickets.select";
+import {
+  ticketPayloadHash,
+  toTicketRecord,
+  toReporterTicketRecord,
+} from "./utils/ticket-payload";
 
 @Injectable()
 export class TicketsService {
@@ -111,13 +116,13 @@ export class TicketsService {
     };
   }
 
-  async detail(actor: PublicUser, id: string): Promise<TicketRecord> {
+  async detail(actor: PublicUser, id: string): Promise<ReporterTicketRecord> {
     this.requireReporter(actor);
     const row = await this.database.ticket.findFirst({
       where: { id, reporterId: actor.id },
-      select: TICKET_PUBLIC_SELECT,
+      select: REPORTER_TICKET_SELECT,
     });
     if (!row) throw new NotFoundException("报修记录不存在或无权访问");
-    return toTicketRecord(row);
+    return toReporterTicketRecord(row);
   }
 }

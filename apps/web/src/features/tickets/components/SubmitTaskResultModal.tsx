@@ -116,7 +116,7 @@ export default function SubmitTaskResultModal({
         </Form.Item>
       </Form>
       <p className="muted">
-        提交后进入待用户确认，当前不支持修改已提交结果。用户确认与退回操作后续开放。
+        提交后由报修用户确认完成，当前不支持修改已提交结果或退回。
       </p>
     </Modal>
   );

@@ -14,17 +14,32 @@ import type {
   PublicUser,
   TicketPage,
   TicketRecord,
+  ReporterTicketRecord,
 } from "@device-service-hub/contracts";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { SessionGuard } from "../auth/guards/session.guard";
 import { CreateTicketDto } from "./dto/create-ticket.dto";
 import { TicketsQueryDto } from "./dto/tickets-query.dto";
 import { TicketsService } from "./tickets.service";
+import { TicketConfirmationsService } from "./ticket-confirmations.service";
+import { ConfirmTicketDto } from "./dto/confirm-ticket.dto";
 
 @Controller("tickets")
 @UseGuards(SessionGuard)
 export class TicketsController {
-  constructor(private readonly tickets: TicketsService) {}
+  constructor(
+    private readonly tickets: TicketsService,
+    private readonly confirmations: TicketConfirmationsService,
+  ) {}
+
+  @Post(":id/confirm")
+  confirm(
+    @CurrentUser() actor: PublicUser,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Body() body: ConfirmTicketDto,
+  ): Promise<ReporterTicketRecord> {
+    return this.confirmations.confirm(actor, id, body);
+  }
 
   @Post()
   async create(
@@ -49,7 +64,7 @@ export class TicketsController {
   detail(
     @CurrentUser() actor: PublicUser,
     @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
-  ): Promise<TicketRecord> {
+  ): Promise<ReporterTicketRecord> {
     return this.tickets.detail(actor, id);
   }
 }

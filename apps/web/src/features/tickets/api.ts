@@ -2,10 +2,21 @@ import type {
   CreateTicketInput,
   TicketPage,
   TicketRecord,
+  ReporterTicketRecord,
+  ConfirmTicketInput,
 } from "@device-service-hub/contracts";
 import { apiRequest } from "../../shared/api/http";
 
 export const connectedTicketsApi = {
+  confirm: (id: string, input: ConfirmTicketInput, signal?: AbortSignal) =>
+    apiRequest<ReporterTicketRecord>(
+      `/tickets/${encodeURIComponent(id)}/confirm`,
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+        signal,
+      },
+    ),
   create: (input: CreateTicketInput, signal?: AbortSignal) =>
     apiRequest<TicketRecord>("/tickets", {
       method: "POST",
@@ -17,5 +28,7 @@ export const connectedTicketsApi = {
       signal,
     }),
   detail: (id: string, signal?: AbortSignal) =>
-    apiRequest<TicketRecord>(`/tickets/${encodeURIComponent(id)}`, { signal }),
+    apiRequest<ReporterTicketRecord>(`/tickets/${encodeURIComponent(id)}`, {
+      signal,
+    }),
 };

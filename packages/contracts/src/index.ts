@@ -53,6 +53,7 @@ export interface TicketRecord {
   assignee: TicketPerson | null;
   assignedAt: string | null;
   acceptance: { actor: TicketPerson; createdAt: string } | null;
+  confirmation: { actor: TicketPerson; createdAt: string } | null;
   result: {
     description: string;
     actor: TicketPerson;
@@ -72,6 +73,10 @@ export interface AssignTicketInput extends TicketCommandInput {
   assigneeId: string;
 }
 export type AcceptTicketInput = TicketCommandInput;
+export type ConfirmTicketInput = TicketCommandInput;
+export interface ReporterTicketRecord extends TicketRecord {
+  version: number;
+}
 export interface SubmitTicketResultInput extends TicketCommandInput {
   description: string;
 }

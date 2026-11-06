@@ -1,6 +1,6 @@
 # 后端结构与维护约定
 
-后端使用 NestJS 11 + Prisma 7 + PostgreSQL，采用业务模块内分层的单体结构。当前实现登录、会话、设备查询、文字报修、本人记录、首次分派、维修任务/接单和文字处理结果。运行方式见 [API_SETUP.md](API_SETUP.md)，业务规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)、[ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)、[TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)、[TASK_RESULTS.md](TASK_RESULTS.md)。AI 协作入口为根目录 [AGENTS.md](../AGENTS.md)。
+后端使用 NestJS 11 + Prisma 7 + PostgreSQL，采用业务模块内分层的单体结构。当前已贯通登录、授权设备查询、文字报修、首次分派、接单、处理结果及用户确认完成。运行方式见 [API_SETUP.md](API_SETUP.md)，业务规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)、[ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)、[TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)、[TASK_RESULTS.md](TASK_RESULTS.md)、[TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)。AI 协作入口为根目录 [AGENTS.md](../AGENTS.md)。
 
 ## 目录职责
 
@@ -87,6 +87,8 @@ JSON/Cookie 解析、响应头中间件
 NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常响应处理。目前沿用框架异常机制；出现明确需求后再加入对应实现，不把所有横切逻辑塞进 Middleware。
 
 ## 数据访问与事务
+
+用户确认由 TicketConfirmationsService 承担，复用 TicketsService 的报修角色和归属读取。在同一事务内确认结果存在、版本匹配且无已有确认，再写入 completed 状态与 TicketConfirmation。本人详情使用单独投影返回当前版本，列表投影保持不变，规则见 [TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)。
 
 文字结果提交由 TaskResultsService 承担，复用 TaskTicketsService 的当前角色/归属查询，在一个事务中更新 processing → confirming 并创建 TicketResult。规范化说明、工单及原版本参与重放核对，规则见 [TASK_RESULTS.md](TASK_RESULTS.md)。现有接单用例保持独立，不抽象通用状态修改服务。
 

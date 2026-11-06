@@ -164,14 +164,9 @@ try {
   );
   assert.equal(own.status, "assigned");
   assert.equal(own.assignee.id, fixtureUsers[0]);
-  for (const key of [
-    "reporter",
-    "version",
-    "assignment",
-    "requestId",
-    "requestHash",
-  ])
+  for (const key of ["reporter", "assignment", "requestId", "requestHash"])
     assert.equal(key in own, false);
+  assert.equal(own.version, 1);
   check(await request("/tickets/" + ticket.id, { cookie: otherReporter }), 404);
 
   const same = await create(reporter);

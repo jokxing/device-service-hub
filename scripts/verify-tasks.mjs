@@ -181,7 +181,7 @@ try {
   );
   assert.equal(own.status, "processing");
   assert.equal(own.acceptance.actor.id, users[0]);
-  assert.equal("version" in own, false);
+  assert.equal(own.version, 2);
   check(await request("/tickets/" + ticket.id, { cookie: reporterB }), 404);
   const managed = check(
     await request("/admin/tickets/" + ticket.id, { cookie: admin }),

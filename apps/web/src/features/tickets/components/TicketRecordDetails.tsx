@@ -102,6 +102,22 @@ export default function TicketRecordDetails({
                 },
               ]
             : []),
+          ...(ticket.confirmation
+            ? [
+                {
+                  key: "confirmedBy",
+                  label: "确认人",
+                  children: ticket.confirmation.actor.name,
+                },
+                {
+                  key: "confirmedAt",
+                  label: "确认时间",
+                  children: formatDateTime(
+                    new Date(ticket.confirmation.createdAt),
+                  ),
+                },
+              ]
+            : []),
         ]}
       />
       {ticket.status === "pending" && (
@@ -115,6 +131,9 @@ export default function TicketRecordDetails({
       )}
       {ticket.status === "confirming" && (
         <Alert showIcon type="info" title="处理结果已提交，等待报修用户确认" />
+      )}
+      {ticket.status === "completed" && (
+        <Alert showIcon type="success" title="报修用户已确认完成，工单已结束" />
       )}
     </div>
   );

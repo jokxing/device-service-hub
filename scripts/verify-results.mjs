@@ -140,7 +140,7 @@ try {
   );
   assert.equal(own.result.description, record.result.description);
   assert.equal(own.result.createdAt, record.result.createdAt);
-  assert.equal("version" in own, false);
+  assert.equal(own.version, 3);
   check(await local.request("/tickets/" + task.id, { cookie: reporterB }), 404);
   const managed = check(
     await local.request("/admin/tickets/" + task.id, { cookie: admin }),
