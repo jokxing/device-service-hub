@@ -6,7 +6,7 @@
 
 核心流程：**设备查询 → 提交报修 → 管理员分派 → 维修人员接单处理 → 报修用户确认 → 查看维修记录**。
 
-目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的最小文字业务闭环：登录与授权设备查询 → 报修 → 首次分派 → 维修人员接单 → 提交处理结果 → 报修用户确认完成。移动客户端尚未实现。
+目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的最小文字业务闭环：登录与授权设备查询 → 报修 → 首次分派 → 维修人员接单 → 提交处理结果 → 报修用户确认完成。Next.js 用户门户已接入登录、授权设备列表与动态详情；移动客户端尚未实现。
 
 ## 工程设计
 
@@ -37,6 +37,8 @@
 
 [完成记录](docs/screenshots/service-completed-ticket.png) · [窄屏完成详情](docs/screenshots/service-completed-ticket-mobile.png)
 
+[Next.js 设备门户](docs/screenshots/portal-devices.png) · [门户手机详情](docs/screenshots/portal-device-detail-mobile.png)
+
 ## 已实现
 
 - 工单工作台：状态统计、关键词与状态筛选、分页、详情时间线及 CSV 导出。
@@ -57,9 +59,9 @@
 
 前端使用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules；后端使用 NestJS 11、Prisma 7 和 PostgreSQL 17。使用 npm workspaces 管理应用。
 
-工作区包含 `apps/web`、`apps/api` 和仅提供传输类型的 `packages/contracts`；React Native 客户端按后续功能进度增加。
+工作区包含 `apps/web`、`apps/api`、Next.js App Router 门户 `apps/portal` 和仅提供传输类型的 `packages/contracts`；React Native 客户端按后续功能进度增加。
 
-后续依次推进 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。Next.js、RN 和微前端目前均未实现；现有 React 后台与 Node.js 业务后端继续保留。
+演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户目前仅提供登录和授权设备查询，RN 和微前端尚未实现；现有 React 后台与 Node.js 业务后端继续保留。
 
 ## 快速开始
 
@@ -80,7 +82,9 @@ npm run format        # 格式化源码
 
 Web 构建产物输出到 `apps/web/dist`。部署前需为前端路由配置 HTML 回退。
 
-真实设备服务需要先初始化本地数据库，再启动 API，详见 [API 启动与验证](docs/API_SETUP.md)。环境准备后，`npm run build` 同时检查 Web 和 API；API 编译产物输出到 `apps/api/dist`。
+真实设备服务需要先初始化本地数据库，再启动 API，详见 [API 启动与验证](docs/API_SETUP.md)。环境准备后，`npm run build` 检查 Web、API 和门户；API 编译产物输出到 `apps/api/dist`。
+
+门户启动使用 `npm run dev:portal`，访问 `http://127.0.0.1:3000/login`。会话与来源配置、生产构建及验证命令见 [Next.js 门户](docs/PORTAL.md)。
 
 报修入口、数据范围和防重复提交说明见 [文字报修与本人记录](docs/TEXT_REPAIR.md)。
 

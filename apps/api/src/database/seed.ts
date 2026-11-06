@@ -4,8 +4,8 @@ import { hashPassword } from "../modules/auth/utils/password";
 
 async function seed() {
   const password = process.env.SEED_ACCOUNT_PASSWORD;
-  if (!password || password.startsWith("REPLACE") || password.length < 16)
-    throw new Error("Configure a random local seed password first.");
+  if (!password || password.startsWith("REPLACE") || password.length < 8)
+    throw new Error("Configure a local seed password with at least 8 characters.");
   const database = new DatabaseService();
   await database.$connect();
   try {

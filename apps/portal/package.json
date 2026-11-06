@@ -1,0 +1,26 @@
+{
+  "name": "@device-service-hub/portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3000"
+  },
+  "dependencies": {
+    "@device-service-hub/contracts": "^0.1.0",
+    "@ant-design/nextjs-registry": "1.3.0",
+    "@ant-design/cssinjs": "^2.0.0",
+    "antd": "^6.7.0",
+    "next": "16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2"
+  }
+}

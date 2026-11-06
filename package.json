@@ -5,6 +5,7 @@
   "workspaces": [
     "apps/web",
     "apps/api",
+    "apps/portal",
     "packages/contracts"
   ],
   "scripts": {
@@ -34,9 +35,13 @@
     "verify:connected-ui": "node scripts/verify-connected-ui.mjs",
     "test:business": "node --test scripts/test-business-rules.mjs",
     "verify:ui": "node scripts/verify-ui.mjs",
-    "format": "prettier --write apps/web/src apps/api/src apps/api/prisma.config.ts packages/contracts/src \"scripts/**/*.mjs\"",
+    "format": "prettier --write apps/web/src apps/portal/src apps/portal/next.config.ts apps/portal/tsconfig.json apps/api/src apps/api/prisma.config.ts packages/contracts/src \"scripts/**/*.mjs\"",
     "dev": "npm run dev --workspace apps/web",
-    "build": "npm run build:web && npm run build:api",
+    "dev:portal": "npm run dev --workspace apps/portal",
+    "start:portal": "npm run start --workspace apps/portal",
+    "build:portal": "npm run build --workspace apps/portal",
+    "verify:portal": "node scripts/verify-portal.mjs",
+    "build": "npm run build:web && npm run build:api && npm run build:portal",
     "build:web": "npm run build --workspace apps/web",
     "preview": "npm run preview --workspace apps/web"
   },

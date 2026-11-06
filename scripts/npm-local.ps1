@@ -15,6 +15,7 @@ $env:npm_config_userconfig = Join-Path $localRoot 'user.npmrc'
 $env:npm_config_globalconfig = Join-Path $localRoot 'global.npmrc'
 $env:PLAYWRIGHT_BROWSERS_PATH = Join-Path $localRoot 'browsers'
 $env:PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = '1'
+$env:NEXT_TELEMETRY_DISABLED = '1'
 Set-Location -LiteralPath $projectRoot
 & 'E:\nodejs\npm.cmd' @NpmArgs
 exit $LASTEXITCODE

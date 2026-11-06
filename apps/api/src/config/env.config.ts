@@ -12,7 +12,8 @@ export function getConfig() {
     port,
     databaseUrl: required("DATABASE_URL"),
     webOrigins: (
-      process.env.WEB_ORIGINS ?? "http://127.0.0.1:5173,http://localhost:5173"
+      process.env.WEB_ORIGINS ??
+      "http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:3000"
     )
       .split(",")
       .map((origin) => origin.trim()),

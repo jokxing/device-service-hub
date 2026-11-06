@@ -10,6 +10,7 @@
 - NestJS 11、Prisma 7 稳定版和 PostgreSQL 17。未使用 Prisma 8 预发布版本。
 - PostgreSQL 程序、数据库文件、日志及测试账号说明保存在被忽略的 `.local`；不注册 Windows 服务。
 - API 仅监听 `127.0.0.1:3001`，本项目数据库仅监听 `127.0.0.1:55432`；Vite 将 `/api` 代理到后端。
+- Next.js 门户监听 `127.0.0.1:3000`，目前复用登录与设备查询。启用前在根 `WEB_ORIGINS` 中保留原来源并加入 `http://127.0.0.1:3000`，重启 API；门户独立 Cookie 和服务端转发规则见 [PORTAL.md](PORTAL.md)。
 
 ## 首次启动
 
