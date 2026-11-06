@@ -12,7 +12,9 @@ export default async function LoginPage() {
       <div className={styles.login}>
         <div className={styles.brand}>DEVICE SERVICE HUB</div>
         <h1 className={styles.loginTitle}>设备服务门户</h1>
-        <p className={styles.description}>登录后查看你有权限访问的设备资料。</p>
+        <p className={styles.description}>
+          登录后查看授权设备、提交报修并跟进处理进度。
+        </p>
         <section className={styles.card} aria-label="账号登录">
           <LoginForm />
         </section>

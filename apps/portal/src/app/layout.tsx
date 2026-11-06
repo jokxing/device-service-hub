@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "设备服务门户", template: "%s · 设备服务门户" },
-  description: "查询授权设备与设备资料",
+  description: "查询授权设备、提交报修并跟进处理进度",
 };
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

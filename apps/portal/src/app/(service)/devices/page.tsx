@@ -25,7 +25,7 @@ export default async function DevicesPage() {
         </section>
       )}
       <p className={styles.notice}>
-        当前门户提供设备查询。报修与维修记录请使用现有设备服务入口。
+        在设备详情中发起文字报修，提交后可在“我的报修”中查看处理进度。
       </p>
     </>
   );

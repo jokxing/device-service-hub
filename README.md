@@ -6,7 +6,7 @@
 
 核心流程：**设备查询 → 提交报修 → 管理员分派 → 维修人员接单处理 → 报修用户确认 → 查看维修记录**。
 
-目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的最小文字业务闭环：登录与授权设备查询 → 报修 → 首次分派 → 维修人员接单 → 提交处理结果 → 报修用户确认完成。Next.js 用户门户已接入登录、授权设备列表与动态详情；移动客户端尚未实现。
+目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的最小文字业务闭环：登录与授权设备查询 → 报修 → 首次分派 → 维修人员接单 → 提交处理结果 → 报修用户确认完成。Next.js 用户门户已接入登录、授权设备查询、文字报修、本人记录与完成确认；移动客户端尚未实现。
 
 ## 工程设计
 
@@ -39,6 +39,10 @@
 
 [Next.js 设备门户](docs/screenshots/portal-devices.png) · [门户手机详情](docs/screenshots/portal-device-detail-mobile.png)
 
+[门户文字报修](docs/screenshots/portal-repair-mobile.png) · [门户本人记录](docs/screenshots/portal-my-tickets.png) · [门户报修详情](docs/screenshots/portal-ticket-mobile.png)
+
+[门户确认框](docs/screenshots/portal-confirmation-dialog-mobile.png) · [门户完成详情](docs/screenshots/portal-completed-ticket-mobile.png)
+
 ## 已实现
 
 - 工单工作台：状态统计、关键词与状态筛选、分页、详情时间线及 CSV 导出。
@@ -53,7 +57,7 @@
 - 文字处理结果提交与待确认状态；校验归属、状态、版本及规范化内容，结果与状态原子写入，三角色详情展示一致。
 - 报修用户本人确认完成；状态与确认记录原子写入，管理员和维修人员只读完成记录，终结状态不接受新的修改命令。
 
-**能力边界：**设备和账号为虚构样例，无真实硬件通信。`/tickets`、`/devices`、`/records` 的完整流程为内存演示，刷新重置。`/login`、`/service/*` 使用真实 API、数据库会话及文字业务闭环，身份与演示角色独立；图片上传、改派、退回与再次提交尚未实现。
+**能力边界：**设备和账号为虚构样例，无真实硬件通信。`apps/web` 的 `/tickets`、`/devices`、`/records` 为内存演示，刷新重置；其 `/login`、`/service/*` 使用真实 API、数据库会话及文字业务闭环。`apps/portal` 的 `/devices`、`/tickets` 则为真实授权设备与本人报修入口，两应用同名路径需结合各自端口区分。真实身份与演示角色独立；图片上传、改派、退回与再次提交尚未实现。
 
 ## 技术栈
 
@@ -61,7 +65,7 @@
 
 工作区包含 `apps/web`、`apps/api`、Next.js App Router 门户 `apps/portal` 和仅提供传输类型的 `packages/contracts`；React Native 客户端按后续功能进度增加。
 
-演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户目前仅提供登录和授权设备查询，RN 和微前端尚未实现；现有 React 后台与 Node.js 业务后端继续保留。
+演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 和微前端尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
 
 ## 快速开始
 

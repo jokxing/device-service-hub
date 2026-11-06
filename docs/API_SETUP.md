@@ -51,6 +51,8 @@ npm run dev
 
 ## 入口与数据范围
 
+下表描述 Vite 后台（本地 5173 端口）。Next.js 门户使用独立的 3000 端口，同名 `/devices`、`/tickets` 路径对应真实数据，入口与会话边界见 [PORTAL.md](PORTAL.md)。
+
 | 路径 | 数据来源与用途 |
 | --- | --- |
 | `/login` | 真实账号登录 |

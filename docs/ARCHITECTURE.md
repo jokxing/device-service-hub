@@ -4,7 +4,7 @@
 
 本文件解释现有结构与设计取舍；AI 协作执行规则见根目录 [AGENTS.md](../AGENTS.md)，避免重复维护多套规范。
 
-本文件主体描述 `apps/web` 的 Vite 后台。新增 `apps/portal` 使用 Next.js App Router，当前提供登录和授权设备查询；Server/Client Components、Cookie 与缓存边界单独维护在 [PORTAL.md](PORTAL.md)，不将 React Router 和后台布局搬入门户。
+本文件主体描述 `apps/web` 的 Vite 后台。`apps/portal` 使用 Next.js App Router，当前提供登录、授权设备查询、文字报修、本人记录和完成确认；Server/Client Components、Cookie、提交防重与缓存边界单独维护在 [PORTAL.md](PORTAL.md)，不将 React Router 和后台布局搬入门户。
 
 管理员真实列表与首次分派使用 `/service/admin/tickets`，详情字段复用 TicketRecordDetails，列表/分派/详情弹窗分别组织。服务端权限和事务规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)，演示身份不参与管理接口授权。
 

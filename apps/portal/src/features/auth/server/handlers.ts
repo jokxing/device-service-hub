@@ -5,36 +5,22 @@ import { backendFetch } from "../../../shared/server/api";
 import {
   API_COOKIE,
   PORTAL_COOKIE,
-  PORTAL_ORIGIN,
   cookieOptions,
   privateHeaders,
 } from "../../../shared/server/config";
-
-function errorResponse(message: string, status: number) {
-  return NextResponse.json({ message }, { status, headers: privateHeaders });
-}
-function checkOrigin(request: Request) {
-  return request.headers.get("origin") === PORTAL_ORIGIN;
-}
+import {
+  errorResponse,
+  hasValidOrigin,
+  readJsonBody,
+} from "../../../shared/server/request";
 
 export async function login(request: Request) {
-  if (!checkOrigin(request)) return errorResponse("请求来源无效", 403);
-  if (!request.headers.get("content-type")?.startsWith("application/json"))
-    return errorResponse("请使用 JSON 提交", 415);
-  if (Number(request.headers.get("content-length")) > 16384)
-    return errorResponse("请求内容过大", 413);
-  const body = await request.text();
-  if (new TextEncoder().encode(body).length > 16384)
-    return errorResponse("请求内容过大", 413);
-  try {
-    JSON.parse(body);
-  } catch {
-    return errorResponse("请求内容无效", 400);
-  }
+  const input = await readJsonBody(request);
+  if (input.response) return input.response;
   try {
     const upstream = await backendFetch("/auth/login", {
       method: "POST",
-      body,
+      body: input.body,
       headers: { "Content-Type": "application/json" },
     });
     if (!upstream.ok)
@@ -73,7 +59,7 @@ export async function login(request: Request) {
 }
 
 export async function logout(request: Request) {
-  if (!checkOrigin(request)) return errorResponse("请求来源无效", 403);
+  if (!hasValidOrigin(request)) return errorResponse("请求来源无效", 403);
   try {
     const upstream = await backendFetch("/auth/logout", { method: "POST" });
     if (!upstream.ok) return errorResponse("退出未完成，请重试", 502);

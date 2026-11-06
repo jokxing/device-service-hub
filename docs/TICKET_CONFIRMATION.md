@@ -13,6 +13,8 @@
 
 本人列表继续返回 TicketPage，列表项不新增 version。原有字段与数据归属保持一致；详情和确认响应中的 version 为当前业务版本，不包含请求原版本或幂等编号。
 
+Next.js 门户已在 `/tickets/[id]` 接入同一确认接口，通过服务端适配转发会话、requestId 与 expectedVersion。页面主体仍由 Server Components 读取，确认弹窗为独立客户端组件；详情见 [PORTAL.md](PORTAL.md)。没有新增后端状态操作、模型或迁移。
+
 ## 权限与状态约束
 
 - 未登录返回 401，管理员与维修人员不能代确认，返回 403。

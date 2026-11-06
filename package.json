@@ -41,6 +41,8 @@
     "start:portal": "npm run start --workspace apps/portal",
     "build:portal": "npm run build --workspace apps/portal",
     "verify:portal": "node scripts/verify-portal.mjs",
+    "verify:portal-tickets": "node scripts/verify-portal-tickets.mjs",
+    "verify:portal-confirmations": "node scripts/verify-portal-confirmations.mjs",
     "build": "npm run build:web && npm run build:api && npm run build:portal",
     "build:web": "npm run build --workspace apps/web",
     "preview": "npm run preview --workspace apps/web"

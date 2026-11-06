@@ -101,6 +101,16 @@ try {
   assert.equal(forged.status(), 400);
 
   const cookieA = await login("reporter.a");
+  const navigation = page.getByRole("navigation", {
+    name: "门户导航",
+    exact: true,
+  });
+  assert.equal(
+    await navigation
+      .getByRole("link", { name: "我的设备", exact: true })
+      .getAttribute("aria-current"),
+    "true",
+  );
   assert.equal(await page.getByText("WP-002", { exact: true }).count(), 0);
   await page.getByText("AC-001", { exact: true }).waitFor();
   const htmlA = await assertPrivate(
@@ -118,6 +128,12 @@ try {
   await page.getByRole("link", { name: "查看设备详情 →", exact: true }).click();
   await page.getByRole("heading", { name: "设备详情", exact: true }).waitFor();
   await page.getByText("KFR-120LW", { exact: true }).waitFor();
+  assert.equal(
+    await navigation
+      .getByRole("link", { name: "我的设备", exact: true })
+      .getAttribute("aria-current"),
+    "true",
+  );
   await page.reload({ waitUntil: "networkidle" });
   await page.getByText("KFR-120LW", { exact: true }).waitFor();
   await page.screenshot({
@@ -158,6 +174,26 @@ try {
     path: path.join(screenshots, "portal-devices-mobile.png"),
     fullPage: true,
   });
+  await navigation.getByRole("link", { name: "我的报修", exact: true }).click();
+  await page.getByRole("heading", { name: "我的报修", exact: true }).waitFor();
+  assert.equal(
+    await navigation
+      .getByRole("link", { name: "我的报修", exact: true })
+      .getAttribute("aria-current"),
+    "true",
+  );
+  assert.equal(await navigation.locator(".ant-menu-item-selected").count(), 1);
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+    true,
+  );
+  await navigation.screenshot({
+    path: path.join(screenshots, "portal-navigation-mobile.png"),
+  });
+  await navigation.getByRole("link", { name: "我的设备", exact: true }).click();
+  await page.getByRole("heading", { name: "我的设备", exact: true }).waitFor();
 
   const csrfLogout = await context.request.post(origin + "/api/auth/logout", {
     headers: { Origin: "https://untrusted.invalid" },

@@ -12,7 +12,7 @@
 - 未获当前任务明确授权，不更换技术栈、重组目录、添加状态库或组件库、批量升级依赖。
 - 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的登录、设备查询、文字报修、本人记录、首次分派、任务/接单、文字结果与报修用户确认完成。真实图片上传、改派、退回/再次提交、RN、微前端和支付尚未实现，不提前扩展范围。
 - Git 提交、推送、部署和仓库可见性修改需要明确授权。
-- `apps/portal` 已进入 Next.js 首步交付，修改前阅读 [PORTAL.md](docs/PORTAL.md)。使用 App Router；Server Components 查询设备，Client Components 承担表单交互。后续门户报修、RN 与微前端仍需按步确认。
+- `apps/portal` 已交付登录、授权设备查询、文字报修、本人记录与完成确认，修改前阅读 [PORTAL.md](docs/PORTAL.md)。使用 App Router；Server Components 负责设备/本人记录查询，Client Components 承担表单与确认交互。图片上传、RN 与微前端仍需按步确认。
 - 不读取无关项目或私有业务资料，不复制来源或授权不明确的代码与素材。
 
 ## 目录与复用边界
@@ -75,6 +75,8 @@
 - 测试聚焦关键业务和真实异常，不堆重复测试；已通过后不无故重复执行。纯文档修改不要求重跑应用测试。
 - 共享提交/列表交互变更补充运行 `run verify:shared-ui`；涉及共享种子账号和总数断言的 API 套件串行执行，避免临时记录相互干扰。
 - 门户变更执行 `run build:portal` 和 `run verify:portal`，检查 SSR、Origin、HttpOnly Cookie、个人数据 no-store 与跨用户隔离。内部 API 地址不得放入 NEXT_PUBLIC 环境变量，令牌不进入客户端存储或 HTML。
+- 门户报修或本人记录变更执行 `run verify:portal-tickets`。转发不得重建 requestId、伪造报修人或初始状态；复用本应用的 clientPost、useApiMutation、PageHeader 和 reporterGet，不跨应用导入后台 Hook。认证套件会短暂修改种子账号状态，与使用同账号的浏览器套件串行执行。
+- 门户确认变更执行 `run verify:portal-confirmations`。入口共用 canConfirmTicket，弹窗复用本应用 MutationModal；保留原 requestId/expectedVersion，成功后读取实际完成记录。取消请求不等于回滚，关闭重开前先核对不明结果；不顺带增加撤销、退回或重新打开。
 - 不提交 `.local`、`node_modules`、构建产物、真实 `.env`、凭据或个人操作记录。公开文档不包含个人绝对路径或对话过程。
 - 公开文档采用产品与工程交付表述，突出业务建模、架构取舍、数据权限、并发一致性、可维护性及验证证据，不加入学习任务、练习安排或教程式要求。十余年前端经历不等同于十余年 React/RN 经历；不虚构生产规模、客户案例或性能指标。
 - 如实标明演示数据、未实现能力以及 Mock、模拟器、真机和安装包各自验证范围，不包装为商业生产经验。

@@ -1,34 +1,20 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { Button } from "antd";
+import { clientPost } from "../../../shared/api/http";
+import { useApiMutation } from "../../../shared/hooks/useApiMutation";
 
 export default function LogoutButton() {
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState("");
-  const active = useRef(false);
-  async function logout() {
-    if (active.current) return;
-    active.current = true;
-    setPending(true);
-    setError("");
-    try {
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!response.ok) throw new Error("Logout failed");
-      window.location.replace("/login");
-    } catch {
-      setError("退出未完成，请重试");
-    } finally {
-      active.current = false;
-      setPending(false);
-    }
+  const { submitting, error, run } = useApiMutation("退出未完成，请重试");
+  function logout() {
+    return run(
+      (signal) => clientPost("/api/auth/logout", undefined, signal),
+      () => window.location.replace("/login"),
+    );
   }
   return (
     <div>
-      <Button onClick={logout} loading={pending} disabled={pending}>
+      <Button onClick={logout} loading={submitting} disabled={submitting}>
         退出登录
       </Button>
       {error && <p role="alert">{error}</p>}

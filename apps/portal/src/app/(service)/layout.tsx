@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import PortalNavigation from "../../shared/components/PortalNavigation";
 import { requireReporter } from "../../features/auth/server/session";
 import LogoutButton from "../../features/auth/components/LogoutButton";
 import styles from "../../shared/components/PortalPage.module.css";
@@ -22,6 +23,7 @@ export default async function ServiceLayout({
           <LogoutButton />
         </div>
       </header>
+      <PortalNavigation />
       <main>{children}</main>
       <footer className={styles.footer}>设备资料来自设备服务平台</footer>
     </div>

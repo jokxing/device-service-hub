@@ -1,6 +1,8 @@
 import Link from "next/link";
+import PageHeader from "../../../../shared/components/PageHeader";
 import { getDevice } from "../../../../features/devices/server/queries";
 import DeviceStatus from "../../../../features/devices/components/DeviceStatus";
+import ticketStyles from "../../../../features/tickets/tickets.module.css";
 import styles from "../../../../shared/components/PortalPage.module.css";
 
 export const metadata = { title: "设备详情" };
@@ -13,11 +15,11 @@ export default async function DevicePage({
   const device = await getDevice(id);
   return (
     <>
-      <Link href="/devices" className={styles.back} prefetch={false}>
-        ← 返回我的设备
-      </Link>
-      <h1 className={styles.heading}>设备详情</h1>
-      <p className={styles.description}>核对设备标识、型号与安装位置。</p>
+      <PageHeader
+        title="设备详情"
+        description="核对设备标识、型号与安装位置。"
+        back={{ href: "/devices", label: "返回我的设备" }}
+      />
       <article className={styles.card}>
         <div className={styles.row}>
           <span className={styles.eyebrow}>{device.code}</span>
@@ -32,6 +34,17 @@ export default async function DevicePage({
           <dt>安装位置</dt>
           <dd>{device.location}</dd>
         </dl>
+        {device.enabled ? (
+          <Link
+            className={ticketStyles.linkButton}
+            href={`/devices/${encodeURIComponent(device.id)}/repair`}
+            prefetch={false}
+          >
+            发起报修
+          </Link>
+        ) : (
+          <p className={styles.notice}>设备已停用，暂时无法发起新报修。</p>
+        )}
       </article>
     </>
   );

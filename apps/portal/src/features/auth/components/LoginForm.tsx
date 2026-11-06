@@ -1,38 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { Alert, Button, Form, Input } from "antd";
 import type { LoginInput } from "@device-service-hub/contracts";
+import { clientPost } from "../../../shared/api/http";
+import { useApiMutation } from "../../../shared/hooks/useApiMutation";
 
 export default function LoginForm() {
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const pending = useRef(false);
-  async function submit(values: LoginInput) {
-    if (pending.current) return;
-    pending.current = true;
-    setSubmitting(true);
-    setError("");
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!response.ok) {
-        const data = (await response.json()) as { message: string };
-        setError(data.message);
-        return;
-      }
-      // Full navigation discards the previous account's client router cache.
-      window.location.replace("/devices");
-    } catch {
-      setError("尚未确认登录结果，请重试");
-    } finally {
-      pending.current = false;
-      setSubmitting(false);
-    }
+  const { submitting, error, run } = useApiMutation("尚未确认登录结果，请重试");
+  function submit(values: LoginInput) {
+    return run(
+      (signal) => clientPost("/api/auth/login", values, signal),
+      () => window.location.replace("/devices"),
+    );
   }
   return (
     <>

@@ -4,6 +4,8 @@
 
 ## 页面与接口
 
+下表为原 React 入口。Next.js 门户已通过 `/devices/[id]/repair`、`/tickets`、`/tickets/[id]` 接入相同创建、本人查询和完成确认接口，独立 Cookie、SSR 与提交重试边界见 [PORTAL.md](PORTAL.md)。门户不复制后端规则，也不直接访问数据库；原 React 入口保留为回归基线。
+
 | 入口 | 行为 |
 | --- | --- |
 | `/service/devices` | 在启用设备旁发起报修，仅报修用户显示入口 |
