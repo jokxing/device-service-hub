@@ -8,6 +8,9 @@ import RepairRecordsPage from "./pages/RepairRecordsPage";
 import SessionBoundary from "./features/auth/SessionBoundary";
 import LoginPage from "./pages/LoginPage";
 import ConnectedDevicesPage from "./pages/ConnectedDevicesPage";
+import ServiceLayout from "./layouts/ServiceLayout";
+import MyTicketsPage from "./pages/MyTicketsPage";
+import MyTicketDetailPage from "./pages/MyTicketDetailPage";
 
 export default function App() {
   return (
@@ -16,10 +19,17 @@ export default function App() {
         <Routes>
           <Route element={<SessionBoundary />}>
             <Route path={ROUTES.login} element={<LoginPage />} />
-            <Route
-              path={ROUTES.serviceDevices}
-              element={<ConnectedDevicesPage />}
-            />
+            <Route element={<ServiceLayout />}>
+              <Route
+                path={ROUTES.serviceDevices}
+                element={<ConnectedDevicesPage />}
+              />
+              <Route path={ROUTES.serviceTickets} element={<MyTicketsPage />} />
+              <Route
+                path={ROUTES.serviceTickets + "/:id"}
+                element={<MyTicketDetailPage />}
+              />
+            </Route>
           </Route>
           <Route element={<AppLayout />}>
             <Route index element={<Navigate to={ROUTES.tickets} replace />} />

@@ -6,10 +6,11 @@
 
 ## 范围与技术栈
 
+- 阶段顺序遵循 [ROADMAP.md](docs/ROADMAP.md)：React 基础收尾 → Next.js 用户门户 → RN 客户端 → 微前端。保留现有 React 后台和 NestJS 后端；新应用到对应阶段经确认再创建，不同时铺开。
 - 每次只完成当前确认的一步。范围外的问题先说明，不顺带扩建系统。
 - 沿用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules、npm workspaces 和根锁文件。
 - 未获当前任务明确授权，不更换技术栈、重组目录、添加状态库或组件库、批量升级依赖。
-- 当前包含 Web 工单演示，以及 NestJS + PostgreSQL 的登录、会话和设备查询。工单后端、RN、微前端和支付尚未实现，不提前创建空壳目录。
+- 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的登录、设备查询、文字报修与本人记录。真实图片上传、分派、后续状态操作、RN、微前端和支付尚未实现，不提前扩展范围。
 - Git 提交、推送、部署和仓库可见性修改需要明确授权。
 - 不读取无关项目或私有业务资料，不复制来源或授权不明确的代码与素材。
 
@@ -39,6 +40,7 @@
 
 ## UI 与样式
 
+- 真实服务页面共用 ServicePageHeader；页面横向边距由 ServiceLayout 统一负责。全局不能为 main、nav、h1 添加特定页面的响应式规则，避免嵌套缩进和其他应用受影响。
 - 业务控件优先复用 Ant Design；主题在 `app/theme.ts`，公共字号和文字色在 `styles/tokens.css`。
 - 正文以 14px 为基准，辅助说明优先 13px，次要元数据 12px；不能把业务说明缩回 8～10px。装饰性品牌字和图标单独处理。
 - Tailwind 处理适合的布局和间距，复杂局部样式用 CSS Modules。全局样式只保留基础约定，不堆具体页面选择器。
@@ -61,6 +63,7 @@
 - 当前 Windows 本地命令通过 `.\scripts\npm-local.ps1` 调用 npm，保留其进程级缓存与临时目录设置。
 - 源码变更执行 `run build`；规则变更执行 `run test:business`；UI/样式/路由变更执行 `run verify:ui` 并查看受影响截图。浏览器核对需先启动本地服务，使用现有 Edge，不自动安装浏览器。
 - 真实 API 或认证链路变更执行 `run verify:api`，对应 Web 入口变更执行 `run verify:connected-ui`。相关操作需先启动本项目数据库/API；测试只能针对专用本地库，不得使用生产连接。搭建与命令见 `docs/API_SETUP.md`。
+- 真实报修变更执行 `run verify:tickets`、`run verify:tickets-ui`，覆盖并发防重与本人数据范围。记录归属来自会话，创建状态由服务端确定；同一提交意图的防重规则见 `docs/TEXT_REPAIR.md`。测试只能按本轮随机提交编号清理临时记录，不能批量删除人工数据。
 - 测试聚焦关键业务和真实异常，不堆重复测试；已通过后不无故重复执行。纯文档修改不要求重跑应用测试。
 - 不提交 `.local`、`node_modules`、构建产物、真实 `.env`、凭据或个人操作记录。公开文档不包含个人绝对路径或对话过程。
 - 如实标明演示数据、未实现能力以及 Mock、模拟器、真机和安装包各自验证范围，不包装为商业生产经验。

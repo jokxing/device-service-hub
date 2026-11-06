@@ -1,6 +1,6 @@
 # 后端结构与维护约定
 
-后端使用 NestJS 11 + Prisma 7 + PostgreSQL，采用业务模块内分层的单体结构。当前只实现登录、会话和设备查询，接口运行方式见 [API_SETUP.md](API_SETUP.md)。AI 协作入口为根目录 [AGENTS.md](../AGENTS.md)。
+后端使用 NestJS 11 + Prisma 7 + PostgreSQL，采用业务模块内分层的单体结构。当前实现登录、会话、设备查询、文字报修和本人记录。运行方式见 [API_SETUP.md](API_SETUP.md)，报修规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)。AI 协作入口为根目录 [AGENTS.md](../AGENTS.md)。
 
 ## 目录职责
 
@@ -34,6 +34,7 @@ apps/api/
    │  │  ├─ constants/
    │  │  ├─ types/
    │  │  └─ utils/
+   │  ├─ tickets/（Controller、Service、DTO、投影、常量与纯工具）
    │  └─ devices/
    │     ├─ devices.module.ts
    │     ├─ devices.controller.ts
@@ -42,7 +43,7 @@ apps/api/
    └─ generated/prisma/
 ```
 
-目录对应现有职责，不预建工单、支付或空的 Filter、Interceptor、Repository。
+目录对应现有职责，不预建支付或空的 Filter、Interceptor、Repository。
 
 | 层或机制 | 职责与边界 |
 | --- | --- |
@@ -91,7 +92,7 @@ NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常�
 
 出现重复复杂查询、可独立维护的数据访问职责时，可增加模块内部 Repository。业务流程和授权决策仍属于 Service；Repository 不接受 HTTP 对象，不反向调用 Controller。
 
-未来工单涉及多表更新时，由一个业务用例确定事务边界，相关查询共用同一个事务客户端。不能让多个 Repository 各自提交，造成部分成功。
+文字报修由 Service 在事务中检查设备授权和启用状态后插入工单，唯一约束保证并发防重；查询投影、摘要和序列化各有明确文件。未来涉及更多表更新时仍由一个用例确定事务边界，不能让多个 Repository 各自提交，造成部分成功。
 
 数据库模型和迁移归 `prisma/`。接口投影归业务模块，公开传输类型归 `packages/contracts`；该包不输出 Prisma 模型、密码哈希、会话令牌或授权名单。
 

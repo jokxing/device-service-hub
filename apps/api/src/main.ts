@@ -15,7 +15,11 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(responseHeaders);
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
   );
   app.enableShutdownHooks();
   await app.listen(config.port, "127.0.0.1");

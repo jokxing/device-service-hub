@@ -26,3 +26,35 @@ export interface DeviceSummary {
   model: string;
   enabled: boolean;
 }
+
+export type TicketPriority = "normal" | "urgent";
+export type TicketStatus =
+  | "pending"
+  | "assigned"
+  | "processing"
+  | "confirming"
+  | "completed"
+  | "cancelled";
+export interface CreateTicketInput {
+  requestId: string;
+  deviceId: string;
+  title: string;
+  description: string;
+  priority: TicketPriority;
+}
+export interface TicketRecord {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  priority: TicketPriority;
+  status: TicketStatus;
+  createdAt: string;
+  device: Pick<DeviceSummary, "id" | "code" | "name" | "location">;
+}
+export interface TicketPage {
+  items: TicketRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}

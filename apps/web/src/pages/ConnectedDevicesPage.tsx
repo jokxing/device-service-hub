@@ -1,124 +1,84 @@
-import { useEffect, useState } from "react";
-import { Alert, Button, Empty, Space, Spin, message } from "antd";
-import { Link, Navigate } from "react-router-dom";
-import type { DeviceSummary } from "@device-service-hub/contracts";
+import { useCallback, useState } from "react";
+import { Alert, Button, Empty, Spin } from "antd";
+import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../app/routes";
-import { ROLE_LABELS } from "../shared/constants/roles";
-import { ApiError } from "../shared/api/http";
 import ContentCard from "../shared/components/ContentCard";
+import ServicePageHeader from "../shared/components/ServicePageHeader";
+import { useApiResource } from "../shared/hooks/useApiResource";
 import { useSession } from "../features/auth/sessionContext";
-import SessionFeedback from "../features/auth/components/SessionFeedback";
 import { devicesApi } from "../features/devices/api";
 import DeviceTable from "../features/devices/components/DeviceTable";
 import ConnectedDeviceDetail from "../features/devices/components/ConnectedDeviceDetail";
-import styles from "../features/devices/connected.module.css";
+import ConnectedCreateTicketModal from "../features/tickets/components/ConnectedCreateTicketModal";
 
 export default function ConnectedDevicesPage() {
-  const { user, status, signOut, clearSession } = useSession();
-  const [devices, setDevices] = useState<DeviceSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [attempt, setAttempt] = useState(0);
+  const { user, clearSession } = useSession();
+  const navigate = useNavigate();
+  const load = useCallback(
+    (signal: AbortSignal) => devicesApi.list(signal),
+    [],
+  );
+  const {
+    data: devices,
+    loading,
+    error,
+    refresh,
+  } = useApiResource(load, clearSession);
   const [selectedId, setSelectedId] = useState<string>();
-  const [leaving, setLeaving] = useState(false);
-  const [msg, contextHolder] = message.useMessage();
-  const userId = user?.id;
-  useEffect(() => {
-    if (!userId) return;
-    const controller = new AbortController();
-    setDevices([]);
-    setSelectedId(undefined);
-    setError("");
-    setLoading(true);
-    devicesApi
-      .list(controller.signal)
-      .then((result) => {
-        if (!controller.signal.aborted) setDevices(result);
-      })
-      .catch((error) => {
-        if (controller.signal.aborted) return;
-        if (error instanceof ApiError && error.status === 401) clearSession();
-        else setError(error instanceof Error ? error.message : "设备加载失败");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, [userId, attempt, clearSession]);
-  if (status === "loading" || status === "unavailable")
-    return <SessionFeedback />;
-  if (!user) return <Navigate to={ROUTES.login} replace />;
-  async function logout() {
-    setLeaving(true);
-    try {
-      await signOut();
-    } catch {
-      msg.error("退出失败，请稍后重试");
-      setLeaving(false);
-    }
-  }
+  const [repairDeviceId, setRepairDeviceId] = useState<string>();
+  const repairDevice = devices?.find((device) => device.id === repairDeviceId);
   return (
-    <div className={styles.page}>
-      {contextHolder}
-      <header className={styles.header}>
-        <div>
-          <span className={styles.eyebrow}>DEVICE SERVICE HUB</span>
-          <h1>设备台账</h1>
-          <p>当前仅显示此账号有权访问的设备。</p>
-        </div>
-        <Space wrap>
-          <span>
-            {user.name} · {ROLE_LABELS[user.role]}
-          </span>
-          <Button onClick={logout} loading={leaving}>
-            退出登录
-          </Button>
-        </Space>
-      </header>
-      <Alert
-        showIcon
-        type="info"
-        title="已连接本地服务与数据库"
+    <>
+      <ServicePageHeader
+        title="设备台账"
         description={
-          <>
-            当前开放登录和设备查询。工单流程可前往{" "}
-            <Link to={ROUTES.tickets}>演示工作台</Link>{" "}
-            体验，其演示角色与当前登录账号相互独立。
-          </>
+          user?.role === "reporter"
+            ? "查看授权设备的状态与位置，选择启用设备发起报修。"
+            : "查看当前账号有权访问的设备及其详细信息。"
         }
-        className="mb-5"
       />
       <ContentCard
         title="我的可见设备"
-        count={devices.length}
+        count={devices?.length}
         extra={
-          <Button
-            onClick={() => setAttempt((value) => value + 1)}
-            loading={loading}
-          >
+          <Button loading={loading} onClick={refresh}>
             刷新
           </Button>
         }
       >
         {error ? (
-          <Alert type="error" showIcon title={error} className="m-5" />
+          <Alert type="error" title={error} showIcon className="m-5" />
         ) : loading ? (
           <Spin tip="正在读取设备">
             <div className="min-h-32" />
           </Spin>
-        ) : devices.length ? (
-          <DeviceTable visibleDevices={devices} onView={setSelectedId} />
+        ) : devices?.length ? (
+          <DeviceTable
+            visibleDevices={devices}
+            onView={setSelectedId}
+            onReport={user?.role === "reporter" ? setRepairDeviceId : undefined}
+          />
         ) : (
           <Empty description="当前账号暂无可访问的设备" className="my-10" />
         )}
       </ContentCard>
       {selectedId && (
         <ConnectedDeviceDetail
-          key={user.id + ":" + selectedId}
+          key={selectedId}
           id={selectedId}
           onClose={() => setSelectedId(undefined)}
         />
       )}
-    </div>
+      {repairDevice && (
+        <ConnectedCreateTicketModal
+          key={repairDevice.id}
+          device={repairDevice}
+          onClose={() => setRepairDeviceId(undefined)}
+          onCreated={(ticket) =>
+            navigate(ROUTES.serviceTickets + "/" + ticket.id)
+          }
+        />
+      )}
+    </>
   );
 }

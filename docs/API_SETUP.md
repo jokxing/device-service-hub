@@ -1,6 +1,6 @@
 # 本地登录与设备查询
 
-本阶段实现一条真实链路：浏览器登录 → NestJS → PostgreSQL 会话与设备授权 → React 设备列表和详情。工单流程仍是独立的内存演示。
+真实链路包括：浏览器登录 → NestJS → PostgreSQL 会话与设备授权 → 设备列表和详情 → 文字报修 → 本人记录。完整的分派、处理与确认流程仍保留独立内存演示。文字报修接口和防重规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)。
 
 后端目录、Controller/Service/Guard 等职责，以及新增功能的放置约定见 [BACKEND_ARCHITECTURE.md](BACKEND_ARCHITECTURE.md)。
 
@@ -54,6 +54,7 @@ npm run dev
 | --- | --- |
 | `/login` | 真实账号登录 |
 | `/service/devices` | 真实 API 和数据库设备查询，未登录跳转登录页 |
+| `/service/tickets`、`/service/tickets/:id` | 本人真实报修列表与详情 |
 | `/tickets`、`/devices`、`/records` | 原有工单与设备演示，保留角色切换和刷新重置 |
 
 两种入口的身份相互独立。演示角色下拉框不能改变服务端登录身份。
@@ -96,7 +97,7 @@ npm run verify:ui
 - `verify:ui` 回归原有演示流程，`test:business` 验证已有工单纯规则。
 - `verify:api` 在 `.local` 保存一个待复核会话。重启 API 和数据库后执行 `npm run verify:api:restart`，检查会话及授权设备仍可读取；复核后撤销测试会话并删除临时文件。
 
-未实现设备维护、用户管理、工单 API、图片上传、RN、报价或支付。自动化检查不等于用户已完成人工验收，也不代表生产部署。
+已实现文字工单创建与本人查询；尚未实现设备维护、用户管理、图片上传、分派与后续状态操作、RN、报价或支付。自动化检查不等于用户已完成人工验收，也不代表生产部署。
 
 建议人工核对：分别用两个报修账号登录，观察列表差异并刷新回看；沿“设备页面 → devicesApi → SessionGuard → DevicesService → Prisma”的路径阅读一次查询。
 

@@ -112,33 +112,12 @@ a {
 }
 
 @media (min-width: 1600px) {
-  main {
-    padding-top: 40px;
-  }
   .ant-table-wrapper .ant-table {
     font-size: var(--font-size-secondary);
   }
 }
 
-@media (max-width: 1180px) {
-  main {
-    padding: 24px 22px 0;
-  }
-}
-
 @media (max-width: 760px) {
-  nav {
-    padding: 0 9px;
-  }
-  main {
-    padding: 24px 15px 0;
-  }
-  h1 {
-    font-size: 24px;
-  }
-  .card-title {
-    padding: 17px 15px;
-  }
   .ant-table-wrapper .ant-pagination {
     padding-left: 10px;
     padding-right: 10px;

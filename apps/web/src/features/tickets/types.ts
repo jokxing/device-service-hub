@@ -1,11 +1,11 @@
-export type Status =
-  | "pending"
-  | "assigned"
-  | "processing"
-  | "confirming"
-  | "completed"
-  | "cancelled";
-export type Priority = "normal" | "urgent";
+import type {
+  TicketStatus as Status,
+  TicketPriority as Priority,
+} from "@device-service-hub/contracts";
+export type {
+  TicketStatus as Status,
+  TicketPriority as Priority,
+} from "@device-service-hub/contracts";
 export type TicketTab = "all" | "active" | Status;
 export type TicketListMode = "all" | "completed";
 

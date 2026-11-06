@@ -47,6 +47,23 @@ try {
     path: path.join(screenshots, "service-devices.png"),
     fullPage: true,
   });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("list", { name: "设备列表", exact: true }).waitFor();
+  assert.equal(await page.getByRole("table").count(), 0);
+  await page.getByRole("button", { name: /^详\s*情$/ }).click();
+  await page.getByText("型号：KFR-120LW", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "知道了", exact: true }).click();
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+    true,
+  );
+  await page.screenshot({
+    path: path.join(screenshots, "service-devices-mobile.png"),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1440, height: 1100 });
   await logout();
   await login("reporter.b");
   await page.getByRole("cell", { name: "WP-002", exact: true }).waitFor();

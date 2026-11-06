@@ -1,14 +1,11 @@
+import TicketTextFields from "./TicketTextFields";
 import { useState } from "react";
-import { App, Alert, Button, Form, Input, Modal, Select, Upload } from "antd";
+import { App, Alert, Button, Form, Modal, Select, Upload } from "antd";
 import type { UploadFile } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useDemoTickets } from "../../../demo/useDemoTickets";
 import { isAllowedFile } from "../../../shared/utils/file";
-import {
-  ATTACHMENT_POLICY,
-  PRIORITY_OPTIONS,
-  TICKET_LIMITS,
-} from "../constants";
+import { ATTACHMENT_POLICY, TICKET_LIMITS } from "../constants";
 import type { CreateTicketValues } from "../types";
 export default function CreateTicketModal({
   onClose,
@@ -64,35 +61,7 @@ export default function CreateTicketModal({
             }))}
           />
         </Form.Item>
-        <Form.Item
-          name="title"
-          label="问题标题"
-          rules={[
-            { required: true, whitespace: true, message: "请简要描述问题" },
-          ]}
-        >
-          <Input
-            maxLength={TICKET_LIMITS.title}
-            placeholder="例如：空调运行但不制冷"
-          />
-        </Form.Item>
-        <Form.Item
-          name="description"
-          label="问题描述"
-          rules={[
-            { required: true, whitespace: true, message: "请填写问题详情" },
-          ]}
-        >
-          <Input.TextArea
-            rows={3}
-            maxLength={TICKET_LIMITS.description}
-            showCount
-            placeholder="请描述故障现象、出现时间及已尝试的操作"
-          />
-        </Form.Item>
-        <Form.Item name="priority" label="优先级">
-          <Select options={PRIORITY_OPTIONS} />
-        </Form.Item>
+        <TicketTextFields />
         <Form.Item
           label="故障照片（可选）"
           extra="最多 3 张，每张不超过 5MB；此预览仅保留文件名，不上传。"

@@ -1,0 +1,15 @@
+.record {
+  overflow-wrap: anywhere;
+  padding: 0 22px 22px;
+}
+@media (max-width: 760px) {
+  .record {
+    padding: 0 15px 16px;
+  }
+}
+.link {
+  color: #2563eb;
+}
+.link:hover {
+  text-decoration: underline;
+}

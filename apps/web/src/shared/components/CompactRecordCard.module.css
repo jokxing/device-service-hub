@@ -1,0 +1,82 @@
+.list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0 15px 16px;
+  list-style: none;
+}
+.list > li {
+  min-width: 0;
+}
+.card {
+  padding: 16px;
+  border: 1px solid #e6eaf1;
+  border-radius: 9px;
+  background: #fff;
+  overflow-wrap: anywhere;
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.eyebrow {
+  color: var(--text-secondary);
+  font-size: var(--font-size-secondary);
+}
+.card h3 {
+  margin: 10px 0 12px;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+.fields {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.fields > div {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr);
+  gap: 10px;
+}
+.fields dt {
+  color: var(--text-secondary);
+}
+.fields dd {
+  margin: 0;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #eff2f7;
+}
+.actions :global(.ant-btn),
+.actionLink {
+  min-height: 40px;
+  padding: 8px 16px;
+}
+.actionLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe2ec;
+  border-radius: 7px;
+  color: #2563eb;
+}
+.actionLink:hover {
+  background: #eff5ff;
+  border-color: #93b4f5;
+}
+.pagination {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 0 15px 20px;
+}

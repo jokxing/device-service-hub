@@ -4,7 +4,7 @@
 
 核心流程：**设备查询 → 提交报修 → 管理员分派 → 维修人员接单处理 → 报修用户确认 → 查看维修记录**。
 
-目前包含 React Web 工单演示，以及已连接 NestJS 和 PostgreSQL 的登录、会话与设备查询链路。移动客户端尚未实现。
+目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的登录、设备授权查询、文字报修与本人记录链路。移动客户端尚未实现。
 
 ## 界面预览
 
@@ -14,6 +14,10 @@
 
 [查看真实设备查询界面](docs/screenshots/service-devices.png) · [查看登录界面](docs/screenshots/service-login.png)
 
+[查看本人报修列表](docs/screenshots/service-my-tickets.png) · [查看报修详情](docs/screenshots/service-ticket-detail.png)
+
+[窄屏设备卡片](docs/screenshots/service-devices-mobile.png) · [窄屏报修卡片](docs/screenshots/service-my-tickets-mobile.png)
+
 ## 已实现
 
 - 工单工作台：状态统计、关键词与状态筛选、分页、详情时间线及 CSV 导出。
@@ -22,14 +26,17 @@
 - 三种演示角色的数据范围：管理员查看全部样例；报修用户查看本人记录与授权设备；维修人员查看当前分派任务。
 - 页面路由、响应式布局、CSS Modules，以及公共类型、常量和工具方法。
 - NestJS 真实登录、数据库会话、退出登录，以及按用户授权查询设备列表和详情。
+- 真实文字报修、本人分页列表与详情；校验设备授权和启用状态，数据库唯一约束与内容摘要处理并发重复请求。
 
-**能力边界：**设备和账号为虚构样例，无真实硬件通信。`/tickets`、`/devices`、`/records` 的工单流程仍使用内存演示，刷新重置，图片未上传。`/login`、`/service/devices` 使用真实 API、数据库会话和设备授权，身份与演示角色切换独立；尚未实现工单后端。
+**能力边界：**设备和账号为虚构样例，无真实硬件通信。`/tickets`、`/devices`、`/records` 的完整流程为内存演示，刷新重置。`/login`、`/service/*` 使用真实 API、数据库会话、设备授权和文字报修，身份与演示角色独立；图片上传、真实分派及后续状态操作尚未实现。
 
 ## 技术栈
 
 前端使用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules；后端使用 NestJS 11、Prisma 7 和 PostgreSQL 17。使用 npm workspaces 管理应用。
 
 工作区包含 `apps/web`、`apps/api` 和仅提供传输类型的 `packages/contracts`；React Native 客户端按后续功能进度增加。
+
+后续依次推进 React 基础收尾、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [分阶段路线](docs/ROADMAP.md)。Next.js、RN 和微前端目前均未实现；现有 React 后台与 Node.js 业务后端继续保留。
 
 ## 快速开始
 
@@ -51,6 +58,8 @@ npm run format        # 格式化源码
 Web 构建产物输出到 `apps/web/dist`。部署前需为前端路由配置 HTML 回退。
 
 真实设备服务需要先初始化本地数据库，再启动 API，详见 [API 启动与验证](docs/API_SETUP.md)。环境准备后，`npm run build` 同时检查 Web 和 API；API 编译产物输出到 `apps/api/dist`。
+
+报修入口、数据范围和防重复提交说明见 [文字报修与本人记录](docs/TEXT_REPAIR.md)。
 
 ## 结构与验证
 

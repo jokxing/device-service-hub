@@ -23,6 +23,7 @@ model User {
   active       Boolean  @default(true)
   sessions     Session[]
   deviceAccess DeviceAccess[]
+  tickets      Ticket[]
 }
 
 model Device {
@@ -34,6 +35,41 @@ model Device {
   model    String
   enabled  Boolean @default(true)
   access   DeviceAccess[]
+  tickets  Ticket[]
+}
+
+enum TicketStatus {
+  pending
+  assigned
+  processing
+  confirming
+  completed
+  cancelled
+}
+
+enum TicketPriority {
+  normal
+  urgent
+}
+
+model Ticket {
+  id          String @id @default(uuid())
+  number      Int @unique @default(autoincrement())
+  reporterId  String
+  deviceId    String
+  title       String @db.VarChar(60)
+  description String @db.VarChar(500)
+  priority    TicketPriority
+  status      TicketStatus @default(pending)
+  requestId   String @db.Uuid
+  requestHash String @db.Char(64)
+  createdAt   DateTime @default(now())
+  reporter    User @relation(fields: [reporterId], references: [id], onDelete: Restrict)
+  device      Device @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+
+  @@unique([reporterId, requestId])
+  @@index([reporterId, createdAt, id])
+  @@index([deviceId])
 }
 
 model DeviceAccess {
