@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { Alert, Form, Input, Modal } from "antd";
+import { useRef } from "react";
+import { Form, Input } from "antd";
 import type { TaskTicketRecord } from "@device-service-hub/contracts";
 import { useSession } from "../../auth/sessionContext";
-import { ApiError } from "../../../shared/api/http";
+import { useApiMutation } from "../../../shared/hooks/useApiMutation";
+import MutationModal from "../../../shared/components/MutationModal";
+import TicketActionSummary from "./TicketActionSummary";
 import { tasksApi } from "../tasks-api";
 import { TICKET_LIMITS } from "../constants";
 
@@ -18,77 +20,36 @@ export default function SubmitTaskResultModal({
 }: Props) {
   const { clearSession } = useSession();
   const [form] = Form.useForm<{ description: string }>();
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const { submitting, error, run } = useApiMutation({
+    onUnauthorized: clearSession,
+    fallbackError: "尚未确认提交结果，可重试相同说明，或关闭后刷新任务核对。",
+  });
   const intent = useRef<{ description: string; requestId: string } | null>(
     null,
   );
-  const activeRequest = useRef<AbortController | null>(null);
-  useEffect(() => () => activeRequest.current?.abort(), []);
-  async function submit({
-    description: rawDescription,
-  }: {
-    description: string;
-  }) {
-    if (activeRequest.current) return;
+  function submit({ description: rawDescription }: { description: string }) {
     const description = rawDescription.trim();
-    if (intent.current?.description !== description)
-      intent.current = { description, requestId: crypto.randomUUID() };
-    const controller = new AbortController();
-    activeRequest.current = controller;
-    const timeout = window.setTimeout(() => controller.abort("timeout"), 15000);
-    setSubmitting(true);
-    setError("");
-    try {
-      await tasksApi.submitResult(
+    return run((signal) => {
+      if (intent.current?.description !== description)
+        intent.current = { description, requestId: crypto.randomUUID() };
+      return tasksApi.submitResult(
         task.id,
         { ...intent.current, expectedVersion: task.version },
-        controller.signal,
+        signal,
       );
-      if (!controller.signal.aborted) onSubmitted();
-    } catch (error) {
-      if (controller.signal.aborted && controller.signal.reason !== "timeout")
-        return;
-      if (error instanceof ApiError && error.status === 401) clearSession();
-      else
-        setError(
-          error instanceof ApiError
-            ? error.message
-            : "尚未确认提交结果，可重试相同说明，或关闭后刷新任务核对。",
-        );
-    } finally {
-      window.clearTimeout(timeout);
-      activeRequest.current = null;
-      if (!controller.signal.aborted || controller.signal.reason === "timeout")
-        setSubmitting(false);
-    }
+    }, onSubmitted);
   }
+
   return (
-    <Modal
-      open
+    <MutationModal
       title="提交处理结果"
-      onCancel={() => {
-        if (!submitting) onClose();
-      }}
-      onOk={() => form.submit()}
       okText="提交待确认"
-      cancelText="取消"
-      confirmLoading={submitting}
-      closable={!submitting}
-      maskClosable={!submitting}
-      keyboard={!submitting}
-      cancelButtonProps={{ disabled: submitting }}
-      okButtonProps={{ "aria-label": "提交待确认", "aria-busy": submitting }}
+      submitting={submitting}
+      error={error}
+      onClose={onClose}
+      onSubmit={() => form.submit()}
     >
-      <p>
-        <strong>
-          {task.code} · {task.title}
-        </strong>
-      </p>
-      <p className="muted">
-        {task.device.name} · {task.device.location}
-      </p>
-      {error && <Alert type="error" showIcon title={error} className="mb-5" />}
+      <TicketActionSummary ticket={task} />
       <Form
         form={form}
         layout="vertical"
@@ -118,6 +79,6 @@ export default function SubmitTaskResultModal({
       <p className="muted">
         提交后由报修用户确认完成，当前不支持修改已提交结果或退回。
       </p>
-    </Modal>
+    </MutationModal>
   );
 }

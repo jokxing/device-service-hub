@@ -1,4 +1,4 @@
-import { Empty, Grid, Pagination, Table } from "antd";
+import ResponsiveRecordList from "../../../shared/components/ResponsiveRecordList";
 import { Link } from "react-router-dom";
 import type { TicketPage, TicketRecord } from "@device-service-hub/contracts";
 import { ROUTES } from "../../../app/routes";
@@ -14,80 +14,46 @@ interface Props {
   onPageChange: (page: number) => void;
 }
 export default function MyTicketsTable({ data, onPageChange }: Props) {
-  const screens = Grid.useBreakpoint();
-  if (!screens.md) {
-    return (
-      <>
-        {data.items.length ? (
-          <ul className={cardStyles.list} aria-label="报修记录">
-            {data.items.map((ticket) => (
-              <li key={ticket.id}>
-                <CompactRecordCard
-                  eyebrow={ticket.code}
-                  title={ticket.title}
-                  badge={<StatusTag status={ticket.status} />}
-                  fields={[
-                    { label: "设备", value: ticket.device.name },
-                    { label: "编号", value: ticket.device.code },
-                    {
-                      label: "维修人员",
-                      value: ticket.assignee?.name ?? "待分派",
-                    },
-                    {
-                      label: "优先级",
-                      value: PRIORITY_LABELS[ticket.priority],
-                    },
-                    {
-                      label: "提交时间",
-                      value: formatDateTime(new Date(ticket.createdAt)),
-                    },
-                  ]}
-                  actions={
-                    <Link
-                      className={cardStyles.actionLink}
-                      to={ROUTES.serviceTickets + "/" + ticket.id}
-                    >
-                      查看详情
-                    </Link>
-                  }
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Empty
-            description="暂无报修记录，可在设备台账发起报修"
-            className="my-6"
-          />
-        )}
-        <div className={cardStyles.pagination}>
-          <span className="muted">共 {data.total} 条报修</span>
-          <Pagination
-            simple
-            current={data.page}
-            pageSize={data.pageSize}
-            total={data.total}
-            showSizeChanger={false}
-            onChange={onPageChange}
-          />
-        </div>
-      </>
-    );
-  }
   return (
-    <Table<TicketRecord>
-      rowKey="id"
-      dataSource={data.items}
-      scroll={{ x: 1020 }}
-      pagination={{
-        current: data.page,
-        pageSize: data.pageSize,
-        total: data.total,
-        showSizeChanger: false,
-        onChange: onPageChange,
-        showTotal: (total) => `共 ${total} 条报修`,
-      }}
-      locale={{ emptyText: "暂无报修记录，可在设备台账发起报修" }}
+    <ResponsiveRecordList<TicketRecord>
+      records={data.items}
+      pagination={data}
+      onPageChange={onPageChange}
+      listLabel="报修记录"
+      unitLabel="报修"
+      emptyText="暂无报修记录，可在设备台账发起报修"
+      scrollX={1020}
+      renderCard={(ticket) => (
+        <CompactRecordCard
+          eyebrow={ticket.code}
+          title={ticket.title}
+          badge={<StatusTag status={ticket.status} />}
+          fields={[
+            { label: "设备", value: ticket.device.name },
+            { label: "编号", value: ticket.device.code },
+            {
+              label: "维修人员",
+              value: ticket.assignee?.name ?? "待分派",
+            },
+            {
+              label: "优先级",
+              value: PRIORITY_LABELS[ticket.priority],
+            },
+            {
+              label: "提交时间",
+              value: formatDateTime(new Date(ticket.createdAt)),
+            },
+          ]}
+          actions={
+            <Link
+              className={cardStyles.actionLink}
+              to={ROUTES.serviceTickets + "/" + ticket.id}
+            >
+              查看详情
+            </Link>
+          }
+        />
+      )}
       columns={[
         {
           title: "报修编号 / 问题",

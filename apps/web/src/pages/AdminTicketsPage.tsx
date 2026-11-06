@@ -1,26 +1,20 @@
 import { useCallback, useState } from "react";
-import { Alert, Button, Select, Spin } from "antd";
-import { useSearchParams } from "react-router-dom";
+import { Alert, Button, Spin } from "antd";
 import type { AdminTicketRecord } from "@device-service-hub/contracts";
 import { useSession } from "../features/auth/sessionContext";
 import { useApiResource } from "../shared/hooks/useApiResource";
-import { readPage } from "../shared/utils/pagination";
 import ServicePageHeader from "../shared/components/ServicePageHeader";
 import ContentCard from "../shared/components/ContentCard";
 import { adminTicketsApi } from "../features/tickets/admin-api";
-import { STATUS_OPTIONS } from "../features/tickets/constants";
+import { useTicketListQuery } from "../features/tickets/hooks/useTicketListQuery";
+import TicketStatusFilter from "../features/tickets/components/TicketStatusFilter";
 import AdminTicketsList from "../features/tickets/components/AdminTicketsList";
 import AdminTicketDetail from "../features/tickets/components/AdminTicketDetail";
 import AssignConnectedTicketModal from "../features/tickets/components/AssignConnectedTicketModal";
-import styles from "../features/tickets/connected.module.css";
 
 function AdminTicketsContent() {
   const { clearSession } = useSession();
-  const [params, setParams] = useSearchParams();
-  const page = readPage(params.get("page"));
-  const status = STATUS_OPTIONS.find(
-    (option) => option.value === params.get("status"),
-  )?.value;
+  const { page, status, setPage, setStatus } = useTicketListQuery();
   const load = useCallback(
     (signal: AbortSignal) => adminTicketsApi.list(page, status, signal),
     [page, status],
@@ -43,19 +37,12 @@ function AdminTicketsContent() {
           </Button>
         }
       >
-        <div className={styles.toolbar}>
-          <Select
-            aria-label="工单状态"
-            value={status ?? "all"}
-            options={[{ value: "all", label: "全部状态" }, ...STATUS_OPTIONS]}
-            onChange={(value) =>
-              setParams(value === "all" ? {} : { status: value })
-            }
-          />
-          <span className="muted">
-            首次分派后，由维修人员在“我的任务”确认接单
-          </span>
-        </div>
+        <TicketStatusFilter
+          label="工单状态"
+          value={status}
+          onChange={setStatus}
+          description="首次分派后，由维修人员在“我的任务”确认接单"
+        />
         {error ? (
           <Alert type="error" showIcon title={error} className="m-5" />
         ) : loading || !data ? (
@@ -67,12 +54,7 @@ function AdminTicketsContent() {
             data={data}
             onView={setDetailId}
             onAssign={setAssignmentTicket}
-            onPageChange={(next) => {
-              const query = new URLSearchParams();
-              if (status) query.set("status", status);
-              if (next > 1) query.set("page", String(next));
-              setParams(query);
-            }}
+            onPageChange={setPage}
           />
         )}
       </ContentCard>

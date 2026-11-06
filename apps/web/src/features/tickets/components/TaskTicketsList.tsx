@@ -1,4 +1,5 @@
-import { Button, Empty, Grid, Pagination, Space, Table } from "antd";
+import ResponsiveRecordList from "../../../shared/components/ResponsiveRecordList";
+import { Button, Space } from "antd";
 import { Link } from "react-router-dom";
 import type {
   TaskTicketPage,
@@ -23,14 +24,6 @@ export default function TaskTicketsList({
   onPageChange,
   onAccept,
 }: Props) {
-  const screens = Grid.useBreakpoint();
-  const pagination = {
-    current: data.page,
-    pageSize: data.pageSize,
-    total: data.total,
-    showSizeChanger: false,
-    onChange: onPageChange,
-  };
   function actions(task: TaskTicketRecord, compact: boolean) {
     return (
       <Space>
@@ -52,49 +45,34 @@ export default function TaskTicketsList({
       </Space>
     );
   }
-  if (!screens.md)
-    return (
-      <>
-        {data.items.length ? (
-          <ul className={cardStyles.list} aria-label="维修任务列表">
-            {data.items.map((task) => (
-              <li key={task.id}>
-                <CompactRecordCard
-                  title={task.title}
-                  eyebrow={task.code}
-                  badge={<StatusTag status={task.status} />}
-                  fields={[
-                    { label: "设备", value: task.device.name },
-                    { label: "位置", value: task.device.location },
-                    { label: "优先级", value: PRIORITY_LABELS[task.priority] },
-                    {
-                      label: "分派时间",
-                      value: task.assignedAt
-                        ? formatDateTime(new Date(task.assignedAt))
-                        : "—",
-                    },
-                  ]}
-                  actions={actions(task, true)}
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Empty description="暂无分派给你的任务" className="my-6" />
-        )}
-        <div className={cardStyles.pagination}>
-          <span className="muted">共 {data.total} 条任务</span>
-          <Pagination simple {...pagination} />
-        </div>
-      </>
-    );
   return (
-    <Table<TaskTicketRecord>
-      rowKey="id"
-      dataSource={data.items}
-      scroll={{ x: 1050 }}
-      pagination={{ ...pagination, showTotal: (total) => `共 ${total} 条任务` }}
-      locale={{ emptyText: "暂无分派给你的任务" }}
+    <ResponsiveRecordList<TaskTicketRecord>
+      records={data.items}
+      pagination={data}
+      onPageChange={onPageChange}
+      listLabel="维修任务列表"
+      unitLabel="任务"
+      emptyText="暂无分派给你的任务"
+      scrollX={1050}
+      renderCard={(task) => (
+        <CompactRecordCard
+          title={task.title}
+          eyebrow={task.code}
+          badge={<StatusTag status={task.status} />}
+          fields={[
+            { label: "设备", value: task.device.name },
+            { label: "位置", value: task.device.location },
+            { label: "优先级", value: PRIORITY_LABELS[task.priority] },
+            {
+              label: "分派时间",
+              value: task.assignedAt
+                ? formatDateTime(new Date(task.assignedAt))
+                : "—",
+            },
+          ]}
+          actions={actions(task, true)}
+        />
+      )}
       columns={[
         {
           title: "工单 / 问题",

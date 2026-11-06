@@ -22,6 +22,8 @@
 - 状态标签、优先级、字段长度、附件限制使用统一定义；修改前先搜索已有常量、组件和方法。
 - 通用方法按日期、文件、CSV 等职责分别存放，不建立混杂的大 `common.ts` 或 `utils.ts`。工单迁移留在 `ticketRules.ts`，设备授权留在 `deviceRules.ts`。
 - 公共函数使用显式参数，不依赖可变全局变量、隐藏页面状态或演示账号。
+- 真实写操作复用 useApiMutation 与 MutationModal；业务提交编号、参数与校验留在各操作组件。共享 Hook 不自动重试写请求，取消请求不等于数据库回滚。
+- 分页工单列表复用 ResponsiveRecordList；列定义、卡片字段与角色动作留在业务组件。工单摘要和状态筛选属于 features/tickets，不移入 shared。
 - 类型导入使用 `import type`，保持 TypeScript strict，不用 `any`、忽略检查或放宽配置掩盖问题。
 - `demo` 隔离账号、fixtures、内存状态与演示适配；组件不直接修改 fixtures。
 - `apps/api` 按业务模块组织控制器、服务与鉴权，数据库迁移在 Prisma 目录；`packages/contracts` 仅输出前后端共用的传输类型，不暴露 ORM 实体、密码或会话。真实设备入口不使用演示角色作为身份来源。
@@ -69,6 +71,7 @@
 - 文字处理结果变更执行 `run verify:results`、`run verify:results-ui`，规则见 `docs/TASK_RESULTS.md`。说明、版本与请求编号参与重放核对，状态更新和结果记录必须在同一事务。
 - 用户确认变更执行 `run verify:confirmations`、`run verify:confirmations-ui`，规则见 `docs/TICKET_CONFIRMATION.md`。仅本人且有结果的待确认工单可完成，三角色读取同一确认记录；本人详情新增 version，列表契约不变。退回、再次提交和后续阶段需单独确认后实施。
 - 测试聚焦关键业务和真实异常，不堆重复测试；已通过后不无故重复执行。纯文档修改不要求重跑应用测试。
+- 共享提交/列表交互变更补充运行 `run verify:shared-ui`；涉及共享种子账号和总数断言的 API 套件串行执行，避免临时记录相互干扰。
 - 不提交 `.local`、`node_modules`、构建产物、真实 `.env`、凭据或个人操作记录。公开文档不包含个人绝对路径或对话过程。
 - 公开文档采用产品与工程交付表述，突出业务建模、架构取舍、数据权限、并发一致性、可维护性及验证证据，不加入学习任务、练习安排或教程式要求。十余年前端经历不等同于十余年 React/RN 经历；不虚构生产规模、客户案例或性能指标。
 - 如实标明演示数据、未实现能力以及 Mock、模拟器、真机和安装包各自验证范围，不包装为商业生产经验。

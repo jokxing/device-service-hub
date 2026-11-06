@@ -1,6 +1,6 @@
 # Web 结构与维护约定
 
-本说明描述 Web 组织方式。完整工单流程保留内存演示；真实服务入口已连接 NestJS、PostgreSQL，实现登录、设备查询、文字报修和本人记录，运行方式见 [API_SETUP.md](API_SETUP.md)、[TEXT_REPAIR.md](TEXT_REPAIR.md)。RN 尚未实施。
+本说明描述 Web 组织方式。完整工单流程保留内存演示；真实服务入口已连接 NestJS、PostgreSQL，实现登录、设备查询、文字报修、分派、接单、处理结果与本人确认完成。运行方式见 [API_SETUP.md](API_SETUP.md)，业务边界见各功能文档。RN 尚未实施。
 
 本文件解释现有结构与设计取舍；AI 协作执行规则见根目录 [AGENTS.md](../AGENTS.md)，避免重复维护多套规范。
 
@@ -23,6 +23,7 @@
 | `features/tickets/` | 工单业务 | 类型、状态常量、状态迁移、筛选、表格和操作弹窗 |
 | `features/devices/` | 设备业务 | 类型、设备访问规则、表格和详情 |
 | `shared/components/` | 跨业务的基础组件 | 工单和设备共用的 ContentCard |
+| `shared/hooks/` | 与业务无关的请求生命周期 | useApiResource、useApiMutation |
 | `shared/constants/`、`shared/types/` | 跨业务的常量和类型 | 角色标签、Actor 和 Role |
 | `shared/utils/` | Web 通用工具 | 日期格式、文件策略校验、CSV 编码与下载 |
 | `demo/` | 可替换的演示数据与状态适配 | 虚构账号、设备、工单、内存 Provider、演示操作 Hook |
@@ -38,6 +39,22 @@
 - `shared` 不反向依赖 `pages`、`layouts`、`features` 或 `demo`。类型只用于类型检查时使用 `import type`。
 - 演示账号姓名和“演示：”选项属于 `demo`，不进入通用角色定义。
 - Web 的 `shared` 仍是 Web 内部复用。CSV 下载、DOM、存储、UI 样式不能直接用于 RN。以后有第二个真实消费者时，才把适合共享的契约和纯规则迁移到独立包。
+
+## 提交交互与列表复用
+
+| 复用入口 | 当前使用范围 | 职责 |
+| --- | --- | --- |
+| `shared/hooks/useApiMutation.ts` | 真实报修、分派、接单、处理结果、确认完成 | 同步防重复进入、提交状态、15 秒超时、卸载取消、错误处理与调用方传入的 401 回调 |
+| `shared/components/MutationModal.tsx` | 上述五类操作弹窗 | 统一错误区域和提交按钮，提交时禁止取消、关闭图标、Esc 与遮罩关闭 |
+| `shared/components/ResponsiveRecordList.tsx` | 本人报修、管理员工单、维修任务 | 桌面表格、手机卡片列表、空态及受控分页；业务方传入列、卡片与操作 |
+| `features/tickets/hooks/useTicketListQuery.ts` | 管理员工单、维修任务 | URL 状态与分页解析、筛选重置页码、刷新和前进后退 |
+| `features/tickets/components/TicketStatusFilter.tsx` | 上述两种列表 | 状态选项、无障碍标签和筛选栏布局 |
+| `features/tickets/components/TicketActionSummary.tsx` | 分派、接单、处理结果、确认完成 | 工单编号、标题与设备位置摘要 |
+
+- `shared` 不导入身份上下文或工单模块；业务组件传入请求、401 回调和成功回调。请求参数、表单校验、状态动作与提交编号留在业务模块，不建设通用表单配置引擎。
+- 提交 Hook 不自动重试写请求。相同内容的重试沿用原业务提交编号；内容变化是否产生新编号由各业务操作决定。取消浏览器请求不代表数据库回滚，响应丢失后仍通过服务端幂等规则核对。
+- 业务差异明确保留：三种列表拥有不同字段和权限入口；演示弹窗使用内存适配，真实弹窗使用会话 API。设备列表无分页，继续复用 CompactRecordCard，不为套用分页容器新增虚假分页。
+- 后端各角色的授权、状态条件与事务边界保持独立，不能因前端组件相似而合并成通用修改接口。
 
 ## 状态与数据流
 
@@ -90,6 +107,8 @@ App → DemoProvider → AppLayout → 页面 → 业务组件
 - `npm run build`：TypeScript 和生产构建。
 - `npm run test:business`：5 项关键规则测试，使用 Node.js 24 执行可擦除 TypeScript，无额外测试编译器。
 - `npm run verify:ui`：覆盖工单闭环、角色范围、路由刷新/前进后退、跨页数据保留、表单清理、设备详情离页清理和窄屏。脚本默认使用 Windows 已安装的 Edge，其他环境需调整浏览器配置。
+- `npm run verify:shared-ui`：使用本地真实 API 核对五类提交弹窗的重复点击、Esc/遮罩关闭限制、401、实际超时、离页取消，以及真实第二页的 URL 筛选和手机分页。临时数据按本轮提交编号清理。
+- 真实业务回归分别见 `verify:tickets[-ui]`、`verify:assignment[-ui]`、`verify:tasks[-ui]`、`verify:results[-ui]`、`verify:confirmations[-ui]`。共享种子账号的总数断言可能互相干扰，API 套件串行执行；不要通过放宽断言消除干扰。
 - 缓存与浏览器临时数据保存在项目内 `.local` 目录，目录已配置忽略。
 
 Web 演示阶段的构建、5 项关键规则及浏览器回归已通过；新增真实 API 链路的实际验证范围单独记录在 `API_SETUP.md`，不混用验证结论。尚未进行 RN 或实体业务设备验证。
