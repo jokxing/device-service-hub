@@ -3,11 +3,22 @@ import type {
   TaskTicketPage,
   TaskTicketRecord,
   TicketStatus,
+  SubmitTicketResultInput,
 } from "@device-service-hub/contracts";
 import { apiRequest } from "../../shared/api/http";
 import { ticketListQuery } from "./ticketQuery";
 
 export const tasksApi = {
+  submitResult: (
+    id: string,
+    input: SubmitTicketResultInput,
+    signal?: AbortSignal,
+  ) =>
+    apiRequest<TaskTicketRecord>(`/tasks/${encodeURIComponent(id)}/result`, {
+      method: "POST",
+      body: JSON.stringify(input),
+      signal,
+    }),
   list: (page: number, status?: TicketStatus, signal?: AbortSignal) =>
     apiRequest<TaskTicketPage>(`/tasks?${ticketListQuery(page, status)}`, {
       signal,

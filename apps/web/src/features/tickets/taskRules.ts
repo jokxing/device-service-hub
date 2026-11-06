@@ -4,3 +4,9 @@ import type { TaskTicketRecord } from "@device-service-hub/contracts";
 export function canAcceptTask(task: Pick<TaskTicketRecord, "status">): boolean {
   return task.status === "assigned";
 }
+
+export function canSubmitTaskResult(
+  task: Pick<TaskTicketRecord, "status">,
+): boolean {
+  return task.status === "processing";
+}

@@ -29,6 +29,7 @@ export const TICKET_LIMITS = {
   title: 60,
   description: 500,
   attachments: 3,
+  result: 2000,
 } as const;
 export const TICKET_PAGE_SIZE = 6;
 export const ATTACHMENT_POLICY: FilePolicy = {

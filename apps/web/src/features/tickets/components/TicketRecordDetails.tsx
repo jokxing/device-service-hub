@@ -78,6 +78,30 @@ export default function TicketRecordDetails({
             ),
             span: 2,
           },
+          ...(ticket.result
+            ? [
+                {
+                  key: "result",
+                  label: "处理说明",
+                  children: (
+                    <span className="whitespace-pre-wrap break-words">
+                      {ticket.result.description}
+                    </span>
+                  ),
+                  span: 2,
+                },
+                {
+                  key: "resultBy",
+                  label: "提交人",
+                  children: ticket.result.actor.name,
+                },
+                {
+                  key: "resultAt",
+                  label: "处理提交时间",
+                  children: formatDateTime(new Date(ticket.result.createdAt)),
+                },
+              ]
+            : []),
         ]}
       />
       {ticket.status === "pending" && (
@@ -88,6 +112,9 @@ export default function TicketRecordDetails({
       )}
       {ticket.status === "processing" && (
         <Alert showIcon type="info" title="维修人员已接单，正在处理中" />
+      )}
+      {ticket.status === "confirming" && (
+        <Alert showIcon type="info" title="处理结果已提交，等待报修用户确认" />
       )}
     </div>
   );

@@ -53,6 +53,11 @@ export interface TicketRecord {
   assignee: TicketPerson | null;
   assignedAt: string | null;
   acceptance: { actor: TicketPerson; createdAt: string } | null;
+  result: {
+    description: string;
+    actor: TicketPerson;
+    createdAt: string;
+  } | null;
   device: Pick<DeviceSummary, "id" | "code" | "name" | "location">;
 }
 export interface TicketPerson {
@@ -67,6 +72,9 @@ export interface AssignTicketInput extends TicketCommandInput {
   assigneeId: string;
 }
 export type AcceptTicketInput = TicketCommandInput;
+export interface SubmitTicketResultInput extends TicketCommandInput {
+  description: string;
+}
 export interface TaskTicketRecord extends TicketRecord {
   version: number;
 }

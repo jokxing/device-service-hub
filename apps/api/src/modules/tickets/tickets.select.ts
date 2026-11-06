@@ -13,6 +13,13 @@ export const TICKET_PUBLIC_SELECT = {
   acceptance: {
     select: { actor: { select: { id: true, name: true } }, createdAt: true },
   },
+  result: {
+    select: {
+      description: true,
+      actor: { select: { id: true, name: true } },
+      createdAt: true,
+    },
+  },
   device: { select: { id: true, code: true, name: true, location: true } },
 } as const satisfies Prisma.TicketSelect;
 

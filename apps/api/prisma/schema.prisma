@@ -28,6 +28,7 @@ model User {
   assignmentsMade TicketAssignment[] @relation("AssignmentActor")
   assignmentsReceived TicketAssignment[] @relation("AssignmentTechnician")
   acceptances TicketAcceptance[]
+  results TicketResult[]
 }
 
 model Device {
@@ -76,12 +77,27 @@ model Ticket {
   device      Device @relation(fields: [deviceId], references: [id], onDelete: Restrict)
   assignment  TicketAssignment?
   acceptance  TicketAcceptance?
+  result      TicketResult?
 
   @@unique([reporterId, requestId])
   @@index([reporterId, createdAt, id])
   @@index([deviceId])
   @@index([status, createdAt, id])
   @@index([assigneeId])
+}
+
+model TicketResult {
+  id              String @id @default(uuid())
+  ticketId        String @unique
+  actorId         String
+  description     String @db.VarChar(2000)
+  requestId       String @db.Uuid
+  expectedVersion Int
+  createdAt       DateTime @default(now())
+  ticket          Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  actor           User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@unique([actorId, requestId])
 }
 
 model TicketAcceptance {

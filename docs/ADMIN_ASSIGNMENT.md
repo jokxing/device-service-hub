@@ -1,6 +1,6 @@
 # 管理员工单列表与首次分派
 
-管理员工单列表、详情与首次分派基于现有 React 和 NestJS 实现。维修人员接单通过独立任务接口提供，见 [TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)。改派、处理结果与用户确认尚未实现。
+管理员工单列表、详情与首次分派基于现有 React 和 NestJS 实现。维修人员接单及文字处理结果通过独立任务接口提供，见 [TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)、[TASK_RESULTS.md](TASK_RESULTS.md)。改派、用户确认与退回尚未实现。
 
 ## 入口与权限
 

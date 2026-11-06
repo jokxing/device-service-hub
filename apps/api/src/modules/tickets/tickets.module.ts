@@ -7,6 +7,7 @@ import { AdminTicketsController } from "./admin-tickets.controller";
 import { AdminTicketsService } from "./admin-tickets.service";
 import { TaskTicketsController } from "./task-tickets.controller";
 import { TaskTicketsService } from "./task-tickets.service";
+import { TaskResultsService } from "./task-results.service";
 
 @Module({
   imports: [DatabaseModule, AuthModule],
@@ -15,6 +16,11 @@ import { TaskTicketsService } from "./task-tickets.service";
     AdminTicketsController,
     TaskTicketsController,
   ],
-  providers: [TicketsService, AdminTicketsService, TaskTicketsService],
+  providers: [
+    TicketsService,
+    AdminTicketsService,
+    TaskTicketsService,
+    TaskResultsService,
+  ],
 })
 export class TicketsModule {}

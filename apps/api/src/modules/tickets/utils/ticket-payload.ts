@@ -26,7 +26,7 @@ export function ticketPayloadHash(input: CreateTicketInput): string {
 }
 
 export function toTicketRecord(row: TicketRow): TicketRecord {
-  const { number, createdAt, assignedAt, acceptance, ...record } = row;
+  const { number, createdAt, assignedAt, acceptance, result, ...record } = row;
   return {
     ...record,
     code: `WO-${String(number).padStart(6, "0")}`,
@@ -34,6 +34,9 @@ export function toTicketRecord(row: TicketRow): TicketRecord {
     assignedAt: assignedAt?.toISOString() ?? null,
     acceptance: acceptance
       ? { ...acceptance, createdAt: acceptance.createdAt.toISOString() }
+      : null,
+    result: result
+      ? { ...result, createdAt: result.createdAt.toISOString() }
       : null,
   };
 }

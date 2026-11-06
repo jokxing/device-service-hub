@@ -18,11 +18,25 @@ import { SessionGuard } from "../auth/guards/session.guard";
 import { TaskTicketsService } from "./task-tickets.service";
 import { StatusTicketsQueryDto } from "./dto/status-tickets-query.dto";
 import { AcceptTicketDto } from "./dto/accept-ticket.dto";
+import { SubmitTicketResultDto } from "./dto/submit-ticket-result.dto";
+import { TaskResultsService } from "./task-results.service";
 
 @Controller("tasks")
 @UseGuards(SessionGuard)
 export class TaskTicketsController {
-  constructor(private readonly tickets: TaskTicketsService) {}
+  constructor(
+    private readonly tickets: TaskTicketsService,
+    private readonly results: TaskResultsService,
+  ) {}
+
+  @Post(":id/result")
+  submitResult(
+    @CurrentUser() actor: PublicUser,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Body() body: SubmitTicketResultDto,
+  ): Promise<TaskTicketRecord> {
+    return this.results.submit(actor, id, body);
+  }
 
   @Get()
   list(

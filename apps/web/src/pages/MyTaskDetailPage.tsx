@@ -9,7 +9,11 @@ import ServicePageHeader from "../shared/components/ServicePageHeader";
 import ContentCard from "../shared/components/ContentCard";
 import TicketRecordDetails from "../features/tickets/components/TicketRecordDetails";
 import AcceptTaskModal from "../features/tickets/components/AcceptTaskModal";
-import { canAcceptTask } from "../features/tickets/taskRules";
+import SubmitTaskResultModal from "../features/tickets/components/SubmitTaskResultModal";
+import {
+  canAcceptTask,
+  canSubmitTaskResult,
+} from "../features/tickets/taskRules";
 import { tasksApi } from "../features/tickets/tasks-api";
 import styles from "../features/tickets/connected.module.css";
 
@@ -22,17 +26,18 @@ function MyTaskDetailContent() {
   );
   const { data, error, loading, refresh } = useApiResource(load, clearSession);
   const [taskToAccept, setTaskToAccept] = useState<TaskTicketRecord>();
+  const [taskToSubmit, setTaskToSubmit] = useState<TaskTicketRecord>();
   return (
     <>
       <ServicePageHeader
         title="任务详情"
-        description="查看设备问题与任务进度，按当前状态执行接单。"
+        description="查看设备问题与任务进度，接单后提交处理结果。"
         back={{ to: ROUTES.serviceTasks, label: "返回我的任务" }}
       />
       <ContentCard
         title={data?.code ?? "维修任务"}
         extra={
-          <Space>
+          <Space wrap>
             <Button onClick={refresh} loading={loading}>
               刷新
             </Button>
@@ -43,6 +48,11 @@ function MyTaskDetailContent() {
                 onClick={() => setTaskToAccept(data)}
               >
                 接单
+              </Button>
+            )}
+            {data && canSubmitTaskResult(data) && (
+              <Button type="primary" onClick={() => setTaskToSubmit(data)}>
+                提交处理结果
               </Button>
             )}
           </Space>
@@ -67,6 +77,17 @@ function MyTaskDetailContent() {
           onClose={() => setTaskToAccept(undefined)}
           onAccepted={() => {
             setTaskToAccept(undefined);
+            refresh();
+          }}
+        />
+      )}
+      {taskToSubmit && (
+        <SubmitTaskResultModal
+          key={taskToSubmit.id}
+          task={taskToSubmit}
+          onClose={() => setTaskToSubmit(undefined)}
+          onSubmitted={() => {
+            setTaskToSubmit(undefined);
             refresh();
           }}
         />

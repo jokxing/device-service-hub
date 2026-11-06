@@ -20,6 +20,21 @@ export function openLocalApi() {
   );
   const base = "http://127.0.0.1:" + (process.env.API_PORT ?? "3001") + "/api";
   const sessions = [];
+  async function waitForApi() {
+    for (let attempt = 0; attempt < 6; attempt++) {
+      try {
+        const response = await fetch(base + "/auth/me", {
+          signal: AbortSignal.timeout(2000),
+        });
+        await response.body?.cancel();
+        if (response.status === 401 || response.status === 200) return;
+      } catch {
+        // Development builds may replace the listening process; only retry this read.
+      }
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    throw new Error("Local API is not ready for verification");
+  }
   async function request(route, { cookie, method = "GET", body } = {}) {
     const response = await fetch(base + route, {
       method,
@@ -70,5 +85,5 @@ export function openLocalApi() {
     await database.connect();
     return database;
   }
-  return { root, request, login, logout, dispose, connectDatabase };
+  return { root, request, login, logout, dispose, connectDatabase, waitForApi };
 }

@@ -12,7 +12,11 @@ export const TICKET_STATUSES = [
   "cancelled",
 ] as const satisfies readonly TicketStatus[];
 
-export const TICKET_LIMITS = { title: 60, description: 500 } as const;
+export const TICKET_LIMITS = {
+  title: 60,
+  description: 500,
+  result: 2000,
+} as const;
 export const TICKET_PRIORITIES = [
   "normal",
   "urgent",

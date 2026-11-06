@@ -1,6 +1,6 @@
 # 后端结构与维护约定
 
-后端使用 NestJS 11 + Prisma 7 + PostgreSQL，采用业务模块内分层的单体结构。当前实现登录、会话、设备查询、文字报修、本人记录、管理员首次分派和维修人员任务/接单。运行方式见 [API_SETUP.md](API_SETUP.md)，业务规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)、[ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)、[TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)。AI 协作入口为根目录 [AGENTS.md](../AGENTS.md)。
+后端使用 NestJS 11 + Prisma 7 + PostgreSQL，采用业务模块内分层的单体结构。当前实现登录、会话、设备查询、文字报修、本人记录、首次分派、维修任务/接单和文字处理结果。运行方式见 [API_SETUP.md](API_SETUP.md)，业务规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)、[ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)、[TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)、[TASK_RESULTS.md](TASK_RESULTS.md)。AI 协作入口为根目录 [AGENTS.md](../AGENTS.md)。
 
 ## 目录职责
 
@@ -87,6 +87,8 @@ JSON/Cookie 解析、响应头中间件
 NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常响应处理。目前沿用框架异常机制；出现明确需求后再加入对应实现，不把所有横切逻辑塞进 Middleware。
 
 ## 数据访问与事务
+
+文字结果提交由 TaskResultsService 承担，复用 TaskTicketsService 的当前角色/归属查询，在一个事务中更新 processing → confirming 并创建 TicketResult。规范化说明、工单及原版本参与重放核对，规则见 [TASK_RESULTS.md](TASK_RESULTS.md)。现有接单用例保持独立，不抽象通用状态修改服务。
 
 维修人员查询与接单由 TaskTicketsService 承担。列表、总数、详情与命令均按当前 assigneeId 过滤，接单在一个事务内完成版本条件更新及 TicketAcceptance 记录写入。接单人与时间统一来自审计关系；命令编号/版本及状态分页校验由业务 DTO 复用，不向维修人员暴露管理员响应，规则见 [TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)。
 
