@@ -1,14 +1,13 @@
+import TicketCard from "./components/TicketCard";
 import { useState } from "react";
 import { Text } from "react-native";
 import { useRouter } from "expo-router";
 import Screen from "../../shared/components/Screen";
-import ContentCard from "../../shared/components/ContentCard";
 import ActionButton from "../../shared/components/ActionButton";
 import { useMyTickets } from "./useTickets";
-import { STATUS_LABELS, PRIORITY_LABELS } from "./constants";
 import { ticketStyles as styles } from "./ticketStyles";
 import ReporterAccess from "./components/ReporterAccess";
-import LoadFeedback from "./components/LoadFeedback";
+import LoadFeedback from "../../shared/components/LoadFeedback";
 function TicketList() {
   const router = useRouter();
   const [page, setPage] = useState(1);
@@ -25,23 +24,11 @@ function TicketList() {
         <Text style={styles.text}>暂无报修记录</Text>
       )}
       {data?.items.map((ticket) => (
-        <ContentCard key={ticket.id} title={ticket.title}>
-          <Text style={styles.muted}>{ticket.code}</Text>
-          <Text style={styles.text}>
-            {STATUS_LABELS[ticket.status]} · {PRIORITY_LABELS[ticket.priority]}
-          </Text>
-          <Text style={styles.text}>
-            {ticket.device.code} · {ticket.device.name}
-          </Text>
-          <Text style={styles.muted}>
-            {new Date(ticket.createdAt).toLocaleString("zh-CN")}
-          </Text>
-          <ActionButton
-            title="查看报修详情"
-            secondary
-            onPress={() => router.push(`/tickets/${ticket.id}`)}
-          />
-        </ContentCard>
+        <TicketCard
+          key={ticket.id}
+          ticket={ticket}
+          onView={() => router.push(`/tickets/${ticket.id}`)}
+        />
       ))}
       <ActionButton
         title="刷新报修"

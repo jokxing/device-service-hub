@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Text } from "react-native";
 import { randomUUID } from "expo-crypto";
 import type { ReporterTicketRecord } from "@device-service-hub/contracts";
 import ActionButton from "../../../shared/components/ActionButton";
 import MutationModal from "../../../shared/components/MutationModal";
-import { useAction } from "../../../shared/hooks/useAction";
+import { useApiMutation } from "../../../shared/hooks/useApiMutation";
 import { useNativeSession } from "../../auth/sessionContext";
 import { confirmTicket } from "../api";
 import { canConfirmTicket } from "../rules";
@@ -18,29 +18,18 @@ function Confirmation({
   onClose: () => void;
 }) {
   const { post } = useNativeSession();
-  const action = useAction();
+  const action = useApiMutation();
   const intent = useRef<string | null>(null);
-  const active = useRef(true);
-  const controller = useRef<AbortController | null>(null);
-  useEffect(() => {
-    active.current = true;
-    return () => {
-      active.current = false;
-      controller.current?.abort();
-    };
-  }, []);
   function submit() {
-    void action.run(async () => {
+    action.run((signal) => {
       intent.current ??= randomUUID();
-      controller.current = new AbortController();
-      await confirmTicket(
+      return confirmTicket(
         post,
         ticket.id,
         { requestId: intent.current, expectedVersion: ticket.version },
-        controller.current.signal,
+        signal,
       );
-      if (active.current) onClose();
-    });
+    }, onClose);
   }
   return (
     <MutationModal

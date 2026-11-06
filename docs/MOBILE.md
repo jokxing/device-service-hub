@@ -4,7 +4,7 @@
 
 `apps/mobile` 是独立 Expo / React Native 工作区。首步交付服务首页、报修须知、原生 Stack 导航、主题、安全区与滚动布局，完成浏览器预览及 Android 模拟器运行验证。
 
-已接通真实登录、会话恢复、退出、授权设备列表/详情、文字报修、本人分页记录/详情与确认完成。维修任务、相机和上传尚未接入。设备与工单来自同一 NestJS/PostgreSQL，范围由服务端决定；现有 Web 与门户继续保留。
+已接通真实登录、会话恢复、退出、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。相机和上传尚未接入；管理员分派继续使用 Web 后台。设备与工单来自同一 NestJS/PostgreSQL，范围由服务端决定；现有 Web 与门户继续保留。
 
 ## 技术与目录
 
@@ -28,7 +28,8 @@ apps/mobile/
    │  └─ (service)/       # 受保护设备路由
    ├─ features/auth/     # api.ts、会话生命周期、SecureStore 与登录
    ├─ features/devices/  # api.ts、授权列表/详情与业务 Hook
-   ├─ features/tickets/  # api.ts、报修表单、本人列表/详情与业务组件
+   ├─ features/tickets/  # api.ts、报修表单、本人列表/详情与只读工单组件
+   ├─ features/tasks/    # api.ts、本人任务、筛选、详情、接单与结果表单
    ├─ features/service/
    │  ├─ HomeScreen.tsx
    │  ├─ GuideScreen.tsx
@@ -37,7 +38,8 @@ apps/mobile/
       ├─ theme.ts         # 颜色、字号、行高、间距、圆角与控件尺寸
       ├─ constants/       # 跨业务角色名称等常量
       ├─ api/             # 地址、Bearer 传输、超时与错误
-      ├─ hooks/           # 通用异步操作生命周期
+      ├─ hooks/           # 通用读取/写入的取消、防重复操作和清理
+      ├─ styles/          # 跨业务正文、说明及错误文字样式
       └─ components/      # Screen、ContentCard、ActionButton、MutationModal
 ```
 
@@ -69,6 +71,10 @@ npm run verify:mobile-tickets # 原生报修权限、分页与并发防重
 npm run verify:mobile-tickets-android # 原生表单、重试和本人记录
 npm run verify:mobile-confirmations # 原生确认的归属、版本和并发重放
 npm run verify:mobile-confirmations-android # 原生确认框、取消、异常重试和过期页面
+npm run verify:mobile-tasks # 原生任务归属、分页筛选、接单防重
+npm run verify:mobile-tasks-android # 原生维修角色、任务卡片、取消与异常重试
+npm run verify:mobile-results # 原生结果的内容、版本、权限与并发防重
+npm run verify:mobile-results-android # 原生结果表单、重试与用户确认闭环
 ```
 
 浏览器预览地址为 `http://127.0.0.1:8081`。两个开发命令共用端口，择一启动；同一个 Metro 可以同时服务 Expo Go 与浏览器。脚本禁止自动打开系统浏览器，可手动打开预览链接。
@@ -114,11 +120,29 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 
 ## 本人确认完成
 
+公共 MutationModal 的正文独立滚动；错误提示、提交和取消按钮放在固定操作区，底部使用 spacing.xl 留白，避免长表单将按钮裁切在圆角边缘。接单、确认和结果表单统一沿用此布局。
+
 - POST `/api/mobile/tickets/:id/confirm` 复用 ConfirmTicketDto 与 TicketConfirmationsService，不增加表、迁移或通用状态修改接口。请求仅带 UUID v4 requestId 与 expectedVersion；状态和确认人、时间由服务端事务写入。
 - `ConfirmTicketAction` 组织入口与业务意图，公共 `MutationModal` 只处理展示、提交状态和关闭；原生 [Modal](https://reactnative.dev/docs/modal) 的 Android 返回关闭也受 pending 限制。内容可滚动，样式沿用公共主题。
 - 单次窗口的 UUID 与原版本保持不变，响应不明可重试；提交期间禁止重复点击、取消或返回关闭。关闭窗口后重新读取详情，版本冲突不在本地强制修改状态。切换路由或账号会卸载弹窗并取消请求，但取消请求不等于业务回滚。
 - 模拟器验收使用本地网关丢弃一条成功响应并返回 502，验证同意图重试只有一条确认记录；同时验证取消不改变状态、冷启动恢复、其他端已完成后的旧页面冲突与刷新。网关仅临时转发模拟器端口，结束后恢复转发并按本轮随机 ID 清理。
 - 截图：[确认窗口](screenshots/mobile-android-confirm-dialog.png)、[完成详情](screenshots/mobile-android-confirmed.png)。图中工单及维修员是临时验收数据，不是生产案例。
+
+## 维修任务与接单
+
+- 维修人员登录后进入 `/tasks`，也可从设备页进入“我的任务”。列表支持本人计数、状态筛选、分页和空态；返回列表时刷新真实状态，切换筛选回到第一页。详情为 `/tasks/[id]`。
+- 任务列表的退出操作固定在导航栏右上角，长列表滚动后仍可访问；失败通过原生提示反馈。主列表不展示返回箭头。详情使用 dismissTo 返回栈内已有列表，保留筛选与分页；详情直达且栈内没有列表时才替换为列表，避免重复堆叠同名页面。
+- 原生接口为 GET `/api/mobile/tasks`、GET `/api/mobile/tasks/:id`、POST `/api/mobile/tasks/:id/accept`；复用 TaskTicketsService、StatusTicketsQueryDto 和 AcceptTicketDto，不增加表或迁移。列表与计数共用当前 assigneeId 条件；旧接单意图重放仍检查当前归属。
+- 任务只展示必要设备摘要，不扩大独立设备台账权限。非维修角色被服务端拒绝；跨维修人员和不存在的任务统一返回 404。
+- 只有待接单且未接单的任务显示接单动作。窗口内保留原 requestId/expectedVersion，取消不修改状态，关闭后重新查询；成功读取实际处理中状态与接单人、时间。处理中任务已接通文字处理结果提交。
+- 任务卡片和详情使用工单模块的只读 TicketCard、TicketRecordDetails；动作和 API 留在 tasks。任务导航栏使用 SessionHeaderAction，设备页保留 SessionFooter；两者调用同一会话退出逻辑。共用文字样式、LoadFeedback、useApiResource 与 useApiMutation。公共提交 Hook 只处理防重复点击、取消和卸载清理，业务意图不进入公共层。
+
+## 文字处理结果
+
+- 处理中且未提交结果的本人任务显示“提交处理结果”，表单沿用 MutationModal/useApiMutation，输入归业务组件管理。说明去空白后必须非空且最多 2000 字符，保留内部换行；提交后变为待用户确认。
+- POST `/api/mobile/tasks/:id/result` 仅适配原生传输，复用 SubmitTicketResultDto 与 TaskResultsService；角色、当前 assigneeId、状态、版本、规范化说明与幂等重放由既有服务校验。没有增加表、迁移或覆盖结果接口。
+- 同一窗口内的相同规范化说明保持原 UUID 和 expectedVersion；说明变化后再次提交是新意图，不能覆盖已提交内容。取消或关闭重开清空输入，关闭后查询实际状态；冲突时保留输入，不能强制覆盖其他端的结果。
+- 状态、处理说明、人员及时间从同一记录读取，报修用户可在原生本人详情核对并确认完成。管理员分派仍由 Web 后台负责，原生两种业务角色已贯通文字闭环。
 
 ## 缓存与磁盘约束
 
@@ -129,7 +153,7 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 
 ## 验证记录与边界
 
-2026-11-06：
+2026-11-06～2026-11-07：
 
 | 验证项 | 当前结果 |
 | --- | --- |
@@ -143,12 +167,20 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 | 原生文字报修、本人分页记录与详情 | 已接入；服务端权限与八路并发防重验证通过 |
 | 原生报修异常重试与记录恢复 | MuMu + Expo Go 验证通过：网关丢弃成功响应后同意图重试只留一单，详情冷启动恢复，跨账号详情拒绝 |
 | 原生确认完成 | 已接入；角色/归属、版本、八路重放及模拟器取消、异常重试、过期页面刷新通过 |
-| 扫码拍照、上传、移动端任务 | 未接入 |
+| 原生任务查询与接单 API | 已接入；本人计数/筛选、角色与归属、版本、八路防重和历史意图重放验证通过 |
+| 原生任务与接单模拟器 | 通过维修角色登录、状态筛选、取消、异常重试、冷启动、过期版本与跨维修账号隔离 |
+| 原生文字处理结果 API | 已接入；内容校验、归属、版本、八路防重、三角色一致性与终结状态重放验证通过 |
+| 原生处理结果模拟器 | 通过空内容禁用、取消清理、多行说明、异常重试、冷启动、过期输入保留与报修用户确认闭环 |
+| 扫码拍照、上传 | 未接入 |
 
 截图：[原生登录](screenshots/mobile-android-login.png)、[授权设备](screenshots/mobile-android-devices.png)、[设备详情](screenshots/mobile-android-device-detail.png)、[模拟器首页](screenshots/mobile-android-home.png)、[模拟器须知](screenshots/mobile-android-guide.png)、[浏览器预览](screenshots/mobile-web-home.png)。模拟器结果与浏览器结果分别记录，不表示硬件设备通信或商业生产交付。
 
 报修截图：[表单](screenshots/mobile-android-repair.png)、[本人列表](screenshots/mobile-android-my-tickets.png)、[报修详情](screenshots/mobile-android-ticket-detail.png)。图中随机标题为临时验收记录，脚本按本轮提交编号精确清理，人工记录不在清理范围内。
 
+任务截图：[本人任务](screenshots/mobile-android-tasks.png)、[接单窗口](screenshots/mobile-android-accept-dialog.png)、[接单后详情](screenshots/mobile-android-task-accepted.png)。图中账号和工单为本轮临时验收数据，结束后精确清理。
+
+处理结果截图：[结果表单](screenshots/mobile-android-result-form.png)、[提交后记录](screenshots/mobile-android-result-submitted.png)、[报修用户查看](screenshots/mobile-android-result-reporter.png)。图中工单和维修员为脚本生成的临时验收数据，测试后定向清理。
+
 ## 下一增量
 
-下一增量建议为维修人员的本人任务查询与接单，需确认后实施；随后接入处理结果、扫码与拍照上传。
+下一增量建议为扫码查看授权设备，需确认后实施；随后接入拍照上传。相机能力将分别记录模拟器、真机与浏览器的验证范围。

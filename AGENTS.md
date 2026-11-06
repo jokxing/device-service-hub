@@ -10,7 +10,7 @@
 - 每次只完成当前确认的一步。范围外的问题先说明，不顺带扩建系统。
 - 沿用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules、npm workspaces 和根锁文件。
 - 未获当前任务明确授权，不更换技术栈、重组目录、添加状态库或组件库、批量升级依赖。
-- 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复、授权设备查询、文字报修、本人记录与确认完成；真实图片上传、改派、退回/再次提交、微前端和支付尚未实现，不提前扩展范围。
+- 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复、授权设备查询、文字报修、本人记录、确认完成及维修任务查询/接单、文字处理结果；真实图片上传、改派、退回/再次提交、微前端和支付尚未实现，不提前扩展范围。
 - Git 提交、推送、部署和仓库可见性修改需要明确授权。
 - `apps/portal` 已交付登录、授权设备查询、文字报修、本人记录与完成确认，修改前阅读 [PORTAL.md](docs/PORTAL.md)。使用 App Router；Server Components 负责设备/本人记录查询，Client Components 承担表单与确认交互。图片上传、RN 与微前端仍需按步确认。
 - 不读取无关项目或私有业务资料，不复制来源或授权不明确的代码与素材。
@@ -84,6 +84,8 @@
 - RN 认证或设备接口变更执行 `run verify:mobile-api`、`run verify:mobile-auth-android`；复用 AuthService 与 DevicesService。Web 保持 Cookie/Origin，原生端只用专用 Bearer 适配，凭据存 SecureStore；RN Web 不开放原生登录。
 - RN 文字报修变更执行 `run verify:mobile-tickets`、`run verify:mobile-tickets-android`；沿用 TicketsService 与 DTO，不复制幂等和归属规则。提交 UUID 由 Expo Crypto 生成，同一内容结果不明时保留编号重试，离页取消不等于回滚。设备和工单读取共用 useApiResource。
 - RN 确认变更执行 `run verify:mobile-confirmations`、`run verify:mobile-confirmations-android`，复用 TicketConfirmationsService 和 ConfirmTicketDto；入口使用 canConfirmTicket，弹窗使用原生 MutationModal。窗口内保持原 requestId/expectedVersion，关闭后重新读取实际状态，提交期间禁用取消与重复操作。
+- RN 任务变更执行 `run verify:mobile-tasks`、`run verify:mobile-tasks-android`，复用 TaskTicketsService、StatusTicketsQueryDto 与 AcceptTicketDto。列表、计数、详情和接单均限定当前 assigneeId；不开放全部设备。TicketCard/详情复用 tickets 的只读组件，接单动作留 tasks；MutationModal/useApiMutation 只管理公共交互，提交编号与版本留业务组件。
+- RN 处理结果变更执行 `run verify:mobile-results`、`run verify:mobile-results-android`，复用 TaskResultsService 与 SubmitTicketResultDto；入口使用 canSubmitTaskResult，表单复用 MutationModal/useApiMutation。相同规范化说明重试保持原 UUID 和版本，说明变化是新意图，不能覆盖已提交结果。
 - Expo 和 DotSlash 用户缓存必须由本地启动脚本明确指向项目 .local，不能只依赖 APPDATA/TEMP。Android 工具路径与 serial 放被忽略的 .local/android-device.json，不写进公共文件；未确认前不安装完整 SDK、生成原生工程或调用 EAS 云构建。
 - 不提交 `.local`、`node_modules`、构建产物、真实 `.env`、凭据或个人操作记录。公开文档不包含个人绝对路径或对话过程。
 - 公开文档采用产品与工程交付表述，突出业务建模、架构取舍、数据权限、并发一致性、可维护性及验证证据，不加入学习任务、练习安排或教程式要求。十余年前端经历不等同于十余年 React/RN 经历；不虚构生产规模、客户案例或性能指标。

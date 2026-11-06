@@ -85,7 +85,20 @@ npm run dev
 
 接口类型位于 `packages/contracts`，只输出传输类型，不导出 ORM 模型、密码、内部会话记录或 Web UI。Prisma Client 自动生成在 `apps/api/src/generated`，不提交生成产物。
 
-RN 使用专用 `/api/mobile/auth/login`、`me`、`logout` 及 `/api/mobile/devices`、`/:id`。原生登录返回短期不透明 Bearer，由 SecureStore 保存；复用相同会话表与身份/设备服务。原生控制器拒绝浏览器 Origin、Cookie 和 Fetch Metadata 标头，既有 Web 不改用 Bearer。模拟器通过 ADB reverse 连接本机 3001，不开放局域网服务。验证执行 `verify:mobile-api`、`verify:mobile-auth-android`，详细边界见 [MOBILE.md](MOBILE.md)。原生文字报修、本人分页列表及详情使用 `/api/mobile/tickets`、`/mine`、`/:id`，复用现有 DTO 和 TicketsService；验证执行 `verify:mobile-tickets`、`verify:mobile-tickets-android`。POST `/api/mobile/tickets/:id/confirm` 复用既有确认 DTO 与事务服务，原生确认验证执行 `verify:mobile-confirmations`、`verify:mobile-confirmations-android`。
+### 原生客户端接口
+
+RN 使用不透明 Bearer，凭据存 SecureStore；复用既有会话表与业务服务。原生控制器拒绝浏览器 Origin、Cookie 和 Fetch Metadata，既有 Web 继续 Cookie/Origin 策略。模拟器通过 ADB reverse 连接本机 3001，不开放局域网服务。
+
+| 能力 | 原生接口 | 服务边界 |
+| --- | --- | --- |
+| 会话 | /api/mobile/auth/login、me、logout | AuthService |
+| 授权设备 | GET /api/mobile/devices、/:id | DevicesService |
+| 报修与本人记录 | POST /api/mobile/tickets；GET /mine、/:id | TicketsService |
+| 用户确认 | POST /api/mobile/tickets/:id/confirm | TicketConfirmationsService |
+| 维修任务与接单 | GET /api/mobile/tasks、/:id；POST /:id/accept | TaskTicketsService |
+| 文字处理结果 | POST /api/mobile/tasks/:id/result | TaskResultsService |
+
+相对路径均基于同一行的完整前缀，接口复用各业务现有 DTO；不增加移动端专用表。启动、原生验证命令与模拟器/真机边界集中维护于 [MOBILE.md](MOBILE.md)。
 
 ## 验证
 

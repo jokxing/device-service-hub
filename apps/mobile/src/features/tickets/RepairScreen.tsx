@@ -4,7 +4,7 @@ import Screen from "../../shared/components/Screen";
 import ActionButton from "../../shared/components/ActionButton";
 import { useDevice } from "../devices/useDeviceResource";
 import ReporterAccess from "./components/ReporterAccess";
-import LoadFeedback from "./components/LoadFeedback";
+import LoadFeedback from "../../shared/components/LoadFeedback";
 import RepairForm from "./components/RepairForm";
 import { ticketStyles as styles } from "./ticketStyles";
 function Repair() {

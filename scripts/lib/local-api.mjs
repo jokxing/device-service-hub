@@ -26,7 +26,8 @@ export function openLocalApi() {
         const response = await fetch(base + "/auth/me", {
           signal: AbortSignal.timeout(2000),
         });
-        await response.body?.cancel();
+        // Drain the small response before reusing Undici's connection for a write.
+        await response.arrayBuffer();
         if (response.status === 401 || response.status === 200) return;
       } catch {
         // Development builds may replace the listening process; only retry this read.

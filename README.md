@@ -6,7 +6,7 @@
 
 核心流程：**设备查询 → 提交报修 → 管理员分派 → 维修人员接单处理 → 报修用户确认 → 查看维修记录**。
 
-目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的最小文字业务闭环：登录与授权设备查询 → 报修 → 首次分派 → 维修人员接单 → 提交处理结果 → 报修用户确认完成。Next.js 用户门户已接入同一报修与确认流程。RN 客户端已接入真实登录、SecureStore 会话恢复、授权设备列表/详情、文字报修、本人分页记录/详情及确认完成。
+目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的最小文字业务闭环：登录与授权设备查询 → 报修 → 首次分派 → 维修人员接单 → 提交处理结果 → 报修用户确认完成。Next.js 用户门户已接入同一报修与确认流程。RN 客户端已接入真实登录、SecureStore 会话恢复、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。
 
 ## 工程设计
 
@@ -43,7 +43,7 @@
 
 [门户确认框](docs/screenshots/portal-confirmation-dialog-mobile.png) · [门户完成详情](docs/screenshots/portal-completed-ticket-mobile.png)
 
-[RN 确认窗口](docs/screenshots/mobile-android-confirm-dialog.png) · [RN 报修列表](docs/screenshots/mobile-android-my-tickets.png) · [RN 报修详情](docs/screenshots/mobile-android-ticket-detail.png) · [RN 设备列表](docs/screenshots/mobile-android-devices.png) · [RN 设备详情](docs/screenshots/mobile-android-device-detail.png) · [RN 模拟器首页](docs/screenshots/mobile-android-home.png) · [RN 模拟器须知](docs/screenshots/mobile-android-guide.png) · [RN 浏览器预览](docs/screenshots/mobile-web-home.png)
+[RN 结果表单](docs/screenshots/mobile-android-result-form.png) · [RN 维修任务](docs/screenshots/mobile-android-tasks.png) · [RN 接单窗口](docs/screenshots/mobile-android-accept-dialog.png) · [RN 确认窗口](docs/screenshots/mobile-android-confirm-dialog.png) · [RN 报修列表](docs/screenshots/mobile-android-my-tickets.png) · [RN 报修详情](docs/screenshots/mobile-android-ticket-detail.png) · [RN 设备列表](docs/screenshots/mobile-android-devices.png) · [RN 设备详情](docs/screenshots/mobile-android-device-detail.png) · [RN 模拟器首页](docs/screenshots/mobile-android-home.png) · [RN 模拟器须知](docs/screenshots/mobile-android-guide.png) · [RN 浏览器预览](docs/screenshots/mobile-web-home.png)
 
 ## 已实现
 
@@ -67,7 +67,7 @@
 
 工作区包含 `apps/web`、`apps/api`、Next.js App Router 门户 `apps/portal`、Expo/RN 客户端 `apps/mobile` 和仅提供传输类型的 `packages/contracts`。移动端使用 SDK 57、Expo Router、React Native 原生组件与 StyleSheet，按 SDK 兼容组合独立管理 React 版本。
 
-演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 已接通原生鉴权、设备查询、文字报修、本人记录与确认完成，维修任务与微前端尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
+演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 的报修与维修人员文字链路已贯通，管理员分派继续使用 Web 后台；扫码、图片上传与微前端尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
 
 ## 快速开始
 

@@ -20,6 +20,8 @@
 
 ## 状态与事务
 
+RN 已通过 `/tasks`、`/tasks/[id]` 及 `/api/mobile/tasks` 系列原生接口接入本人任务查询与接单。复用下述服务端权限、DTO、版本和事务规则；原生列表使用卡片与状态筛选，接单复用 MutationModal。跨端只共享契约，不复用 Web DOM 或浏览器存储；验证边界见 [MOBILE.md](MOBILE.md)。
+
 唯一新增状态操作为 **assigned → processing**，要求当前维修人员与 assigneeId 一致、状态为待接单且版本匹配。请求为 `{ requestId, expectedVersion }`，接单人来自有效会话。
 
 TicketAcceptance 保存工单、接单人、时间、提交编号与原版本：ticketId 唯一，同一接单人加 requestId 唯一。接单时间以数据库记录为准，不采用客户端时间。
@@ -61,7 +63,7 @@ API 检查覆盖本人列表与计数、分页筛选、跨维修人员、未分�
 
 测试仅针对专用本地数据库，临时工单按本轮随机 requestId 和报修人清理，分派/接单记录随工单级联清理；临时账号只按本轮随机 ID 删除。不会按名称、角色或标题批量删除人工数据。截图可能包含已清理的临时记录。
 
-处理中任务可通过独立结果接口提交文字说明，见 [TASK_RESULTS.md](TASK_RESULTS.md)。报修用户确认后，当前维修人员可只读完成记录，见 [TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)。退回、上传、改派、RN 与生产环境交付尚未实现。
+处理中任务可通过独立结果接口提交文字说明，见 [TASK_RESULTS.md](TASK_RESULTS.md)。报修用户确认后，当前维修人员可只读完成记录，见 [TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)。退回、上传、改派与生产环境交付尚未实现；原生文字处理结果提交见 [MOBILE.md](MOBILE.md)。
 
 ### 实际验证记录（2026-11-06）
 

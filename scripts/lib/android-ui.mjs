@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
 export function openAndroidUi(android) {
+  function readScreen() {
+    const xml = android.hierarchy();
+    assert.equal(
+      /text="(?:Console Error|Render Error|Uncaught Error)"/.test(xml),
+      false,
+      "Native runtime error overlay must be resolved before UI verification",
+    );
+    return xml;
+  }
   const pause = () => new Promise((resolve) => setTimeout(resolve, 900));
   async function waitFor(text) {
     for (let attempt = 0; attempt < 12; attempt++) {
-      const xml = android.hierarchy();
+      const xml = readScreen();
       if (xml.includes(text)) return xml;
       await pause();
     }
@@ -30,7 +39,7 @@ export function openAndroidUi(android) {
   async function tap(label) {
     let node;
     for (let attempt = 0; attempt < 6; attempt++) {
-      node = nodeFor(android.hierarchy(), label);
+      node = nodeFor(readScreen(), label);
       const bounds = node?.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
       if (
         bounds &&
@@ -112,7 +121,37 @@ export function openAndroidUi(android) {
     await tap("登录");
     await waitFor(expectedCode);
   }
+  async function reveal(text) {
+    for (let attempt = 0; attempt < 7; attempt++) {
+      const xml = readScreen();
+      const visible = [...xml.matchAll(/<node[^>]*>/g)].some(([node]) => {
+        if (!node.includes(text)) return false;
+        const bounds = node.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
+        return (
+          bounds &&
+          Number(bounds[3]) > Number(bounds[1]) &&
+          Number(bounds[4]) > Number(bounds[2])
+        );
+      });
+      if (visible) return xml;
+      const size = android.run(["shell", "wm", "size"]).match(/(\d+)x(\d+)/);
+      assert.ok(size);
+      android.run([
+        "shell",
+        "input",
+        "swipe",
+        String(Math.round(Number(size[1]) / 2)),
+        String(Math.round(Number(size[2]) * 0.8)),
+        String(Math.round(Number(size[1]) / 2)),
+        String(Math.round(Number(size[2]) * 0.35)),
+        "300",
+      ]);
+      await pause();
+    }
+    throw new Error("Native text must be visible: " + text);
+  }
   return {
+    reveal,
     waitFor,
     tap,
     enter,

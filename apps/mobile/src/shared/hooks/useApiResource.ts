@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useApiResource<T>(load: (signal: AbortSignal) => Promise<T>) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [revision, setRevision] = useState(0);
+  const reload = useCallback(() => setRevision((value) => value + 1), []);
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
@@ -31,6 +32,6 @@ export function useApiResource<T>(load: (signal: AbortSignal) => Promise<T>) {
     data,
     error,
     loading,
-    reload: () => setRevision((value) => value + 1),
+    reload,
   };
 }

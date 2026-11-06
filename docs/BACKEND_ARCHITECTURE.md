@@ -129,7 +129,7 @@ NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常�
 
 ## 原生客户端传输
 
-`/api/mobile/auth/*`、`/api/mobile/devices/*` 与 `/api/mobile/tickets/*` 是 RN 的专用控制器，复用 AuthService、DevicesService、TicketsService、TicketConfirmationsService 与现有数据表。NativeSessionGuard 读取不透明 Bearer、调用现有认证逻辑并注入 actor；服务层继续独立约束设备归属。
+`/api/mobile/auth/*`、`/api/mobile/devices/*`、`/api/mobile/tickets/*` 与 `/api/mobile/tasks/*` 是 RN 的专用控制器，复用 AuthService、DevicesService、TicketsService、TicketConfirmationsService、TaskTicketsService、TaskResultsService 与现有数据表。NativeSessionGuard 读取不透明 Bearer、调用现有认证逻辑并注入 actor；服务层继续独立约束设备归属。
 
 OriginGuard 仅对明确标注 NativeClient 的控制器使用原生传输约束，拒绝 Origin、Cookie 与 Fetch Metadata 标头；其他 Web 接口仍使用原 Cookie/Origin 策略，不接受 Bearer 替代 Cookie。原生登录返回的短期凭据仅存 SecureStore，数据库保留摘要；注销可重复调用并撤销会话，不额外创建移动端用户或业务表。原生传输不能证明设备真实性。
 

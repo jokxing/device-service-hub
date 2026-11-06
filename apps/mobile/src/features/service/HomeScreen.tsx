@@ -1,3 +1,4 @@
+import { useNativeSession } from "../auth/sessionContext";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import Screen from "../../shared/components/Screen";
@@ -14,6 +15,7 @@ import { SERVICE_STEPS } from "./content";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useNativeSession();
   return (
     <Screen safeTop>
       <View style={styles.heading}>
@@ -31,7 +33,9 @@ export default function HomeScreen() {
       </View>
       <ActionButton
         title="进入设备服务"
-        onPress={() => router.push("/devices")}
+        onPress={() =>
+          router.push(user?.role === "technician" ? "/tasks" : "/devices")
+        }
       />
       <ContentCard title="服务流程">
         {SERVICE_STEPS.map((step, index) => (

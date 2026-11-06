@@ -14,6 +14,8 @@
 
 ## 权限与校验
 
+RN 已通过 POST `/api/mobile/tasks/:id/result` 接入相同 DTO 和 TaskResultsService。原生表单使用 MutationModal、useApiMutation 与 canSubmitTaskResult，按规范化说明保持提交意图；关闭清理、异常重试及过期页面处理遵循下述规则。原生验证边界见 [MOBILE.md](MOBILE.md)，此前 Web 验证记录保留原日期与范围。
+
 - 身份由有效会话确定；仅维修人员可提交，管理员和报修用户不能代提交。
 - 先按工单 ID 与当前 assigneeId 验证归属，未分派给本人和不存在的工单统一返回 404；历史成功意图不能绕过当前归属。
 - 请求包含 requestId、expectedVersion 和 description。提交编号须为 UUID v4；说明去除前后空白后必须非空，最多 2000 字符，保留内部换行。

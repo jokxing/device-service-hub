@@ -17,13 +17,16 @@ import { useNativeSession } from "./sessionContext";
 import SessionFeedback from "./SessionFeedback";
 
 export default function LoginScreen() {
-  const { status, signIn } = useNativeSession();
+  const { status, signIn, user } = useNativeSession();
   const [username, setUsername] = useState(""),
     [password, setPassword] = useState("");
   const { pending, error, run } = useAction();
   if (status === "loading" || status === "unavailable")
     return <SessionFeedback />;
-  if (status === "authenticated") return <Redirect href="/devices" />;
+  if (status === "authenticated")
+    return (
+      <Redirect href={user?.role === "technician" ? "/tasks" : "/devices"} />
+    );
   return (
     <Screen>
       <Text accessibilityRole="header" style={styles.title}>

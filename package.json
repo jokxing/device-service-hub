@@ -59,7 +59,11 @@
     "verify:mobile-tickets": "node scripts/verify-mobile-tickets.mjs",
     "verify:mobile-tickets-android": "node scripts/verify-mobile-tickets-android.mjs",
     "verify:mobile-confirmations": "node scripts/verify-mobile-confirmations.mjs",
-    "verify:mobile-confirmations-android": "node scripts/verify-mobile-confirmations-android.mjs"
+    "verify:mobile-confirmations-android": "node scripts/verify-mobile-confirmations-android.mjs",
+    "verify:mobile-tasks": "node scripts/verify-mobile-tasks.mjs",
+    "verify:mobile-tasks-android": "node scripts/verify-mobile-tasks-android.mjs",
+    "verify:mobile-results": "node scripts/verify-mobile-results.mjs",
+    "verify:mobile-results-android": "node scripts/verify-mobile-results-android.mjs"
   },
   "overrides": {
     "react-native-gesture-handler": "2.32.0",

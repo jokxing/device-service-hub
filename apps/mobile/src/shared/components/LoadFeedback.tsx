@@ -1,5 +1,5 @@
 import { Text } from "react-native";
-import { ticketStyles as styles } from "../ticketStyles";
+import { typography as styles } from "../styles/typography";
 export default function LoadFeedback({
   loading,
   error,

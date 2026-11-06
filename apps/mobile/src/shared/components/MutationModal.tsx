@@ -12,6 +12,7 @@ export default function MutationModal({
   onSubmit,
   onClose,
   children,
+  submitDisabled = false,
 }: PropsWithChildren<{
   title: string;
   submitText: string;
@@ -19,6 +20,7 @@ export default function MutationModal({
   error: string;
   onSubmit: () => void;
   onClose: () => void;
+  submitDisabled?: boolean;
 }>) {
   return (
     <Modal
@@ -32,6 +34,7 @@ export default function MutationModal({
       <SafeAreaView style={styles.overlay}>
         <View accessibilityViewIsModal style={styles.panel}>
           <ScrollView
+            style={styles.body}
             contentContainerStyle={styles.content}
             keyboardShouldPersistTaps="handled"
           >
@@ -39,6 +42,8 @@ export default function MutationModal({
               {title}
             </Text>
             {children}
+          </ScrollView>
+          <View style={styles.actions}>
             {!!error && (
               <Text accessibilityRole="alert" style={styles.error}>
                 {error}
@@ -47,6 +52,7 @@ export default function MutationModal({
             <ActionButton
               title={submitText}
               pending={pending}
+              disabled={submitDisabled}
               onPress={onSubmit}
             />
             <ActionButton
@@ -55,7 +61,7 @@ export default function MutationModal({
               disabled={pending}
               onPress={onClose}
             />
-          </ScrollView>
+          </View>
         </View>
       </SafeAreaView>
     </Modal>
@@ -77,7 +83,15 @@ const styles = StyleSheet.create({
     borderRadius: radii.card,
     overflow: "hidden",
   },
+  body: { flexGrow: 0, flexShrink: 1 },
   content: { padding: spacing.lg, gap: spacing.lg },
+  actions: {
+    flexShrink: 0,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xl,
+    gap: spacing.sm,
+  },
   title: { color: colors.text, fontSize: fontSizes.section, fontWeight: "600" },
   error: {
     color: colors.danger,
