@@ -22,6 +22,8 @@
     "verify:tickets": "node scripts/verify-tickets.mjs",
     "verify:tickets-ui": "node scripts/verify-tickets-ui.mjs",
     "verify:tickets:restart": "node scripts/verify-tickets.mjs --after-restart",
+    "verify:assignment": "node scripts/verify-assignment.mjs",
+    "verify:assignment-ui": "node scripts/verify-assignment-ui.mjs",
     "verify:connected-ui": "node scripts/verify-connected-ui.mjs",
     "test:business": "node --test scripts/test-business-rules.mjs",
     "verify:ui": "node scripts/verify-ui.mjs",

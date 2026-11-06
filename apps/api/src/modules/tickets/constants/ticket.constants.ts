@@ -1,4 +1,16 @@
-import type { TicketPriority } from "@device-service-hub/contracts";
+import type {
+  TicketPriority,
+  TicketStatus,
+} from "@device-service-hub/contracts";
+
+export const TICKET_STATUSES = [
+  "pending",
+  "assigned",
+  "processing",
+  "confirming",
+  "completed",
+  "cancelled",
+] as const satisfies readonly TicketStatus[];
 
 export const TICKET_LIMITS = { title: 60, description: 500 } as const;
 export const TICKET_PRIORITIES = [

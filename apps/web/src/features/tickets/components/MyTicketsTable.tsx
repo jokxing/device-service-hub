@@ -30,6 +30,10 @@ export default function MyTicketsTable({ data, onPageChange }: Props) {
                     { label: "设备", value: ticket.device.name },
                     { label: "编号", value: ticket.device.code },
                     {
+                      label: "维修人员",
+                      value: ticket.assignee?.name ?? "待分派",
+                    },
+                    {
                       label: "优先级",
                       value: PRIORITY_LABELS[ticket.priority],
                     },
@@ -74,7 +78,7 @@ export default function MyTicketsTable({ data, onPageChange }: Props) {
     <Table<TicketRecord>
       rowKey="id"
       dataSource={data.items}
-      scroll={{ x: 900 }}
+      scroll={{ x: 1020 }}
       pagination={{
         current: data.page,
         pageSize: data.pageSize,
@@ -123,6 +127,12 @@ export default function MyTicketsTable({ data, onPageChange }: Props) {
           width: 90,
           render: (priority: TicketRecord["priority"]) =>
             PRIORITY_LABELS[priority],
+        },
+        {
+          title: "维修人员",
+          key: "assignee",
+          width: 120,
+          render: (_, ticket) => ticket.assignee?.name ?? "待分派",
         },
         {
           title: "提交时间",

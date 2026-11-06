@@ -23,7 +23,10 @@ model User {
   active       Boolean  @default(true)
   sessions     Session[]
   deviceAccess DeviceAccess[]
-  tickets      Ticket[]
+  tickets      Ticket[] @relation("ReportedTickets")
+  assignedTickets Ticket[] @relation("AssignedTickets")
+  assignmentsMade TicketAssignment[] @relation("AssignmentActor")
+  assignmentsReceived TicketAssignment[] @relation("AssignmentTechnician")
 }
 
 model Device {
@@ -61,15 +64,38 @@ model Ticket {
   description String @db.VarChar(500)
   priority    TicketPriority
   status      TicketStatus @default(pending)
+  assigneeId  String?
+  assignedAt  DateTime?
+  version     Int @default(0)
   requestId   String @db.Uuid
   requestHash String @db.Char(64)
   createdAt   DateTime @default(now())
-  reporter    User @relation(fields: [reporterId], references: [id], onDelete: Restrict)
+  reporter    User @relation("ReportedTickets", fields: [reporterId], references: [id], onDelete: Restrict)
+  assignee    User? @relation("AssignedTickets", fields: [assigneeId], references: [id], onDelete: Restrict)
   device      Device @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  assignment  TicketAssignment?
 
   @@unique([reporterId, requestId])
   @@index([reporterId, createdAt, id])
   @@index([deviceId])
+  @@index([status, createdAt, id])
+  @@index([assigneeId])
+}
+
+model TicketAssignment {
+  id              String @id @default(uuid())
+  ticketId        String @unique
+  actorId         String
+  assigneeId      String
+  requestId       String @db.Uuid
+  expectedVersion Int
+  createdAt       DateTime @default(now())
+  ticket          Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  actor           User @relation("AssignmentActor", fields: [actorId], references: [id], onDelete: Restrict)
+  assignee        User @relation("AssignmentTechnician", fields: [assigneeId], references: [id], onDelete: Restrict)
+
+  @@unique([actorId, requestId])
+  @@index([assigneeId])
 }
 
 model DeviceAccess {

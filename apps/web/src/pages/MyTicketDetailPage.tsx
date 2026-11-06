@@ -1,15 +1,15 @@
 import { useCallback } from "react";
-import { Alert, Button, Descriptions, Spin } from "antd";
+import { Alert, Button, Spin } from "antd";
 import { useParams } from "react-router-dom";
 import { ROUTES } from "../app/routes";
 import { useSession } from "../features/auth/sessionContext";
 import { useApiResource } from "../shared/hooks/useApiResource";
-import { formatDateTime } from "../shared/utils/date";
+
 import ContentCard from "../shared/components/ContentCard";
 import ServicePageHeader from "../shared/components/ServicePageHeader";
 import { connectedTicketsApi } from "../features/tickets/api";
-import { PRIORITY_LABELS } from "../features/tickets/constants";
-import StatusTag from "../features/tickets/components/StatusTag";
+
+import TicketRecordDetails from "../features/tickets/components/TicketRecordDetails";
 import styles from "../features/tickets/connected.module.css";
 
 export default function MyTicketDetailPage() {
@@ -43,56 +43,7 @@ export default function MyTicketDetailPage() {
           </Spin>
         ) : (
           <div className={styles.record}>
-            <Descriptions
-              column={{ xs: 1, sm: 2 }}
-              items={[
-                {
-                  key: "title",
-                  label: "问题标题",
-                  children: data.title,
-                  span: 2,
-                },
-                {
-                  key: "device",
-                  label: "设备",
-                  children: data.device.code + " · " + data.device.name,
-                },
-                {
-                  key: "status",
-                  label: "状态",
-                  children: <StatusTag status={data.status} />,
-                },
-                {
-                  key: "location",
-                  label: "位置",
-                  children: data.device.location,
-                },
-                {
-                  key: "priority",
-                  label: "优先级",
-                  children: PRIORITY_LABELS[data.priority],
-                },
-                {
-                  key: "created",
-                  label: "提交时间",
-                  children: formatDateTime(new Date(data.createdAt)),
-                  span: 2,
-                },
-                {
-                  key: "description",
-                  label: "问题描述",
-                  children: (
-                    <span className="whitespace-pre-wrap break-words">
-                      {data.description}
-                    </span>
-                  ),
-                  span: 2,
-                },
-              ]}
-            />
-            {data.status === "pending" && (
-              <Alert showIcon type="info" title="报修已提交，等待管理员分派" />
-            )}
+            <TicketRecordDetails ticket={data} />
           </div>
         )}
       </ContentCard>

@@ -11,6 +11,7 @@ import ConnectedDevicesPage from "./pages/ConnectedDevicesPage";
 import ServiceLayout from "./layouts/ServiceLayout";
 import MyTicketsPage from "./pages/MyTicketsPage";
 import MyTicketDetailPage from "./pages/MyTicketDetailPage";
+import AdminTicketsPage from "./pages/AdminTicketsPage";
 
 export default function App() {
   return (
@@ -20,6 +21,10 @@ export default function App() {
           <Route element={<SessionBoundary />}>
             <Route path={ROUTES.login} element={<LoginPage />} />
             <Route element={<ServiceLayout />}>
+              <Route
+                path={ROUTES.serviceAdminTickets}
+                element={<AdminTicketsPage />}
+              />
               <Route
                 path={ROUTES.serviceDevices}
                 element={<ConnectedDevicesPage />}

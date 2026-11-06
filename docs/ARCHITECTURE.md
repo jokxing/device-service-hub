@@ -4,7 +4,9 @@
 
 本文件解释现有结构与设计取舍；AI 协作执行规则见根目录 [AGENTS.md](../AGENTS.md)，避免重复维护多套规范。
 
-后续按 [阶段路线](ROADMAP.md)依次推进 React 基础、Next.js 用户门户、RN 和微前端。保留现有 Web 后台与 NestJS，门户和移动端到阶段才创建；不将全部 Web 迁移到 Next.js。
+管理员真实列表与首次分派使用 `/service/admin/tickets`，详情字段复用 TicketRecordDetails，列表/分派/详情弹窗分别组织。服务端权限和事务规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)，演示身份不参与管理接口授权。
+
+后续按 [产品与架构演进路线](ROADMAP.md)依次推进 React 后台业务闭环、Next.js 用户门户、RN 和微前端。保留现有 Web 后台与 NestJS，门户和移动端到阶段才创建；不将全部 Web 迁移到 Next.js。
 
 ## 目录职责
 

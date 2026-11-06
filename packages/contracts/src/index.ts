@@ -50,7 +50,33 @@ export interface TicketRecord {
   priority: TicketPriority;
   status: TicketStatus;
   createdAt: string;
+  assignee: TicketPerson | null;
+  assignedAt: string | null;
   device: Pick<DeviceSummary, "id" | "code" | "name" | "location">;
+}
+export interface TicketPerson {
+  id: string;
+  name: string;
+}
+export interface AssignTicketInput {
+  requestId: string;
+  assigneeId: string;
+  expectedVersion: number;
+}
+export interface AdminTicketRecord extends TicketRecord {
+  reporter: TicketPerson;
+  version: number;
+  assignment: {
+    actor: TicketPerson;
+    assignee: TicketPerson;
+    createdAt: string;
+  } | null;
+}
+export interface AdminTicketPage {
+  items: AdminTicketRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 export interface TicketPage {
   items: TicketRecord[];

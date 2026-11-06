@@ -1,6 +1,6 @@
 # 后端结构与维护约定
 
-后端使用 NestJS 11 + Prisma 7 + PostgreSQL，采用业务模块内分层的单体结构。当前实现登录、会话、设备查询、文字报修和本人记录。运行方式见 [API_SETUP.md](API_SETUP.md)，报修规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)。AI 协作入口为根目录 [AGENTS.md](../AGENTS.md)。
+后端使用 NestJS 11 + Prisma 7 + PostgreSQL，采用业务模块内分层的单体结构。当前实现登录、会话、设备查询、文字报修、本人记录和管理员首次分派。运行方式见 [API_SETUP.md](API_SETUP.md)，业务规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)、[ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)。AI 协作入口为根目录 [AGENTS.md](../AGENTS.md)。
 
 ## 目录职责
 
@@ -87,6 +87,8 @@ JSON/Cookie 解析、响应头中间件
 NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常响应处理。目前沿用框架异常机制；出现明确需求后再加入对应实现，不把所有横切逻辑塞进 Middleware。
 
 ## 数据访问与事务
+
+管理员首次分派由独立 AdminTicketsService 承担，复用工单模块查询投影与序列化。一次事务完成版本条件更新、维修人员有效性锁定和 TicketAssignment 审计写入；重复提交与竞争规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)。不开放通用状态 PATCH 接口。
 
 当前 Service 直接使用 Prisma，规模足够清晰，不要求每个模块机械增加 Repository。
 

@@ -54,6 +54,14 @@ export default function ServiceLayout() {
             我的报修
           </NavLink>
         )}
+        {user.role === "admin" && (
+          <NavLink
+            to={ROUTES.serviceAdminTickets}
+            className={({ isActive }) => (isActive ? styles.active : undefined)}
+          >
+            工单分派
+          </NavLink>
+        )}
       </nav>
       <Alert
         showIcon
@@ -61,7 +69,7 @@ export default function ServiceLayout() {
         title="已连接本地服务与数据库"
         description={
           <>
-            支持文字报修和本人记录查询；图片上传与分派尚未开放。
+            支持文字报修、本人记录查询和管理员分派；接单与图片上传尚未开放。
             <Link to={ROUTES.tickets}>工单演示工作台</Link> 使用独立的演示数据。
           </>
         }

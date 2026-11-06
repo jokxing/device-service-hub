@@ -7,14 +7,11 @@ import ContentCard from "../shared/components/ContentCard";
 import ServicePageHeader from "../shared/components/ServicePageHeader";
 import { connectedTicketsApi } from "../features/tickets/api";
 import MyTicketsTable from "../features/tickets/components/MyTicketsTable";
+import { readPage } from "../shared/utils/pagination";
 
 export default function MyTicketsPage() {
   const [params, setParams] = useSearchParams();
-  const rawPage = Number(params.get("page") ?? 1);
-  const page =
-    Number.isSafeInteger(rawPage) && rawPage > 0 && rawPage <= 100000
-      ? rawPage
-      : 1;
+  const page = readPage(params.get("page"));
   const { clearSession } = useSession();
   const load = useCallback(
     (signal: AbortSignal) => connectedTicketsApi.mine(page, signal),
