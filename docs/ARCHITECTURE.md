@@ -6,6 +6,8 @@
 
 管理员真实列表与首次分派使用 `/service/admin/tickets`，详情字段复用 TicketRecordDetails，列表/分派/详情弹窗分别组织。服务端权限和事务规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)，演示身份不参与管理接口授权。
 
+维修人员通过 `/service/tasks` 及详情路由查询本人任务与接单，页面组合 TaskTicketsList 和 AcceptTaskModal，复用详情字段、卡片、分页参数与服务布局。规则见 [TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)，任务身份来自数据库会话，数据范围由服务端按当前分派关系约束。
+
 后续按 [产品与架构演进路线](ROADMAP.md)依次推进 React 后台业务闭环、Next.js 用户门户、RN 和微前端。保留现有 Web 后台与 NestJS，门户和移动端到阶段才创建；不将全部 Web 迁移到 Next.js。
 
 ## 目录职责

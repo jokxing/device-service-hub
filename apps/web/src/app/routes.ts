@@ -3,6 +3,7 @@ export const ROUTES = {
   serviceDevices: "/service/devices",
   serviceTickets: "/service/tickets",
   serviceAdminTickets: "/service/admin/tickets",
+  serviceTasks: "/service/tasks",
   tickets: "/tickets",
   devices: "/devices",
   records: "/records",

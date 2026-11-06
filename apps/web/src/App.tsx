@@ -12,6 +12,8 @@ import ServiceLayout from "./layouts/ServiceLayout";
 import MyTicketsPage from "./pages/MyTicketsPage";
 import MyTicketDetailPage from "./pages/MyTicketDetailPage";
 import AdminTicketsPage from "./pages/AdminTicketsPage";
+import MyTasksPage from "./pages/MyTasksPage";
+import MyTaskDetailPage from "./pages/MyTaskDetailPage";
 
 export default function App() {
   return (
@@ -21,6 +23,11 @@ export default function App() {
           <Route element={<SessionBoundary />}>
             <Route path={ROUTES.login} element={<LoginPage />} />
             <Route element={<ServiceLayout />}>
+              <Route path={ROUTES.serviceTasks} element={<MyTasksPage />} />
+              <Route
+                path={ROUTES.serviceTasks + "/:id"}
+                element={<MyTaskDetailPage />}
+              />
               <Route
                 path={ROUTES.serviceAdminTickets}
                 element={<AdminTicketsPage />}

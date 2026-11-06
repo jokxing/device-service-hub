@@ -52,16 +52,29 @@ export interface TicketRecord {
   createdAt: string;
   assignee: TicketPerson | null;
   assignedAt: string | null;
+  acceptance: { actor: TicketPerson; createdAt: string } | null;
   device: Pick<DeviceSummary, "id" | "code" | "name" | "location">;
 }
 export interface TicketPerson {
   id: string;
   name: string;
 }
-export interface AssignTicketInput {
+export interface TicketCommandInput {
   requestId: string;
-  assigneeId: string;
   expectedVersion: number;
+}
+export interface AssignTicketInput extends TicketCommandInput {
+  assigneeId: string;
+}
+export type AcceptTicketInput = TicketCommandInput;
+export interface TaskTicketRecord extends TicketRecord {
+  version: number;
+}
+export interface TaskTicketPage {
+  items: TaskTicketRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 export interface AdminTicketRecord extends TicketRecord {
   reporter: TicketPerson;

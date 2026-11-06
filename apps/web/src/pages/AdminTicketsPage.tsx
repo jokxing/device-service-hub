@@ -52,7 +52,9 @@ function AdminTicketsContent() {
               setParams(value === "all" ? {} : { status: value })
             }
           />
-          <span className="muted">仅支持首次分派，接单与处理后续开放</span>
+          <span className="muted">
+            首次分派后，由维修人员在“我的任务”确认接单
+          </span>
         </div>
         {error ? (
           <Alert type="error" showIcon title={error} className="m-5" />

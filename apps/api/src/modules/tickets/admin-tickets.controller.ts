@@ -17,7 +17,7 @@ import type {
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { SessionGuard } from "../auth/guards/session.guard";
 import { AdminTicketsService } from "./admin-tickets.service";
-import { AdminTicketsQueryDto } from "./dto/admin-tickets-query.dto";
+import { StatusTicketsQueryDto } from "./dto/status-tickets-query.dto";
 import { AssignTicketDto } from "./dto/assign-ticket.dto";
 
 @Controller("admin/tickets")
@@ -28,7 +28,7 @@ export class AdminTicketsController {
   @Get()
   list(
     @CurrentUser() actor: PublicUser,
-    @Query() query: AdminTicketsQueryDto,
+    @Query() query: StatusTicketsQueryDto,
   ): Promise<AdminTicketPage> {
     return this.tickets.list(actor, query);
   }

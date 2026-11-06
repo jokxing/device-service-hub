@@ -3,7 +3,7 @@ import type { TicketStatus } from "@device-service-hub/contracts";
 import { TicketsQueryDto } from "./tickets-query.dto";
 import { TICKET_STATUSES } from "../constants/ticket.constants";
 
-export class AdminTicketsQueryDto extends TicketsQueryDto {
+export class StatusTicketsQueryDto extends TicketsQueryDto {
   @IsOptional()
   @IsIn(TICKET_STATUSES)
   status?: TicketStatus;

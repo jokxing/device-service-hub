@@ -6,6 +6,7 @@ import type {
   TicketStatus,
 } from "@device-service-hub/contracts";
 import { apiRequest } from "../../shared/api/http";
+import { ticketListQuery } from "./ticketQuery";
 
 export const adminTicketsApi = {
   list: (
@@ -13,8 +14,7 @@ export const adminTicketsApi = {
     status: TicketStatus | undefined,
     signal?: AbortSignal,
   ) => {
-    const query = new URLSearchParams({ page: String(page), pageSize: "10" });
-    if (status) query.set("status", status);
+    const query = ticketListQuery(page, status);
     return apiRequest<AdminTicketPage>(`/admin/tickets?${query}`, { signal });
   },
   detail: (id: string, signal?: AbortSignal) =>

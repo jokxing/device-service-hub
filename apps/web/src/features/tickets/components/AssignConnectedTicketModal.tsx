@@ -140,7 +140,7 @@ export default function AssignConnectedTicketModal({
         </Form.Item>
       </Form>
       <p className="muted">
-        本步仅支持首次分派，成功后工单进入待接单；改派与接单后续开放。
+        首次分派后工单进入待接单，由对应维修人员确认接单；改派暂未开放。
       </p>
     </Modal>
   );

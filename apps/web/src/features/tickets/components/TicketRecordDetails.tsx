@@ -52,6 +52,22 @@ export default function TicketRecordDetails({
                 },
               ]
             : []),
+          ...(ticket.acceptance
+            ? [
+                {
+                  key: "acceptedBy",
+                  label: "接单人",
+                  children: ticket.acceptance.actor.name,
+                },
+                {
+                  key: "acceptedAt",
+                  label: "接单时间",
+                  children: formatDateTime(
+                    new Date(ticket.acceptance.createdAt),
+                  ),
+                },
+              ]
+            : []),
           {
             key: "description",
             label: "问题描述",
@@ -69,6 +85,9 @@ export default function TicketRecordDetails({
       )}
       {ticket.status === "assigned" && (
         <Alert showIcon type="info" title="已分派维修人员，等待接单" />
+      )}
+      {ticket.status === "processing" && (
+        <Alert showIcon type="info" title="维修人员已接单，正在处理中" />
       )}
     </div>
   );

@@ -3,8 +3,13 @@ import type {
   CreateTicketInput,
   TicketRecord,
   AdminTicketRecord,
+  TaskTicketRecord,
 } from "@device-service-hub/contracts";
-import type { TicketRow, AdminTicketRow } from "../tickets.select";
+import type {
+  TicketRow,
+  AdminTicketRow,
+  TaskTicketRow,
+} from "../tickets.select";
 
 /** Hash the normalized business payload, independent of JSON property order and request ID. */
 export function ticketPayloadHash(input: CreateTicketInput): string {
@@ -21,13 +26,21 @@ export function ticketPayloadHash(input: CreateTicketInput): string {
 }
 
 export function toTicketRecord(row: TicketRow): TicketRecord {
-  const { number, createdAt, assignedAt, ...record } = row;
+  const { number, createdAt, assignedAt, acceptance, ...record } = row;
   return {
     ...record,
     code: `WO-${String(number).padStart(6, "0")}`,
     createdAt: createdAt.toISOString(),
     assignedAt: assignedAt?.toISOString() ?? null,
+    acceptance: acceptance
+      ? { ...acceptance, createdAt: acceptance.createdAt.toISOString() }
+      : null,
   };
+}
+
+export function toTaskTicketRecord(row: TaskTicketRow): TaskTicketRecord {
+  const { version, ...record } = row;
+  return { ...toTicketRecord(record), version };
 }
 
 export function toAdminTicketRecord(row: AdminTicketRow): AdminTicketRecord {

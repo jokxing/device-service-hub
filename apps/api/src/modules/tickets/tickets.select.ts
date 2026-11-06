@@ -10,6 +10,9 @@ export const TICKET_PUBLIC_SELECT = {
   createdAt: true,
   assignedAt: true,
   assignee: { select: { id: true, name: true } },
+  acceptance: {
+    select: { actor: { select: { id: true, name: true } }, createdAt: true },
+  },
   device: { select: { id: true, code: true, name: true, location: true } },
 } as const satisfies Prisma.TicketSelect;
 
@@ -25,6 +28,15 @@ export const ADMIN_TICKET_SELECT = {
     },
   },
 } as const satisfies Prisma.TicketSelect;
+
+export const TASK_TICKET_SELECT = {
+  ...TICKET_PUBLIC_SELECT,
+  version: true,
+} as const satisfies Prisma.TicketSelect;
+
+export type TaskTicketRow = Prisma.TicketGetPayload<{
+  select: typeof TASK_TICKET_SELECT;
+}>;
 
 export type AdminTicketRow = Prisma.TicketGetPayload<{
   select: typeof ADMIN_TICKET_SELECT;

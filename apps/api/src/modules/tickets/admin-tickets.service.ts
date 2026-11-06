@@ -12,7 +12,7 @@ import type {
 } from "@device-service-hub/contracts";
 import { DatabaseService } from "../../database/database.service";
 import { Prisma } from "../../generated/prisma/client";
-import type { AdminTicketsQueryDto } from "./dto/admin-tickets-query.dto";
+import type { StatusTicketsQueryDto } from "./dto/status-tickets-query.dto";
 import type { AssignTicketDto } from "./dto/assign-ticket.dto";
 import { ADMIN_TICKET_SELECT } from "./tickets.select";
 import { toAdminTicketRecord } from "./utils/ticket-payload";
@@ -28,7 +28,7 @@ export class AdminTicketsService {
 
   async list(
     actor: PublicUser,
-    query: AdminTicketsQueryDto,
+    query: StatusTicketsQueryDto,
   ): Promise<AdminTicketPage> {
     this.requireAdmin(actor);
     const where: Prisma.TicketWhereInput = query.status

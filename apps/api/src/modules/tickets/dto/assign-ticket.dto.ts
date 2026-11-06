@@ -1,25 +1,13 @@
-import {
-  IsInt,
-  IsNotEmpty,
-  IsString,
-  IsUUID,
-  Max,
-  MaxLength,
-  Min,
-} from "class-validator";
+import { IsNotEmpty, IsString, MaxLength } from "class-validator";
 import type { AssignTicketInput } from "@device-service-hub/contracts";
+import { TicketCommandDto } from "./ticket-command.dto";
 
-export class AssignTicketDto implements AssignTicketInput {
-  @IsUUID("4")
-  requestId!: string;
-
+export class AssignTicketDto
+  extends TicketCommandDto
+  implements AssignTicketInput
+{
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
   assigneeId!: string;
-
-  @IsInt()
-  @Min(0)
-  @Max(2147483646)
-  expectedVersion!: number;
 }

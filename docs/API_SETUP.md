@@ -1,6 +1,6 @@
 # 本地登录与设备查询
 
-真实链路包括：浏览器登录 → NestJS → PostgreSQL 会话与设备授权 → 设备查询 → 文字报修 → 本人记录 → 管理员首次分派。接单、处理和确认仍保留独立内存演示。规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)、[ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)。
+真实链路包括：浏览器登录 → NestJS → PostgreSQL 会话与设备授权 → 设备查询 → 文字报修 → 本人记录 → 管理员首次分派 → 维修人员接单。处理结果和确认仍保留独立内存演示。规则见 [TEXT_REPAIR.md](TEXT_REPAIR.md)、[ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)、[TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)。
 
 后端目录、Controller/Service/Guard 等职责，以及新增功能的放置约定见 [BACKEND_ARCHITECTURE.md](BACKEND_ARCHITECTURE.md)。
 
@@ -56,13 +56,14 @@ npm run dev
 | `/service/devices` | 真实 API 和数据库设备查询，未登录跳转登录页 |
 | `/service/tickets`、`/service/tickets/:id` | 本人真实报修列表与详情 |
 | `/service/admin/tickets` | 管理员真实工单列表与首次分派 |
+| `/service/tasks`、`/service/tasks/:id` | 当前维修人员任务与接单 |
 | `/tickets`、`/devices`、`/records` | 原有工单与设备演示，保留角色切换和刷新重置 |
 
 两种入口的身份相互独立。演示角色下拉框不能改变服务端登录身份。
 
 - 管理员可以读取两台种子设备。
 - `reporter.a` 仅授权 `AC-001`；`reporter.b` 仅授权 `WP-002`。
-- 维修人员任务与相应设备访问在后续接单步骤实现；当前即使已被分派，也不能通过管理员或报修用户接口查询任务，设备列表仍为空。
+- 维修人员通过独立任务接口查询当前分派给自己的工单，并按状态与版本接单；任务详情提供必要设备摘要，不开放管理员或本人报修接口。独立设备台账权限本步维持原有范围，种子维修账号的设备列表仍为空。
 - 服务端使用数据库用户 ID 与授权关系过滤列表及详情；未授权与不存在的设备都返回 404，避免泄漏设备是否存在。
 
 ## 接口与安全边界
@@ -98,7 +99,7 @@ npm run verify:ui
 - `verify:ui` 回归原有演示流程，`test:business` 验证已有工单纯规则。
 - `verify:api` 在 `.local` 保存一个待复核会话。重启 API 和数据库后执行 `npm run verify:api:restart`，检查会话及授权设备仍可读取；复核后撤销测试会话并删除临时文件。
 
-已实现文字工单创建、本人查询和管理员首次分派；尚未实现设备维护、用户管理、图片上传、改派、接单及后续状态操作、RN、报价或支付。自动化检查不等于用户已完成人工验收，也不代表生产部署。
+已实现文字工单创建、本人查询、管理员首次分派和维修人员任务/接单；尚未实现设备维护、用户管理、图片上传、改派、处理结果、用户确认、RN、报价或支付。自动化检查不等于用户已完成人工验收，也不代表生产部署。
 
 设备查询链路为“设备页面 → devicesApi → SessionGuard → DevicesService → Prisma”。数据范围进入服务端查询条件，列表与详情复用同一授权策略；前端角色展示不构成访问控制。
 
