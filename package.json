@@ -63,7 +63,12 @@
     "verify:mobile-tasks": "node scripts/verify-mobile-tasks.mjs",
     "verify:mobile-tasks-android": "node scripts/verify-mobile-tasks-android.mjs",
     "verify:mobile-results": "node scripts/verify-mobile-results.mjs",
-    "verify:mobile-results-android": "node scripts/verify-mobile-results-android.mjs"
+    "verify:mobile-results-android": "node scripts/verify-mobile-results-android.mjs",
+    "test:device-tags": "node --test scripts/test-device-tags.mjs",
+    "verify:device-scan-api": "node scripts/verify-device-scan-api.mjs",
+    "verify:device-scan-ui": "node scripts/verify-device-scan-ui.mjs",
+    "verify:device-scan-android": "node scripts/verify-device-scan-android.mjs",
+    "verify:device-camera-android": "node scripts/verify-device-camera-android.mjs"
   },
   "overrides": {
     "react-native-gesture-handler": "2.32.0",

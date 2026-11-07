@@ -4,7 +4,7 @@
 
 `apps/mobile` 是独立 Expo / React Native 工作区。首步交付服务首页、报修须知、原生 Stack 导航、主题、安全区与滚动布局，完成浏览器预览及 Android 模拟器运行验证。
 
-已接通真实登录、会话恢复、退出、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。相机和上传尚未接入；管理员分派继续使用 Web 后台。设备与工单来自同一 NestJS/PostgreSQL，范围由服务端决定；现有 Web 与门户继续保留。
+已接通真实登录、会话恢复、退出、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。已接入设备二维码相机入口及手动编号查询，图片上传尚未接入；管理员分派继续使用 Web 后台。设备与工单来自同一 NestJS/PostgreSQL，范围由服务端决定；现有 Web 与门户继续保留。
 
 ## 技术与目录
 
@@ -75,6 +75,11 @@ npm run verify:mobile-tasks # 原生任务归属、分页筛选、接单防重
 npm run verify:mobile-tasks-android # 原生维修角色、任务卡片、取消与异常重试
 npm run verify:mobile-results # 原生结果的内容、版本、权限与并发防重
 npm run verify:mobile-results-android # 原生结果表单、重试与用户确认闭环
+npm run test:device-tags # 标签协议、版本与外链拒绝
+npm run verify:device-scan-api # 编号查询及四角色数据权限
+npm run verify:device-scan-ui # Web 设备标签和窄屏布局
+npm run verify:device-scan-android # 原生编号/标签输入和授权详情
+npm run verify:device-camera-android # 相机预览、输入暂停和权限拒绝
 ```
 
 浏览器预览地址为 `http://127.0.0.1:8081`。两个开发命令共用端口，择一启动；同一个 Metro 可以同时服务 Expo Go 与浏览器。脚本禁止自动打开系统浏览器，可手动打开预览链接。
@@ -104,7 +109,7 @@ ADB reverse 转发 Metro 8081 和 API 3001，后端仍监听本机地址；不�
 
 - `/api/mobile/auth/login`、`me`、`logout` 使用独立原生传输适配；授权设备读取为 `/api/mobile/devices` 和 `/:id`。控制器复用 AuthService、DevicesService，不复制密码校验、会话存储或设备归属规则，不增加数据库表。
 - 登录返回短期不透明 Bearer 凭据，服务端只保存摘要，沿用两小时有效期、停用检查与撤销。原生端用 [Expo SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/) 保存，不写日志、URL、普通存储或共享包常量。退出先撤销服务端会话，再清除本机身份；失败明确反馈。
-- 冷启动与回前台校验身份；401 清除持久凭据和设备数据，切换账号重新查询。网络失败显示重试，不把旧身份当作已验证登录。请求设定超时、离页取消读取，写操作不自动重试。
+- 冷启动与回前台校验身份；已有会话在复核期间保留路由，避免系统权限弹窗返回后重建设备页。401 清除持久凭据和设备数据，切换账号重新查询；复核网络失败阻止业务访问并显示重试。请求设定超时、离页取消读取，写操作不自动重试。
 - 原生接口拒绝 Origin、Cookie 和 Fetch Metadata 浏览器标头；既有 Web 继续 Cookie + Origin，不能用 Bearer 登录 Web 接口。此传输约束不构成设备真实性证明，身份仍依赖凭据校验。
 - RN Web 仅用于公开页面预览，禁用原生账号登录；不将 Bearer 写入 localStorage，不借用 Web Origin 绕过原生接口边界。
 
@@ -171,7 +176,10 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 | 原生任务与接单模拟器 | 通过维修角色登录、状态筛选、取消、异常重试、冷启动、过期版本与跨维修账号隔离 |
 | 原生文字处理结果 API | 已接入；内容校验、归属、版本、八路防重、三角色一致性与终结状态重放验证通过 |
 | 原生处理结果模拟器 | 通过空内容禁用、取消清理、多行说明、异常重试、冷启动、过期输入保留与报修用户确认闭环 |
-| 扫码拍照、上传 | 未接入 |
+| 设备标签与编号查询 | 已接入；协议、四角色权限、Web 二维码及模拟器手动输入验证通过 |
+| 原生相机交互 | MuMu + Expo Go 通过相机就绪回调、输入暂停、拒绝权限后的手动查询；预览为灰色画面 |
+| 光学识别 | 模拟器未完成对准二维码解码；真机、现场扫码待验证 |
+| 拍照、图片上传 | 未接入 |
 
 截图：[原生登录](screenshots/mobile-android-login.png)、[授权设备](screenshots/mobile-android-devices.png)、[设备详情](screenshots/mobile-android-device-detail.png)、[模拟器首页](screenshots/mobile-android-home.png)、[模拟器须知](screenshots/mobile-android-guide.png)、[浏览器预览](screenshots/mobile-web-home.png)。模拟器结果与浏览器结果分别记录，不表示硬件设备通信或商业生产交付。
 
@@ -181,6 +189,17 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 
 处理结果截图：[结果表单](screenshots/mobile-android-result-form.png)、[提交后记录](screenshots/mobile-android-result-submitted.png)、[报修用户查看](screenshots/mobile-android-result-reporter.png)。图中工单和维修员为脚本生成的临时验收数据，测试后定向清理。
 
+## 设备标签与扫码边界
+
+- Web 真实设备详情通过 Ant Design QRCode 生成标签，格式为 `device-service-hub:v1:AC-001`；演示设备不生成真实标签。二维码只携带业务编号，不包含账号、令牌或授权；编号为 1～64 位 ASCII 字母、数字、点、下划线或短横线，首位为字母或数字。
+- 纯编解码集中在 `@device-service-hub/contracts/device-tags` 子入口，Web 与 RN 共用。相机只接受明确版本的本平台标签，不打开或请求外部链接；手动输入同时接受设备编号和标签内容。
+- 原生 GET `/api/mobile/devices/resolve?code=AC-001` 使用 NativeSessionGuard、DTO 和既有 DevicesService 数据范围。报修用户只能查授权设备；管理员沿用全设备范围；维修人员通过任务获取设备信息，不新增独立设备权限。不存在和无权访问统一返回 404；停用设备可读，但不提供报修入口。
+- 相机由用户主动开启，仅请求相机权限；拒绝或启动失败时保留手动输入，永久拒绝提供系统设置入口。不请求麦克风，不保存或上传相机画面。`app.json` 的 camera 插件用于后续原生构建配置，本轮未生成原生工程或独立安装包。
+- 识别回调同步锁定后暂停预览，再查询后端；失败需明确重新扫码。编辑编号暂停识别；离页、后台和查询期间卸载相机，读取请求在离页时取消，避免重复跳转与旧响应覆盖。
+- MuMu + Expo Go 已验证编号及完整标签输入、授权查询、外链拒绝和越权提示；这些结果不表示相机实际解码成功。实体 Android/iPhone 与现场光学扫码尚未验证。相机就绪回调、输入暂停、拒绝权限后手动查询已通过；模拟器预览为灰色，未完成现场光学解码。权限验证结束后恢复 Expo Go 原有系统相机授权。
+
+二维码截图：[Web 设备标签](screenshots/device-tag-desktop.png)、[窄屏标签](screenshots/device-tag-mobile.png)、[扫码入口](screenshots/mobile-android-device-scan.png)、[越权提示](screenshots/mobile-android-device-scan-denied.png)、[拒绝相机权限](screenshots/mobile-android-camera-denied.png)。
+
 ## 下一增量
 
-下一增量建议为扫码查看授权设备，需确认后实施；随后接入拍照上传。相机能力将分别记录模拟器、真机与浏览器的验证范围。
+下一增量建议为拍照上传，需确认上传存储、大小限制和附件授权后实施；不自动展开微前端。现场扫码、真机和安装包验证按实际设备条件安排。

@@ -34,13 +34,18 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     if (busy.current) return;
     const current = ++revision.current;
     busy.current = current;
-    setStatus("loading");
-    setUser(null);
+    // Foreground permission dialogs also trigger restore; keep the current route
+    // while revalidating an existing credential. Failure still blocks the stack.
+    if (!token.current) {
+      setStatus("loading");
+      setUser(null);
+    }
     try {
       const stored = await readCredential();
       if (current !== revision.current) return;
       if (!stored) {
         token.current = null;
+        setUser(null);
         setStatus("anonymous");
         return;
       }
@@ -57,7 +62,10 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     } catch (error) {
       if (current !== revision.current) return;
       if (error instanceof ApiError && error.status === 401) await clear();
-      else setStatus("unavailable");
+      else {
+        setUser(null);
+        setStatus("unavailable");
+      }
     } finally {
       if (busy.current === current) busy.current = null;
     }

@@ -1,4 +1,5 @@
 import { Button, Modal } from "antd";
+import type { ReactNode } from "react";
 import type { DeviceDetail } from "../types";
 import styles from "../devices.module.css";
 
@@ -6,12 +7,14 @@ interface Props {
   device: DeviceDetail;
   recordCount?: number;
   onClose: () => void;
+  extra?: ReactNode;
 }
 
 export default function DeviceDetailModal({
   device,
   recordCount,
   onClose,
+  extra,
 }: Props) {
   return (
     <Modal
@@ -31,6 +34,7 @@ export default function DeviceDetailModal({
         {recordCount !== undefined && <p>可见维修记录：{recordCount} 条</p>}
         <p className="muted">这是虚构设备，不代表硬件已连接。</p>
       </div>
+      {extra}
     </Modal>
   );
 }

@@ -83,7 +83,7 @@ npm run dev
 
 每次查询检查会话过期时间和账号启用状态。客户端提交角色、伪造用户头或更换设备 ID 均不能扩大访问范围。公开设备响应不包含授权名单。
 
-接口类型位于 `packages/contracts`，只输出传输类型，不导出 ORM 模型、密码、内部会话记录或 Web UI。Prisma Client 自动生成在 `apps/api/src/generated`，不提交生成产物。
+接口类型位于 `packages/contracts`，根入口只输出传输类型，`device-tags` 子入口包含纯设备标签协议；不导出 ORM 模型、密码、内部会话记录或 Web UI。Prisma Client 自动生成在 `apps/api/src/generated`，不提交生成产物。
 
 ### 原生客户端接口
 

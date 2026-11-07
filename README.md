@@ -65,9 +65,9 @@
 
 前端使用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules；后端使用 NestJS 11、Prisma 7 和 PostgreSQL 17。使用 npm workspaces 管理应用。
 
-工作区包含 `apps/web`、`apps/api`、Next.js App Router 门户 `apps/portal`、Expo/RN 客户端 `apps/mobile` 和仅提供传输类型的 `packages/contracts`。移动端使用 SDK 57、Expo Router、React Native 原生组件与 StyleSheet，按 SDK 兼容组合独立管理 React 版本。
+工作区包含 `apps/web`、`apps/api`、Next.js App Router 门户 `apps/portal`、Expo/RN 客户端 `apps/mobile` 和提供传输类型及纯设备标签协议的 `packages/contracts`。移动端使用 SDK 57、Expo Router、React Native 原生组件与 StyleSheet，按 SDK 兼容组合独立管理 React 版本。
 
-演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 的报修与维修人员文字链路已贯通，管理员分派继续使用 Web 后台；扫码、图片上传与微前端尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
+演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 的报修与维修人员文字链路已贯通，管理员分派继续使用 Web 后台；已接入设备二维码入口与授权查询；图片上传与微前端尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
 
 ## 快速开始
 

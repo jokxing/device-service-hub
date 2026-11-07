@@ -33,4 +33,12 @@ export class DevicesService {
     if (!device) throw new NotFoundException("设备不存在或无权访问");
     return device;
   }
+  async resolveByCode(code: string, actor: PublicUser): Promise<DeviceSummary> {
+    const device = await this.database.device.findFirst({
+      where: { AND: [{ code }, this.scope(actor)] },
+      select: DEVICE_PUBLIC_SELECT,
+    });
+    if (!device) throw new NotFoundException("设备不存在或无权访问");
+    return device;
+  }
 }

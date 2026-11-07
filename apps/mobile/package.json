@@ -12,6 +12,7 @@
   "dependencies": {
     "@device-service-hub/contracts": "^0.1.0",
     "expo": "~57.0.32",
+    "expo-camera": "~57.0.6",
     "expo-constants": "~57.0.23",
     "expo-crypto": "~57.0.4",
     "expo-linking": "~57.0.13",

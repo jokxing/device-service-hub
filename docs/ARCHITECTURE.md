@@ -81,7 +81,7 @@ App → DemoProvider → AppLayout → 页面 → 业务组件
 - `/login` 和 `/service/devices` 由独立会话 Provider 管理，登录后加载真实设备列表及详情；Effect 使用 AbortController 清理请求，账号变化后清除旧数据。
 - `features/auth` 负责会话与登录 API，`features/devices/api.ts` 负责设备请求，`shared/api/http.ts` 统一处理传输和错误。
 - 设备表格与详情组件复用展示结构，演示数据和真实响应在类型上分开，不伪造尚未实现的维修记录。
-- 前后端实际共用的传输类型位于 `packages/contracts`；包只包含类型声明，不依赖数据库或浏览器运行时。
+- 前后端实际共用的传输类型位于 `packages/contracts`；根入口只包含类型声明，`device-tags` 子入口提供 Web 与 RN 共用的纯标签编解码；不依赖数据库或浏览器运行时。
 - ServiceLayout 管理真实身份和服务导航，增加 `/service/tickets` 及本人详情路由；字段组件在演示/真实表单之间复用，提交逻辑保持独立。通用读取请求通过 `shared/hooks/useApiResource.ts` 取消过期请求，401 处理由调用方传入。
 - ServiceLayout 统一真实服务页面的横向边距与区块间距；ServicePageHeader 共用标题、说明和可选返回链接。布局响应式样式留在 CSS Modules，不能用全局 main/nav 规则造成重复内边距。
 - 设备列表和本人报修列表在 Ant Design `md` 断点以下（小于 768px）改用卡片；桌面保留表格，同一时间只渲染一种布局。CompactRecordCard 共用信息层级、字段排版和操作区域，业务数据和回调仍留在所属模块；本人分页继续由 URL 和服务端控制。

@@ -6,9 +6,24 @@
     "orientation": "portrait",
     "scheme": "deviceservicehub",
     "userInterfaceStyle": "light",
-    "plugins": ["expo-router", "expo-secure-store"],
-    "android": { "package": "com.deviceservicehub.app" },
-    "ios": { "supportsTablet": true },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "允许设备服务扫描设备二维码",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ]
+    ],
+    "android": {
+      "package": "com.deviceservicehub.app"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
     "web": {
       "bundler": "metro",
       "output": "static",

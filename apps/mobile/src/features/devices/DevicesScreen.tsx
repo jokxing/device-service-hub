@@ -18,6 +18,12 @@ export default function DevicesScreen() {
       <Text style={styles.identity}>
         {user?.name} · {user ? ROLE_LABELS[user.role] : ""}
       </Text>
+      {user?.role !== "technician" && (
+        <ActionButton
+          title="扫码查看设备"
+          onPress={() => router.push("/devices/scan")}
+        />
+      )}
       {user?.role === "reporter" && (
         <ActionButton
           title="我的报修"

@@ -67,8 +67,8 @@ export function openAndroidUi(android) {
   }
   async function enter(label, value) {
     assert.ok(
-      /^[a-zA-Z0-9._@-]+$/.test(value),
-      "Automation requires shell-safe local account input; use manual verification for other characters",
+      /^[a-zA-Z0-9._@:/-]+$/.test(value),
+      "Automation requires shell-safe local input; use manual verification for other characters",
     );
     await tap(label);
     android.run(["shell", "input", "keyevent", "123"]);

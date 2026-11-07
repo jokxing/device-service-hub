@@ -39,7 +39,9 @@ apps/api/
    │     ├─ devices.module.ts
    │     ├─ devices.controller.ts
    │     ├─ devices.service.ts
-   │     └─ devices.select.ts
+   │     ├─ devices.select.ts
+   │     ├─ native-devices.controller.ts
+   │     └─ dto/resolve-device.dto.ts
    └─ generated/prisma/
 ```
 
@@ -134,3 +136,5 @@ NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常�
 OriginGuard 仅对明确标注 NativeClient 的控制器使用原生传输约束，拒绝 Origin、Cookie 与 Fetch Metadata 标头；其他 Web 接口仍使用原 Cookie/Origin 策略，不接受 Bearer 替代 Cookie。原生登录返回的短期凭据仅存 SecureStore，数据库保留摘要；注销可重复调用并撤销会话，不额外创建移动端用户或业务表。原生传输不能证明设备真实性。
 
 验证命令与模拟器范围见 [MOBILE.md](MOBILE.md)。
+
+扫码查询使用 GET `/api/mobile/devices/resolve?code=...`，静态路由在 `:id` 前声明。Controller 只校验 DTO 并转交 DevicesService；设备编号查询复用列表/详情的角色数据范围和公开投影，不额外授予设备访问权，不增加数据库表。未知设备和越权设备统一 404，Web Cookie/Origin 约束保持不变。

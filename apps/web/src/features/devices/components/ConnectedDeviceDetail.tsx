@@ -5,6 +5,7 @@ import { ApiError } from "../../../shared/api/http";
 import { useSession } from "../../auth/sessionContext";
 import { devicesApi } from "../api";
 import DeviceDetailModal from "./DeviceDetailModal";
+import DeviceTag from "./DeviceTag";
 
 export default function ConnectedDeviceDetail({
   id,
@@ -30,7 +31,14 @@ export default function ConnectedDeviceDetail({
       });
     return () => controller.abort();
   }, [id, clearSession]);
-  if (device) return <DeviceDetailModal device={device} onClose={onClose} />;
+  if (device)
+    return (
+      <DeviceDetailModal
+        device={device}
+        onClose={onClose}
+        extra={<DeviceTag code={device.code} />}
+      />
+    );
   return (
     <Modal
       open

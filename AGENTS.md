@@ -30,7 +30,7 @@
 - 分页工单列表复用 ResponsiveRecordList；列定义、卡片字段与角色动作留在业务组件。工单摘要和状态筛选属于 features/tickets，不移入 shared。
 - 类型导入使用 `import type`，保持 TypeScript strict，不用 `any`、忽略检查或放宽配置掩盖问题。
 - `demo` 隔离账号、fixtures、内存状态与演示适配；组件不直接修改 fixtures。
-- `apps/api` 按业务模块组织控制器、服务与鉴权，数据库迁移在 Prisma 目录；`packages/contracts` 仅输出前后端共用的传输类型，不暴露 ORM 实体、密码或内部会话记录。真实设备入口不使用演示角色作为身份来源。
+- `apps/api` 按业务模块组织控制器、服务与鉴权，数据库迁移在 Prisma 目录；`packages/contracts` 根入口仅输出传输类型；`device-tags` 子入口提供 Web/RN 共用的纯设备标签协议，不暴露 ORM 实体、密码或内部会话记录。真实设备入口不使用演示角色作为身份来源。
 - Web 的公共目录不等于跨端包；DOM、下载、导航、存储与设备能力分别实现，有实际共享需求再提取契约或纯规则。
 - 门户不跨应用导入后台页面或 Hook；共用 contracts。门户内部请求与 Cookie 配置留在 server-only 模块；不直接访问数据库，不复制 NestJS 授权和业务事务。
 
@@ -86,6 +86,7 @@
 - RN 确认变更执行 `run verify:mobile-confirmations`、`run verify:mobile-confirmations-android`，复用 TicketConfirmationsService 和 ConfirmTicketDto；入口使用 canConfirmTicket，弹窗使用原生 MutationModal。窗口内保持原 requestId/expectedVersion，关闭后重新读取实际状态，提交期间禁用取消与重复操作。
 - RN 任务变更执行 `run verify:mobile-tasks`、`run verify:mobile-tasks-android`，复用 TaskTicketsService、StatusTicketsQueryDto 与 AcceptTicketDto。列表、计数、详情和接单均限定当前 assigneeId；不开放全部设备。TicketCard/详情复用 tickets 的只读组件，接单动作留 tasks；MutationModal/useApiMutation 只管理公共交互，提交编号与版本留业务组件。
 - RN 处理结果变更执行 `run verify:mobile-results`、`run verify:mobile-results-android`，复用 TaskResultsService 与 SubmitTicketResultDto；入口使用 canSubmitTaskResult，表单复用 MutationModal/useApiMutation。相同规范化说明重试保持原 UUID 和版本，说明变化是新意图，不能覆盖已提交结果。
+- RN 扫码变更执行 `run test:device-tags`、`run verify:device-scan-api`、`run verify:device-scan-ui`、`run verify:device-scan-android`；相机交互另执行 `run verify:device-camera-android`。保留设备数据范围、拒绝外链、扫码去重和手动输入；光学识别、相机预览与输入查询分别记录，不能以手动查询冒充扫码验证。
 - Expo 和 DotSlash 用户缓存必须由本地启动脚本明确指向项目 .local，不能只依赖 APPDATA/TEMP。Android 工具路径与 serial 放被忽略的 .local/android-device.json，不写进公共文件；未确认前不安装完整 SDK、生成原生工程或调用 EAS 云构建。
 - 不提交 `.local`、`node_modules`、构建产物、真实 `.env`、凭据或个人操作记录。公开文档不包含个人绝对路径或对话过程。
 - 公开文档采用产品与工程交付表述，突出业务建模、架构取舍、数据权限、并发一致性、可维护性及验证证据，不加入学习任务、练习安排或教程式要求。十余年前端经历不等同于十余年 React/RN 经历；不虚构生产规模、客户案例或性能指标。
