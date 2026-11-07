@@ -7,6 +7,7 @@ import { useTask } from "./useTasks";
 import AcceptTaskAction from "./AcceptTaskAction";
 import TechnicianAccess from "./TechnicianAccess";
 import SubmitTaskResultAction from "./SubmitTaskResultAction";
+import PhotoGallery from "../tickets/photos/PhotoGallery";
 function Detail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -17,6 +18,7 @@ function Detail() {
       {task && (
         <>
           <TicketRecordDetails ticket={task} />
+          <PhotoGallery ticketId={task.id} />
           <AcceptTaskAction
             key={`${task.id}:${task.version}`}
             task={task}

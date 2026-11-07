@@ -59,7 +59,7 @@
 - 文字处理结果提交与待确认状态；校验归属、状态、版本及规范化内容，结果与状态原子写入，三角色详情展示一致。
 - 报修用户本人确认完成；状态与确认记录原子写入，管理员和维修人员只读完成记录，终结状态不接受新的修改命令。
 
-**能力边界：**设备和账号为虚构样例，无真实硬件通信。`apps/web` 的 `/tickets`、`/devices`、`/records` 为内存演示，刷新重置；其 `/login`、`/service/*` 使用真实 API、数据库会话及文字业务闭环。`apps/portal` 的 `/devices`、`/tickets` 则为真实授权设备与本人报修入口，两应用同名路径需结合各自端口区分。真实身份与演示角色独立；图片上传、改派、退回与再次提交尚未实现。
+**能力边界：**设备和账号为虚构样例，无真实硬件通信。`apps/web` 的 `/tickets`、`/devices`、`/records` 为内存演示，刷新重置；其 `/login`、`/service/*` 使用真实 API、数据库会话及文字业务闭环。`apps/portal` 的 `/devices`、`/tickets` 则为真实授权设备与本人报修入口，两应用同名路径需结合各自端口区分。真实身份与演示角色独立；RN 支持待分派工单补充现场照片，Web 管理员可查看并放大预览，规则与边界见 [现场照片](docs/TICKET_PHOTOS.md)。Web 上传与门户附件界面、改派、退回与再次提交尚未实现。
 
 ## 技术栈
 
@@ -67,7 +67,7 @@
 
 工作区包含 `apps/web`、`apps/api`、Next.js App Router 门户 `apps/portal`、Expo/RN 客户端 `apps/mobile` 和提供传输类型及纯设备标签协议的 `packages/contracts`。移动端使用 SDK 57、Expo Router、React Native 原生组件与 StyleSheet，按 SDK 兼容组合独立管理 React 版本。
 
-演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 的报修与维修人员文字链路已贯通，管理员分派继续使用 Web 后台；已接入设备二维码入口与授权查询；图片上传与微前端尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
+演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 的报修与维修人员文字链路已贯通，管理员分派继续使用 Web 后台；已接入设备二维码入口与授权查询；RN 图片上传与 Web 管理员看图已接入；Web 上传与门户附件界面与微前端尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
 
 ## 快速开始
 

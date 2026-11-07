@@ -7,12 +7,14 @@ import {
   Post,
   Query,
   UseGuards,
+  StreamableFile,
 } from "@nestjs/common";
 import type {
   AdminTicketPage,
   AdminTicketRecord,
   PublicUser,
   TicketPerson,
+  TicketPhoto,
 } from "@device-service-hub/contracts";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { SessionGuard } from "../auth/guards/session.guard";
@@ -44,6 +46,29 @@ export class AdminTicketsController {
     @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
   ): Promise<AdminTicketRecord> {
     return this.tickets.detail(actor, id);
+  }
+
+  @Get(":id/photos")
+  photos(
+    @CurrentUser() actor: PublicUser,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+  ): Promise<TicketPhoto[]> {
+    return this.tickets.listPhotos(actor, id);
+  }
+
+  @Get(":id/photos/:photoId")
+  async photoContent(
+    @CurrentUser() actor: PublicUser,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Param("photoId", new ParseUUIDPipe({ version: "4" })) photoId: string,
+  ): Promise<StreamableFile> {
+    return new StreamableFile(
+      await this.tickets.photoContent(actor, id, photoId),
+      {
+        type: "image/webp",
+        disposition: "inline",
+      },
+    );
   }
 
   @Post(":id/assign")

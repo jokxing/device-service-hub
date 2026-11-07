@@ -127,6 +127,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
         signal?: AbortSignal;
         method?: "GET" | "POST";
         body?: unknown;
+        responseType?: "json" | "image";
       },
     ): Promise<T> => {
       const activeToken = token.current;
@@ -155,9 +156,14 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       authorized<T>(route, { method: "POST", body, signal }),
     [authorized],
   );
+  const image = useCallback(
+    (route: string, signal?: AbortSignal) =>
+      authorized<string>(route, { signal, responseType: "image" }),
+    [authorized],
+  );
   return (
     <SessionContext.Provider
-      value={{ status, user, signIn, signOut, restore, request, post }}
+      value={{ status, user, signIn, signOut, restore, request, post, image }}
     >
       {children}
     </SessionContext.Provider>

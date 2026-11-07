@@ -1,3 +1,5 @@
+import { resolve } from "node:path";
+
 function required(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Missing configuration: ${name}`);
@@ -10,6 +12,10 @@ export function getConfig() {
     throw new Error("Invalid API_PORT");
   return {
     port,
+    photosDirectory: resolve(
+      __dirname,
+      "../../../../.local/uploads/ticket-photos",
+    ),
     databaseUrl: required("DATABASE_URL"),
     webOrigins: (
       process.env.WEB_ORIGINS ??

@@ -16,6 +16,14 @@
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "允许设备服务选择现场照片",
+          "cameraPermission": "允许设备服务拍摄现场照片",
+          "microphonePermission": false
+        }
       ]
     ],
     "android": {

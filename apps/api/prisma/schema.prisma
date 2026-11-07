@@ -30,6 +30,7 @@ model User {
   acceptances TicketAcceptance[]
   results TicketResult[]
   confirmations TicketConfirmation[]
+  photos TicketPhoto[]
 }
 
 model Device {
@@ -80,12 +81,28 @@ model Ticket {
   acceptance  TicketAcceptance?
   result      TicketResult?
   confirmation TicketConfirmation?
+  photos TicketPhoto[]
 
   @@unique([reporterId, requestId])
   @@index([reporterId, createdAt, id])
   @@index([deviceId])
   @@index([status, createdAt, id])
   @@index([assigneeId])
+}
+
+model TicketPhoto {
+  id String @id @db.Uuid
+  ticketId String
+  uploaderId String
+  storageKey String @unique
+  inputHash String @db.Char(64)
+  width Int
+  height Int
+  bytes Int
+  createdAt DateTime @default(now())
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploader User @relation(fields: [uploaderId], references: [id], onDelete: Restrict)
+  @@index([ticketId, createdAt])
 }
 
 model TicketConfirmation {

@@ -9,6 +9,7 @@ import type {
   AdminTicketRecord,
   PublicUser,
   TicketPerson,
+  TicketPhoto,
 } from "@device-service-hub/contracts";
 import { DatabaseService } from "../../database/database.service";
 import { Prisma } from "../../generated/prisma/client";
@@ -16,10 +17,28 @@ import type { StatusTicketsQueryDto } from "./dto/status-tickets-query.dto";
 import type { AssignTicketDto } from "./dto/assign-ticket.dto";
 import { ADMIN_TICKET_SELECT } from "./tickets.select";
 import { toAdminTicketRecord } from "./utils/ticket-payload";
+import { TicketPhotosService } from "./attachments/ticket-photos.service";
 
 @Injectable()
 export class AdminTicketsService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly photos: TicketPhotosService,
+  ) {}
+
+  listPhotos(actor: PublicUser, id: string): Promise<TicketPhoto[]> {
+    this.requireAdmin(actor);
+    return this.photos.list(actor, id);
+  }
+
+  photoContent(
+    actor: PublicUser,
+    id: string,
+    photoId: string,
+  ): Promise<Buffer> {
+    this.requireAdmin(actor);
+    return this.photos.content(actor, id, photoId);
+  }
 
   private requireAdmin(actor: PublicUser): void {
     if (actor.role !== "admin")

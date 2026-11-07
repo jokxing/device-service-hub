@@ -12,6 +12,7 @@ export interface NativeSession {
   signOut: () => Promise<void>;
   request: AuthenticatedRead;
   post: AuthenticatedPost;
+  image: (route: string, signal?: AbortSignal) => Promise<string>;
 }
 export const SessionContext = createContext<NativeSession | null>(null);
 export function useNativeSession() {

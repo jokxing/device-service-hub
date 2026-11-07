@@ -5,6 +5,7 @@ import { formatDateTime } from "../../../shared/utils/date";
 import { useSession } from "../../auth/sessionContext";
 import { adminTicketsApi } from "../admin-api";
 import TicketRecordDetails from "./TicketRecordDetails";
+import AdminTicketPhotos from "../photos/AdminTicketPhotos";
 
 export default function AdminTicketDetail({
   id,
@@ -26,6 +27,10 @@ export default function AdminTicketDetail({
       onCancel={onClose}
       footer={null}
       width={700}
+      style={{ top: 24 }}
+      styles={{
+        body: { maxHeight: "calc(100dvh - 140px)", overflowY: "auto" },
+      }}
     >
       {error ? (
         <Alert type="error" showIcon title={error} />
@@ -55,6 +60,7 @@ export default function AdminTicketDetail({
             ]}
           />
           <TicketRecordDetails ticket={data} />
+          <AdminTicketPhotos key={data.id} ticketId={data.id} />
         </>
       )}
     </Modal>

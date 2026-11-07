@@ -11,10 +11,14 @@ import { TaskResultsService } from "./task-results.service";
 import { TicketConfirmationsService } from "./ticket-confirmations.service";
 import { NativeTicketsController } from "./native-tickets.controller";
 import { NativeTaskTicketsController } from "./native-task-tickets.controller";
+import { NativeTicketPhotosController } from "./attachments/native-ticket-photos.controller";
+import { TicketPhotosService } from "./attachments/ticket-photos.service";
+import { PhotoStore } from "./attachments/photo-store.service";
 
 @Module({
   imports: [DatabaseModule, AuthModule],
   controllers: [
+    NativeTicketPhotosController,
     NativeTicketsController,
     NativeTaskTicketsController,
     TicketsController,
@@ -22,6 +26,8 @@ import { NativeTaskTicketsController } from "./native-task-tickets.controller";
     TaskTicketsController,
   ],
   providers: [
+    TicketPhotosService,
+    PhotoStore,
     TicketsService,
     AdminTicketsService,
     TaskTicketsService,

@@ -138,3 +138,7 @@ OriginGuard 仅对明确标注 NativeClient 的控制器使用原生传输约束
 验证命令与模拟器范围见 [MOBILE.md](MOBILE.md)。
 
 扫码查询使用 GET `/api/mobile/devices/resolve?code=...`，静态路由在 `:id` 前声明。Controller 只校验 DTO 并转交 DevicesService；设备编号查询复用列表/详情的角色数据范围和公开投影，不额外授予设备访问权，不增加数据库表。未知设备和越权设备统一 404，Web Cookie/Origin 约束保持不变。
+
+现场照片使用工单模块内 `attachments/`，Controller、TicketPhotosService、PhotoStore 分工；附件表元数据与随机文件键分离，图片目录不开放静态访问。状态/数量在工单行锁内核对，幂等 UUID 与原始内容摘要绑定；文件失败清理和数据库/文件系统的崩溃边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。
+
+Web 管理员照片只读路由位于 AdminTicketsController，沿用 SessionGuard。AdminTicketsService 先执行既有管理员限制，再复用 TicketPhotosService 读取元数据与图片；不增加上传路由，不复制附件授权和文件逻辑，也不改变原生传输约束。

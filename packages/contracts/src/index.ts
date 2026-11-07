@@ -114,3 +114,10 @@ export interface TicketPage {
   page: number;
   pageSize: number;
 }
+export interface TicketPhoto {
+  id: string;
+  width: number;
+  height: number;
+  bytes: number;
+  createdAt: string;
+}

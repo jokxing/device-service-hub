@@ -6,6 +6,7 @@ import { useMyTicket } from "./useTickets";
 import ReporterAccess from "./components/ReporterAccess";
 import LoadFeedback from "../../shared/components/LoadFeedback";
 import ConfirmTicketAction from "./components/ConfirmTicketAction";
+import PhotoGallery from "./photos/PhotoGallery";
 function Details() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -16,6 +17,11 @@ function Details() {
       {ticket && (
         <>
           <TicketRecordDetails ticket={ticket} />
+          <PhotoGallery
+            key={`${ticket.id}:${ticket.status}`}
+            ticketId={ticket.id}
+            canUpload={ticket.status === "pending"}
+          />
           <ConfirmTicketAction
             key={`${ticket.id}:${ticket.version}`}
             ticket={ticket}

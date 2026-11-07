@@ -4,7 +4,7 @@
 
 `apps/mobile` 是独立 Expo / React Native 工作区。首步交付服务首页、报修须知、原生 Stack 导航、主题、安全区与滚动布局，完成浏览器预览及 Android 模拟器运行验证。
 
-已接通真实登录、会话恢复、退出、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。已接入设备二维码相机入口及手动编号查询，图片上传尚未接入；管理员分派继续使用 Web 后台。设备与工单来自同一 NestJS/PostgreSQL，范围由服务端决定；现有 Web 与门户继续保留。
+已接通真实登录、会话恢复、退出、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。已接入设备二维码相机入口及手动编号查询，已接入报修详情拍照/相册补充照片及维修任务只读查看；管理员分派继续使用 Web 后台。设备与工单来自同一 NestJS/PostgreSQL，范围由服务端决定；现有 Web 与门户继续保留。
 
 ## 技术与目录
 
@@ -75,6 +75,8 @@ npm run verify:mobile-tasks # 原生任务归属、分页筛选、接单防重
 npm run verify:mobile-tasks-android # 原生维修角色、任务卡片、取消与异常重试
 npm run verify:mobile-results # 原生结果的内容、版本、权限与并发防重
 npm run verify:mobile-results-android # 原生结果表单、重试与用户确认闭环
+npm run verify:mobile-photos # 图片格式、容量、权限、状态和并发防重
+npm run verify:mobile-photos-android # 原生选图、上传重试、恢复与维修人员查看
 npm run test:device-tags # 标签协议、版本与外链拒绝
 npm run verify:device-scan-api # 编号查询及四角色数据权限
 npm run verify:device-scan-ui # Web 设备标签和窄屏布局
@@ -178,8 +180,8 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 | 原生处理结果模拟器 | 通过空内容禁用、取消清理、多行说明、异常重试、冷启动、过期输入保留与报修用户确认闭环 |
 | 设备标签与编号查询 | 已接入；协议、四角色权限、Web 二维码及模拟器手动输入验证通过 |
 | 原生相机交互 | MuMu + Expo Go 通过相机就绪回调、输入暂停、拒绝权限后的手动查询；预览为灰色画面 |
-| 光学识别 | 模拟器未完成对准二维码解码；真机、现场扫码待验证 |
-| 拍照、图片上传 | 未接入 |
+| 光学识别 | 用户人工验证 MuMu 实时截屏扫码进入设备详情并完成文字闭环；实体摄像头扫码待验证 |
+| 现场照片 | API 权限、格式与并发限制通过；MuMu + Expo Go 相册选择、取消、上传重试、冷启动恢复和维修人员查看通过；另验证虚拟系统相机拍摄返回及上传，实体摄像头仍待验证 |
 
 截图：[原生登录](screenshots/mobile-android-login.png)、[授权设备](screenshots/mobile-android-devices.png)、[设备详情](screenshots/mobile-android-device-detail.png)、[模拟器首页](screenshots/mobile-android-home.png)、[模拟器须知](screenshots/mobile-android-guide.png)、[浏览器预览](screenshots/mobile-web-home.png)。模拟器结果与浏览器结果分别记录，不表示硬件设备通信或商业生产交付。
 
@@ -196,10 +198,14 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 - 原生 GET `/api/mobile/devices/resolve?code=AC-001` 使用 NativeSessionGuard、DTO 和既有 DevicesService 数据范围。报修用户只能查授权设备；管理员沿用全设备范围；维修人员通过任务获取设备信息，不新增独立设备权限。不存在和无权访问统一返回 404；停用设备可读，但不提供报修入口。
 - 相机由用户主动开启，仅请求相机权限；拒绝或启动失败时保留手动输入，永久拒绝提供系统设置入口。不请求麦克风，不保存或上传相机画面。`app.json` 的 camera 插件用于后续原生构建配置，本轮未生成原生工程或独立安装包。
 - 识别回调同步锁定后暂停预览，再查询后端；失败需明确重新扫码。编辑编号暂停识别；离页、后台和查询期间卸载相机，读取请求在离页时取消，避免重复跳转与旧响应覆盖。
-- MuMu + Expo Go 已验证编号及完整标签输入、授权查询、外链拒绝和越权提示；这些结果不表示相机实际解码成功。实体 Android/iPhone 与现场光学扫码尚未验证。相机就绪回调、输入暂停、拒绝权限后手动查询已通过；模拟器预览为灰色，未完成现场光学解码。权限验证结束后恢复 Expo Go 原有系统相机授权。
+- MuMu + Expo Go 已验证编号及完整标签输入、授权查询、外链拒绝和越权提示；这些结果不表示相机实际解码成功。用户已人工验证 MuMu 实时截屏扫码 → 设备详情 → 报修及后续文字闭环；实体 Android/iPhone 摄像头扫码仍待验证。相机就绪回调、输入暂停、拒绝权限后手动查询已通过；先前自动验证相机预览为灰色；后续实时截屏扫码已通过用户人工验收，实体摄像头光学扫码仍待验证。权限验证结束后恢复 Expo Go 原有系统相机授权。
 
 二维码截图：[Web 设备标签](screenshots/device-tag-desktop.png)、[窄屏标签](screenshots/device-tag-mobile.png)、[扫码入口](screenshots/mobile-android-device-scan.png)、[越权提示](screenshots/mobile-android-device-scan-denied.png)、[拒绝相机权限](screenshots/mobile-android-camera-denied.png)。
 
+## 现场照片
+
+已支持待分派工单拍照/相册补充照片，维修人员在本人任务只读查看。图片规则、磁盘与数据库边界及验证记录见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。
+
 ## 下一增量
 
-下一增量建议为拍照上传，需确认上传存储、大小限制和附件授权后实施；不自动展开微前端。现场扫码、真机和安装包验证按实际设备条件安排。
+现场照片规则、原生入口及验证边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。下一增量可接入 Web/门户附件查看，或按阶段确认微前端集成；真机与安装包仍按实际条件安排。

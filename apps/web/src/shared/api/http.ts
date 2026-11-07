@@ -7,10 +7,10 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiRequest<T>(
+async function requestResponse(
   path: string,
   options: RequestInit = {},
-): Promise<T> {
+): Promise<Response> {
   const response = await fetch(`/api${path}`, {
     ...options,
     credentials: "same-origin",
@@ -35,7 +35,29 @@ export async function apiRequest<T>(
           : "请求失败，请稍后重试",
     );
   }
+  return response;
+}
+
+export async function apiRequest<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const response = await requestResponse(path, options);
   return response.status === 204
     ? (undefined as T)
     : (response.json() as Promise<T>);
+}
+
+export async function apiImageRequest(
+  path: string,
+  signal?: AbortSignal,
+): Promise<Blob> {
+  const response = await requestResponse(path, {
+    signal,
+    cache: "no-store",
+    headers: { Accept: "image/webp" },
+  });
+  if (response.headers.get("Content-Type") !== "image/webp")
+    throw new Error("图片格式异常，请刷新重试");
+  return response.blob();
 }

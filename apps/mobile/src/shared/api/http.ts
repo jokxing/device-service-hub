@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "./config";
+import { fromByteArray } from "base64-js";
 export type AuthenticatedRead = <T>(
   route: string,
   signal?: AbortSignal,
@@ -23,11 +24,13 @@ export async function apiRequest<T>(
     body,
     method = "GET",
     signal,
+    responseType = "json",
   }: {
     token?: string;
     body?: unknown;
     method?: "GET" | "POST";
     signal?: AbortSignal;
+    responseType?: "json" | "image";
   } = {},
 ): Promise<T> {
   const controller = new AbortController();
@@ -45,11 +48,18 @@ export async function apiRequest<T>(
       credentials: "omit",
       cache: "no-store",
       headers: {
-        Accept: "application/json",
+        Accept: responseType === "image" ? "image/webp" : "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...(body !== undefined && !(body instanceof FormData)
+          ? { "Content-Type": "application/json" }
+          : {}),
       },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body:
+        body === undefined
+          ? undefined
+          : body instanceof FormData
+            ? body
+            : JSON.stringify(body),
       signal: controller.signal,
     });
     if (!response.ok) {
@@ -62,6 +72,12 @@ export async function apiRequest<T>(
           ? value.message
           : "请求失败，请重试";
       throw new ApiError(response.status, message);
+    }
+    if (responseType === "image") {
+      if (response.headers.get("Content-Type")?.split(";")[0] !== "image/webp")
+        throw new Error("图片响应格式无效");
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      return `data:image/webp;base64,${fromByteArray(bytes)}` as T;
     }
     return response.status === 204
       ? (undefined as T)
