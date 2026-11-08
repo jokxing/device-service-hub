@@ -15,9 +15,9 @@ import AdminTicketsPage from "./pages/AdminTicketsPage";
 import MyTasksPage from "./pages/MyTasksPage";
 import MyTaskDetailPage from "./pages/MyTaskDetailPage";
 
-export default function App() {
+export default function App({ basename }: { basename?: string }) {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <DemoProvider>
         <Routes>
           <Route element={<SessionBoundary />}>

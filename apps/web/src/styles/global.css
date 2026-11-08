@@ -6,7 +6,8 @@
 
 @source "../**/*.{ts,tsx}";
 
-:root {
+:root,
+[data-device-service-root] {
   font-size: var(--font-size-body);
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;

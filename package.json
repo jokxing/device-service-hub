@@ -7,6 +7,7 @@
     "apps/api",
     "apps/portal",
     "apps/mobile",
+    "apps/shell",
     "packages/contracts"
   ],
   "scripts": {
@@ -53,7 +54,13 @@
     "verify:portal": "node scripts/verify-portal.mjs",
     "verify:portal-tickets": "node scripts/verify-portal-tickets.mjs",
     "verify:portal-confirmations": "node scripts/verify-portal-confirmations.mjs",
-    "build": "npm run build:web && npm run build:api && npm run build:portal",
+    "build": "npm run build:web && npm run build:api && npm run build:portal && npm run build:micro",
+    "dev:shell": "npm run dev --workspace apps/shell",
+    "build:shell": "npm run build --workspace apps/shell",
+    "build:micro:web": "npm run build:micro --workspace apps/web",
+    "preview:micro:web": "npm run preview:micro --workspace apps/web",
+    "preview:shell": "npm run preview --workspace apps/shell",
+    "build:micro": "npm run build:micro:web && npm run build:shell",
     "build:web": "npm run build --workspace apps/web",
     "preview": "npm run preview --workspace apps/web",
     "verify:mobile-tickets": "node scripts/verify-mobile-tickets.mjs",
@@ -71,7 +78,8 @@
     "verify:device-camera-android": "node scripts/verify-device-camera-android.mjs",
     "verify:mobile-photos": "node scripts/verify-mobile-photos.mjs",
     "verify:mobile-photos-android": "node scripts/verify-mobile-photos-android.mjs",
-    "verify:web-photos": "node scripts/verify-web-photos.mjs"
+    "verify:web-photos": "node scripts/verify-web-photos.mjs",
+    "verify:micro": "node scripts/verify-micro.mjs"
   },
   "overrides": {
     "react-native-gesture-handler": "2.32.0",

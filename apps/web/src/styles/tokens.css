@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-device-service-root] {
   --font-size-caption: 12px;
   --font-size-secondary: 13px;
   --font-size-body: 14px;

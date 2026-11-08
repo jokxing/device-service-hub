@@ -208,4 +208,4 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 
 ## 下一增量
 
-现场照片规则、原生入口及验证边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。下一增量可接入 Web/门户附件查看，或按阶段确认微前端集成；真机与安装包仍按实际条件安排。
+现场照片规则、原生入口及验证边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。Web 管理员已支持现场照片查看，门户附件后置。微前端已完成主应用与 React 后台首步接入，见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)；RN 保持独立，真机与安装包仍按实际条件安排。

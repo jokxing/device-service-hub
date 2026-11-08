@@ -6,6 +6,8 @@
 
 本文件主体描述 `apps/web` 的 Vite 后台。`apps/portal` 使用 Next.js App Router，当前提供登录、授权设备查询、文字报修、本人记录和完成确认；Server/Client Components、Cookie、提交防重与缓存边界单独维护在 [PORTAL.md](PORTAL.md)，不将 React Router 和后台布局搬入门户。
 
+`apps/shell` 已通过 qiankun 加载现有后台。`main.tsx` 和 `micro.ts` 共用 `app/createApplication.tsx` 的 Provider 与根节点管理；独立路由不带前缀，挂载时使用 `/tickets` basename。独立构建、沙箱/浮层、身份与卸载边界见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)，不向门户或 RN 引入 qiankun。
+
 管理员真实列表与首次分派使用 `/service/admin/tickets`，详情字段复用 TicketRecordDetails，列表/分派/详情弹窗分别组织。服务端权限和事务规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)，演示身份不参与管理接口授权。
 
 管理员详情组合 `features/tickets/photos/AdminTicketPhotos`，通过 Cookie 读取 RN 上传的现场照片并放大预览。图片请求复用共享传输和读取 Hook，关闭时取消读取并释放内存 URL；通用详情字段不包含请求或鉴权逻辑。边界及验证见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。

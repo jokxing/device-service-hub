@@ -10,7 +10,7 @@
 - 每次只完成当前确认的一步。范围外的问题先说明，不顺带扩建系统。
 - 沿用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules、npm workspaces 和根锁文件。
 - 未获当前任务明确授权，不更换技术栈、重组目录、添加状态库或组件库、批量升级依赖。
-- 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复、授权设备查询、文字报修、本人记录、确认完成及维修任务查询/接单、文字处理结果；RN 已支持待分派工单补充现场照片；Web 上传与门户附件界面、改派、退回/再次提交、微前端和支付尚未实现，不提前扩展范围。
+- 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复、授权设备查询、文字报修、本人记录、确认完成及维修任务查询/接单、文字处理结果；RN 已支持待分派工单补充现场照片；微前端已初步接入主应用与 React 后台；Web 上传与门户附件界面、改派、退回/再次提交、Vue 子应用和支付尚未实现，不提前扩展范围。
 - Git 提交、推送、部署和仓库可见性修改需要明确授权。
 - `apps/portal` 已交付登录、授权设备查询、文字报修、本人记录与完成确认，修改前阅读 [PORTAL.md](docs/PORTAL.md)。使用 App Router；Server Components 负责设备/本人记录查询，Client Components 承担表单与确认交互。图片上传、RN 与微前端仍需按步确认。
 - 不读取无关项目或私有业务资料，不复制来源或授权不明确的代码与素材。
@@ -89,6 +89,7 @@
 - RN 扫码变更执行 `run test:device-tags`、`run verify:device-scan-api`、`run verify:device-scan-ui`、`run verify:device-scan-android`；相机交互另执行 `run verify:device-camera-android`。保留设备数据范围、拒绝外链、扫码去重和手动输入；光学识别、相机预览与输入查询分别记录，不能以手动查询冒充扫码验证。
 - RN 现场照片变更阅读 [TICKET_PHOTOS.md](docs/TICKET_PHOTOS.md)，执行 `run verify:mobile-photos`、`run verify:mobile-photos-android`；保留文字建单与上传的独立意图、文件解码验证、工单行锁、当前分派权限和受保护图片读取。相机拍摄与系统相册选择分别记录。
 - Web 管理员已支持工单现场照片只读查看与放大预览。照片 UI 位于 `features/tickets/photos`，详情负责组合；复用 Cookie 鉴权和附件服务，不开放静态目录。相关变更执行 `run verify:web-photos`，检查管理员范围、图片失败重试、关闭释放内存 URL、401 清理和窄屏。
+- 微前端修改阅读 [MICRO_FRONTENDS.md](docs/MICRO_FRONTENDS.md)。`apps/shell` 使用稳定版 qiankun 2 加载现有后台的独立 UMD 构建，原 Vite 入口保留；Provider 共用 createApplication，卸载必须回收 React Root。保持 Shadow DOM 内的 Ant Design 样式和浮层容器、`/tickets` basename、Cookie/Origin 边界，相关变更执行 `run verify:micro`。Vue 子应用与业务通信按后续确认推进；不自动升级 qiankun RC、共享凭据或把 RN/门户改为子应用。
 - Expo 和 DotSlash 用户缓存必须由本地启动脚本明确指向项目 .local，不能只依赖 APPDATA/TEMP。Android 工具路径与 serial 放被忽略的 .local/android-device.json，不写进公共文件；未确认前不安装完整 SDK、生成原生工程或调用 EAS 云构建。
 - 不提交 `.local`、`node_modules`、构建产物、真实 `.env`、凭据或个人操作记录。公开文档不包含个人绝对路径或对话过程。
 - 公开文档采用产品与工程交付表述，突出业务建模、架构取舍、数据权限、并发一致性、可维护性及验证证据，不加入学习任务、练习安排或教程式要求。十余年前端经历不等同于十余年 React/RN 经历；不虚构生产规模、客户案例或性能指标。

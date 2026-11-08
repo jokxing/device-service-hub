@@ -6,9 +6,12 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
     "build": "tsc -b && vite build",
+    "build:micro": "tsc -b && vite build --config vite.micro.config.ts",
+    "preview:micro": "vite preview --config vite.micro.config.ts --host 127.0.0.1 --port 5175 --strictPort",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort"
   },
   "dependencies": {
+    "@ant-design/cssinjs": "2.1.2",
     "@ant-design/icons": "^6.3.4",
     "@device-service-hub/contracts": "^0.1.0",
     "antd": "^6.7.0",
