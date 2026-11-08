@@ -14,7 +14,13 @@ async function login(username) {
     .fill(process.env.SEED_ACCOUNT_PASSWORD);
   await page.getByRole("button", { name: /^登\s*录$/ }).click();
   await page.waitForURL("**/service/devices");
-  await page.getByText("已连接本地服务与数据库", { exact: true }).waitFor();
+  await page
+    .getByRole("navigation", { name: "设备服务导航", exact: true })
+    .waitFor();
+  assert.equal(
+    await page.getByText("已连接本地服务与数据库", { exact: true }).count(),
+    0,
+  );
 }
 async function logout() {
   await page.getByRole("button", { name: "退出登录", exact: true }).click();

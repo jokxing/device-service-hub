@@ -1,6 +1,6 @@
 import styles from "../app.module.css";
 import { useLayoutEffect, useRef } from "react";
-import { Link, NavLink, Outlet, useMatch } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useMatch } from "react-router-dom";
 import { TICKETS_APP, DEVICES_APP } from "../micro/apps";
 
 export default function ShellLayout() {
@@ -8,6 +8,11 @@ export default function ShellLayout() {
   const pageRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+  useLayoutEffect(() => {
+    contentRef.current?.scrollTo(0, 0);
+  }, [pathname]);
   useLayoutEffect(() => {
     const page = pageRef.current;
     const header = headerRef.current;
@@ -55,7 +60,12 @@ export default function ShellLayout() {
         </Link>
         <NavLink to={DEVICES_APP.basePath}>设备台账</NavLink>
       </nav>
-      <main className={styles["shell-content"]}>
+      <main
+        ref={contentRef}
+        className={styles["shell-content"]}
+        aria-label="协同台内容"
+        tabIndex={0}
+      >
         <Outlet />
       </main>
     </div>

@@ -3,11 +3,21 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { openLocalApi } from "./lib/local-api.mjs";
 import { openLocalBrowser } from "./lib/browser.mjs";
+import { assertShellContentScroll } from "./lib/micro-ui.mjs";
 const local = openLocalApi();
 const { context, page, screenshots, errors } = await openLocalBrowser(
   "micro-devices-browser-profile",
 );
 const host = "http://127.0.0.1:4174";
+const unified = process.argv.includes("--unified");
+const childAssetPattern = unified
+  ? host + "/micro-assets/devices/**"
+  : "http://127.0.0.1:5177/**";
+const remoteRequests = [];
+page.on("request", (request) => {
+  if (unified && new URL(request.url()).origin !== host)
+    remoteRequests.push(request.url());
+});
 const nav = page.getByRole("navigation", { name: "协同台导航" });
 const devices = page.locator("[data-devices-root]");
 const list = page.getByRole("list", { name: "授权设备列表", exact: true });
@@ -21,7 +31,13 @@ async function login(username) {
     .fill(process.env.SEED_ACCOUNT_PASSWORD);
   await page.getByRole("button", { name: /^登\s*录$/ }).click();
   await page.waitForURL(host + "/tickets/service/devices");
-  await page.getByText("已连接本地服务与数据库", { exact: true }).waitFor();
+  await page
+    .getByRole("navigation", { name: "设备服务导航", exact: true })
+    .waitFor();
+  assert.equal(
+    await page.getByText("已连接本地服务与数据库", { exact: true }).count(),
+    0,
+  );
 }
 async function openDevices() {
   await nav.getByRole("link", { name: "设备台账", exact: true }).click();
@@ -34,6 +50,13 @@ async function logout() {
 }
 try {
   await local.waitForApi();
+  if (unified) {
+    const rejected = await context.request.post(host + "/api/auth/login", {
+      headers: { Origin: "https://untrusted.example" },
+      data: { username: "reporter.a", password: "invalid-password" },
+    });
+    assert.equal(rejected.status(), 403, "Proxy preserves rejected Origin");
+  }
   await context.clearCookies();
   await context.addInitScript(() => {
     const add = EventTarget.prototype.addEventListener,
@@ -89,6 +112,17 @@ try {
   await page.waitForURL(host + "/tickets/login");
   await active("工单后台");
   await login("reporter.a");
+  if (unified) {
+    const cookies = await context.cookies(host + "/api/auth/me");
+    assert.ok(
+      cookies.some(
+        (cookie) =>
+          cookie.httpOnly &&
+          cookie.path === "/api" &&
+          cookie.sameSite === "Strict",
+      ),
+    );
+  }
   await openDevices();
   await list.getByText("AC-001", { exact: true }).waitFor();
   assert.equal(await list.getByText("WP-002", { exact: true }).count(), 0);
@@ -189,6 +223,10 @@ try {
     path: path.join(screenshots, "micro-vue-devices-mobile.png"),
     fullPage: true,
   });
+  await assertShellContentScroll(
+    page,
+    path.join(screenshots, "micro-vue-devices-scrolled.png"),
+  );
   await page.setViewportSize({ width: 1440, height: 1100 });
 
   let baseline;
@@ -283,7 +321,7 @@ try {
   assert.equal(await list.count(), 0);
   assert.deepEqual(errors, []);
   let unavailable = true;
-  await page.route("http://127.0.0.1:5177/**", (route) =>
+  await page.route(childAssetPattern, (route) =>
     unavailable
       ? route.fulfill({ status: 503, body: "unavailable" })
       : route.continue(),
@@ -303,32 +341,41 @@ try {
     ),
     [],
   );
-  // Independent production build reads the same scoped API; it is not only a shell fragment.
-  await page.goto("http://127.0.0.1:5174/devices", {
-    waitUntil: "networkidle",
-  });
-  await list.getByText("AC-001", { exact: true }).waitFor();
-  await list
-    .getByRole("listitem")
-    .filter({ hasText: "AC-001" })
-    .getByRole("link", { name: "查看设备详情 →", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "在服务后台查看", exact: true })
-    .click();
-  await page.waitForURL(
-    "http://127.0.0.1:5174/tickets/service/devices?deviceId=device-ac001",
+  if (!unified) {
+    // Independent production build reads the same scoped API; it is not only a shell fragment.
+    await page.goto("http://127.0.0.1:5174/devices", {
+      waitUntil: "networkidle",
+    });
+    await list.getByText("AC-001", { exact: true }).waitFor();
+    await list
+      .getByRole("listitem")
+      .filter({ hasText: "AC-001" })
+      .getByRole("link", { name: "查看设备详情 →", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "在服务后台查看", exact: true })
+      .click();
+    await page.waitForURL(
+      "http://127.0.0.1:5174/tickets/service/devices?deviceId=device-ac001",
+    );
+    await dialog.getByText("型号：KFR-120LW", { exact: true }).waitFor();
+    await page.goto("http://127.0.0.1:4176/", { waitUntil: "networkidle" });
+    await list.getByText("AC-001", { exact: true }).waitFor();
+    await list.getByText("WP-002", { exact: true }).waitFor();
+  }
+  assert.deepEqual(
+    remoteRequests,
+    [],
+    "Unified browser requests stay on one origin",
   );
-  await dialog.getByText("型号：KFR-120LW", { exact: true }).waitFor();
-  await page.goto("http://127.0.0.1:4176/", { waitUntil: "networkidle" });
-  await list.getByText("AC-001", { exact: true }).waitFor();
-  await list.getByText("WP-002", { exact: true }).waitFor();
   console.log(
     JSON.stringify(
       {
         result: "passed",
         checks: [
-          "Vue standalone and micro builds read real Cookie-scoped devices",
+          unified
+            ? "Unified Vue production assets read Cookie-scoped devices"
+            : "Vue standalone and micro builds read real Cookie-scoped devices",
           "Four roles, unknown/unauthorized details, account switch and 401 cleanup",
           "Vue detail URLs, refresh/history and Vue→host→React device navigation",
           "Internal route preserves instance; cross-app unmount cancels reads and listeners stay stable",

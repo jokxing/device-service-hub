@@ -19,6 +19,8 @@
 
 ## 界面预览
 
+微前端本地统一生产构建入口：启动项目数据库/API 后，运行 `npm run build:micro:unified` 和 `npm run preview:micro:unified`，访问 `http://127.0.0.1:4174`。Windows 使用 `scripts/npm-local.ps1 run <脚本名>`；4174 与原 `preview:shell` 二选一。资源路径、代理与验证边界见 [微前端集成](docs/MICRO_FRONTENDS.md)。
+
 ![工单工作台](docs/screenshots/workbench-desktop.png)
 
 [查看窄屏预览](docs/screenshots/workbench-mobile.png)

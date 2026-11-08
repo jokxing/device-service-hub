@@ -90,6 +90,7 @@ App → DemoProvider → AppLayout → 页面 → 业务组件
 - 前后端实际共用的传输类型位于 `packages/contracts`；根入口只包含类型声明，`device-tags` 子入口提供 Web 与 RN 共用的纯标签编解码；不依赖数据库或浏览器运行时。
 - ServiceLayout 管理真实身份和服务导航，增加 `/service/tickets` 及本人详情路由；字段组件在演示/真实表单之间复用，提交逻辑保持独立。通用读取请求通过 `shared/hooks/useApiResource.ts` 取消过期请求，401 处理由调用方传入。
 - ServiceLayout 统一真实服务页面的横向边距与区块间距；ServicePageHeader 共用标题、说明和可选返回链接。布局响应式样式留在 CSS Modules，不能用全局 main/nav 规则造成重复内边距。
+- 真实服务布局不展示常驻的本地数据库连接或开发能力说明横幅；能力边界记录在文档。操作结果、错误与必要业务提示保留，独立入口与微前端共用同一布局。
 - 设备列表和本人报修列表在 Ant Design `md` 断点以下（小于 768px）改用卡片；桌面保留表格，同一时间只渲染一种布局。CompactRecordCard 共用信息层级、字段排版和操作区域，业务数据和回调仍留在所属模块；本人分页继续由 URL 和服务端控制。
 
 ## 路由与样式
@@ -100,7 +101,7 @@ App → DemoProvider → AppLayout → 页面 → 业务组件
 - Ant Design 主题在 `app/theme.ts`；通知和弹窗通过 Ant Design App 上下文调用。
 - 布局和业务自定义样式使用 CSS Modules；第三方类通过显式 `:global` 引用。组件内部样式优先用 Ant Design Token/属性调整。
 - Tailwind 继续提供布局和间距工具类，未启用 Preflight；全局样式不承载具体业务页面结构。
-- 部署时需要为三个前端路由配置 HTML 回退；当前仅验证 Vite 本地服务，未部署。
+- 微前端统一生产构建入口已提供本地静态资源、页面路由回退与 API 转发验证，见 MICRO_FRONTENDS.md；独立 Web 与门户部署仍需分别配置路由，尚未部署服务器。
 
 ## 新增功能的顺序
 

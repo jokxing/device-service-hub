@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Alert, App, Button, Space } from "antd";
-import { Link, Navigate, NavLink, Outlet } from "react-router-dom";
+import { App, Button, Space } from "antd";
+import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { ROUTES } from "../app/routes";
 import { useSession } from "../features/auth/sessionContext";
 import SessionFeedback from "../features/auth/components/SessionFeedback";
@@ -71,19 +71,6 @@ export default function ServiceLayout() {
           </NavLink>
         )}
       </nav>
-      <Alert
-        showIcon
-        type="info"
-        title="已连接本地服务与数据库"
-        description={
-          <>
-            支持报修、分派、接单、处理结果与用户确认；管理员可查看现场照片，Web
-            上传与退回尚未开放。
-            <Link to={ROUTES.tickets}>工单演示工作台</Link> 使用独立的演示数据。
-          </>
-        }
-        className={styles.notice}
-      />
       <main className={styles.content}>
         <Outlet key={user.id} />
       </main>

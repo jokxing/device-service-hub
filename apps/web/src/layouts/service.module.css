@@ -39,9 +39,6 @@
   color: #2563eb;
   border-bottom-color: #2563eb;
 }
-.notice {
-  margin-bottom: var(--service-section-gap);
-}
 .content {
   min-width: 0;
   padding: 0;

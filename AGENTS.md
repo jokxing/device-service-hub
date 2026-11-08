@@ -91,6 +91,7 @@
 - Web 管理员已支持工单现场照片只读查看与放大预览。照片 UI 位于 `features/tickets/photos`，详情负责组合；复用 Cookie 鉴权和附件服务，不开放静态目录。相关变更执行 `run verify:web-photos`，检查管理员范围、图片失败重试、关闭释放内存 URL、401 清理和窄屏。
 - 微前端修改阅读 [MICRO_FRONTENDS.md](docs/MICRO_FRONTENDS.md)。`apps/shell` 使用稳定版 qiankun 2 加载 React 后台和 Vue 设备子应用的独立 UMD 构建，原 Vite 入口保留；Provider 共用 createApplication，卸载必须回收 React Root。保持 Shadow DOM 内的 Ant Design 样式和浮层容器、`/tickets` basename、Cookie/Origin 边界，相关变更执行 `run verify:micro`、`run verify:micro-devices` 和 `run test:micro-navigation`。`apps/devices` 按 app/layouts/features/shared 分层，Vue 根节点和 Router history 都须卸载；通信只传版本化导航意图，由主应用校验并映射固定路径，不能传凭据或信任客户端角色。不自动升级 qiankun RC、共享凭据或把 RN/门户改为子应用。
 - Expo 和 DotSlash 用户缓存必须由本地启动脚本明确指向项目 .local，不能只依赖 APPDATA/TEMP。Android 工具路径与 serial 放被忽略的 .local/android-device.json，不写进公共文件；未确认前不安装完整 SDK、生成原生工程或调用 EAS 云构建。
+- 微前端统一生产构建入口使用 `build:micro:unified`、`preview:micro:unified`，与 4174 原预览互斥；相关变更运行 `verify:micro-unified`。静态资源缺失必须返回 404，页面路由才可回退 HTML；API 转发保留 Origin、Cookie、方法及响应状态，不自动重试写请求或扩大后端白名单。该脚本只用于本地验证，不当作公网部署交付。
 - 不提交 `.local`、`node_modules`、构建产物、真实 `.env`、凭据或个人操作记录。公开文档不包含个人绝对路径或对话过程。
 - 公开文档采用产品与工程交付表述，突出业务建模、架构取舍、数据权限、并发一致性、可维护性及验证证据，不加入学习任务、练习安排或教程式要求。十余年前端经历不等同于十余年 React/RN 经历；不虚构生产规模、客户案例或性能指标。
 - 如实标明演示数据、未实现能力以及 Mock、模拟器、真机和安装包各自验证范围，不包装为商业生产经验。

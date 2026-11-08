@@ -32,6 +32,7 @@ Vue 子应用提供当前账号授权设备列表、详情、刷新、空态和�
 - 导航选中态从 URL 推导：总览只匹配 `/`，工单匹配 `/tickets/*`，设备匹配 `/devices/*`。筛选、详情、刷新与前进后退保留真实路由。
 - 子应用未知路由只显示兜底页面，不重定向到本应用首页；共享 history 下，离开子应用时也会收到主应用的路由事件，兜底重定向会抢回主应用导航。Vue 未知页面提供显式返回链接。
 - 主布局通过 ResizeObserver 提供剩余视口高度 `--micro-viewport-height`；登录按剩余区域居中，独立入口回退至 100dvh。短屏自然滚动，观察器在卸载时断开。
+- 主应用使用 100dvh 纵向布局，标题和导航不参与滚动，只有“协同台内容”区域 overflow:auto；不修改子应用独立入口的滚动规则。页面路径变化重置内容滚动，筛选参数变化不强制回顶；内容区支持键盘聚焦。React/Vue 长列表及短屏登录均检查内容可达、导航位置稳定和文档无额外滚动条。
 - 资源加载失败显示错误和“重新加载”。qiankun 2 会缓存失败的入口或生命周期 Promise，重试刷新当前文档以清理失败缓存；不自动重试业务写请求。
 
 ## 最小通信协议
@@ -87,7 +88,31 @@ Windows 通过 `scripts/npm-local.ps1 run <脚本名>` 执行，缓存与临时�
 
 根 build 包含上述构建。兼容入口修改后需重建并刷新，不承诺 HMR；独立入口保留各自 Vite 开发体验。根 .env 若显式配置 WEB_ORIGINS，保留旧项并包含 5174/4174 的精确来源，修改后重启 API，不公开凭据。
 
-## 验证范围
+## 本地统一生产构建入口
+
+在已有数据库/API 运行的前提下，执行 `npm run build:micro:unified`，再执行 `npm run preview:micro:unified`，访问 `http://127.0.0.1:4174`。Windows 仍通过 `scripts/npm-local.ps1 run <脚本名>` 执行。该入口占用 4174，与 `preview:shell` 二选一；端口占用时直接报错，不自动终止其他服务。
+
+统一模式将主应用构建到 `apps/shell/dist/unified`；两个子应用保留各自 `dist/micro` 独立产物。`import.meta.env.MODE` 仅在 unified 构建时将入口切换为同源资源路径；原开发和多端口预览方式保留。主应用普通构建会清理其 dist，使用统一入口前须运行完整 `build:micro:unified`。
+
+| 请求路径 | 处理方式 |
+| --- | --- |
+| `/`、`/tickets/*`、`/devices/*` 的页面路由 | 主应用 HTML，子应用按 basename 接管；深层地址可直接刷新 |
+| `/assets/*` | unified 主应用资源 |
+| `/micro-assets/tickets/*` | React UMD/HTML/CSS 产物 |
+| `/micro-assets/devices/*` | Vue UMD/HTML/CSS 产物 |
+| `/api`、`/api/*` | 流式转发到本机 3001，保留方法、查询、请求体、Origin、Cookie、响应状态及 Set-Cookie |
+
+缺失资源返回 404，不能回退成 HTML；非法路径和构建目录外文件不提供访问。构建预览统一使用 no-store，避免固定文件名的子应用 UMD 缓存陈旧。上游连接失败/超时返回 502；不重试写操作。入口只绑定 127.0.0.1，不读取真实 .env，也不修改后端 Origin 白名单。
+
+`scripts/lib/micro-server.mjs` 只承担本地静态产物和代理验证；不是公网服务方案，不包含 TLS、CDN、进程守护、灰度或发布回滚。Next.js/RN 不接入此入口。服务器部署仍为独立事项。
+
+执行 `npm run verify:micro-unified`，复用 React/Vue 原验收而非复制业务测试，并增加 HTTP 路由、缺失资源、API 代理头与错误响应检查。统一模式检查所有浏览器请求均为 4174 同源；浏览器故障注入单独记录，不将其当作真实服务器宕机。验证截图沿用下方微前端截图。
+
+## 验证记录
+
+2026-11-08 统一入口收口：全项目 `build`、`build:micro:unified`、`test:micro-navigation`、`verify:micro-unified`、`verify:api`、`verify:connected-ui`、`verify:ui` 通过。统一入口复核 React/Vue 的四角色范围、会话退出、未知/越权设备、深层地址刷新、URL 详情与跨应用导航、样式隔离、重复挂载卸载、读取取消、390px 与资源失败恢复；所有被观察的浏览器网络请求均使用 4174 来源，真实后端拒绝非法 Origin，Cookie 保留 HttpOnly、SameSite=Strict 和 /api 路径。已查看窄屏和跨应用详情截图。
+
+HTTP 检查另覆盖缺失资源 404、目录外路径拒绝、HEAD、代理请求体/查询/Origin/Cookie、响应状态/Set-Cookie 以及上游断连 502；代理头检查使用临时回显服务，真实认证与权限通过本地 API 单独验收。统一模式使用固定根脚本 `verify:micro-unified`，避免将故障注入指向独立资源端口。未进行公网、TLS、跨浏览器或线上反向代理验证。
 
 2026-11-08：Vue 集成首轮通过独立/兼容构建、管理员/两名报修用户/维修人员四角色范围、越权详情与 React 再鉴权、401 清理、换账号、详情直达/刷新/前进后退、Vue→主应用→React 详情跳转、390px 卡片、读取失败重试和资源入口失败恢复。Vue 内部路由保持原实例；反复切换两个子应用后只有一个活动根节点，路由监听数量稳定，离页会触发未完成读取的 AbortSignal。
 

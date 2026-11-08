@@ -11,7 +11,7 @@
 - PostgreSQL 程序、数据库文件、日志及测试账号说明保存在被忽略的 `.local`；不注册 Windows 服务。
 - API 仅监听 `127.0.0.1:3001`，本项目数据库仅监听 `127.0.0.1:55432`；Vite 将 `/api` 代理到后端。
 - Next.js 门户监听 `127.0.0.1:3000`，目前复用登录与设备查询。启用前在根 `WEB_ORIGINS` 中保留原来源并加入 `http://127.0.0.1:3000`，重启 API；门户独立 Cookie 和服务端转发规则见 [PORTAL.md](PORTAL.md)。
-- 微前端主应用使用 5174（开发）/4174（构建预览），通过同源 `/api` 代理复用业务后端。显式 `WEB_ORIGINS` 须保留旧项并添加这两个精确来源；不改写浏览器 Origin。启动和独立构建见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)。
+- 微前端主应用使用 5174（开发）/4174（构建预览或统一入口），通过同源 `/api` 代理复用业务后端。显式 `WEB_ORIGINS` 须保留旧项并添加这两个精确来源；不改写浏览器 Origin。统一入口的静态产物、深层路由和 API 转发见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)。
 
 ## 首次启动
 

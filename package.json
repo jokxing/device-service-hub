@@ -87,7 +87,11 @@
     "verify:mobile-photos": "node scripts/verify-mobile-photos.mjs",
     "verify:mobile-photos-android": "node scripts/verify-mobile-photos-android.mjs",
     "verify:web-photos": "node scripts/verify-web-photos.mjs",
-    "verify:micro": "node scripts/verify-micro.mjs"
+    "verify:micro": "node scripts/verify-micro.mjs",
+    "build:micro:unified": "npm run build:micro && npm run build --workspace apps/shell -- --mode unified --outDir dist/unified",
+    "preview:micro:unified": "node scripts/preview-micro-unified.mjs",
+    "test:micro-server": "node --test scripts/test-micro-server.mjs",
+    "verify:micro-unified": "npm run test:micro-server && node scripts/verify-micro.mjs --unified && node scripts/verify-micro-devices.mjs --unified"
   },
   "overrides": {
     "react-native-gesture-handler": "2.32.0",

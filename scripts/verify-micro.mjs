@@ -4,12 +4,22 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { openLocalApi } from "./lib/local-api.mjs";
 import { openLocalBrowser } from "./lib/browser.mjs";
+import { assertShellContentScroll } from "./lib/micro-ui.mjs";
 
 const local = openLocalApi();
 const db = await local.connectDatabase();
 const browser = await openLocalBrowser("micro-browser-profile");
 const { context, page, screenshots, errors } = browser;
 const host = "http://127.0.0.1:4174";
+const unified = process.argv.includes("--unified");
+const childAssetPattern = unified
+  ? host + "/micro-assets/tickets/**"
+  : "http://127.0.0.1:5175/**";
+const remoteRequests = [];
+page.on("request", (request) => {
+  if (unified && new URL(request.url()).origin !== host)
+    remoteRequests.push(request.url());
+});
 const title = "微前端工单验收 " + randomUUID().slice(0, 8);
 let ticket;
 const nav = page.getByRole("navigation", { name: "协同台导航" });
@@ -50,6 +60,13 @@ async function assertLoginPosition(fits) {
     await page
       .getByRole("button", { name: /^登\s*录$/ })
       .scrollIntoViewIfNeeded();
+    const button = await page
+      .getByRole("button", { name: /^登\s*录$/ })
+      .boundingBox();
+    assert.ok(
+      button.y >= contentTop && button.y + button.height <= height,
+      "Short-screen login remains reachable inside content",
+    );
   }
   assert.equal(
     await page.evaluate(
@@ -65,7 +82,13 @@ async function login(username) {
     .fill(process.env.SEED_ACCOUNT_PASSWORD);
   await page.getByRole("button", { name: /^登\s*录$/ }).click();
   await page.waitForURL(host + "/tickets/service/devices");
-  await page.getByText("已连接本地服务与数据库", { exact: true }).waitFor();
+  await page
+    .getByRole("navigation", { name: "设备服务导航", exact: true })
+    .waitFor();
+  assert.equal(
+    await page.getByText("已连接本地服务与数据库", { exact: true }).count(),
+    0,
+  );
   await assertActiveTab("工单后台");
 }
 async function logout() {
@@ -246,6 +269,11 @@ try {
     path: path.join(screenshots, "micro-tickets-desktop.png"),
     fullPage: true,
   });
+  await page.setViewportSize({ width: 1440, height: 650 });
+  await assertShellContentScroll(
+    page,
+    path.join(screenshots, "micro-tickets-desktop-scrolled.png"),
+  );
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("list", { name: "管理工单列表" }).waitFor();
   assert.equal(
@@ -258,6 +286,10 @@ try {
     path: path.join(screenshots, "micro-tickets-mobile.png"),
     fullPage: true,
   });
+  await assertShellContentScroll(
+    page,
+    path.join(screenshots, "micro-tickets-scrolled.png"),
+  );
   await page.setViewportSize({ width: 1440, height: 1100 });
 
   let baseline;
@@ -308,7 +340,7 @@ try {
 
   // A new document has an empty qiankun cache, so the entry failure is real.
   let unavailable = true;
-  await page.route("http://127.0.0.1:5175/**", async (route) => {
+  await page.route(childAssetPattern, async (route) => {
     if (unavailable) await route.fulfill({ status: 503, body: "unavailable" });
     else await route.continue();
   });
@@ -324,7 +356,8 @@ try {
     .getByRole("heading", { name: "登录设备服务", exact: true })
     .waitFor();
   // Both dev and built hosts can load the independently built child.
-  await page.goto("http://127.0.0.1:5174/tickets/service/admin/tickets");
+  if (!unified)
+    await page.goto("http://127.0.0.1:5174/tickets/service/admin/tickets");
   await page
     .getByRole("heading", { name: "登录设备服务", exact: true })
     .waitFor();
@@ -335,12 +368,19 @@ try {
     [],
     "No unexpected runtime errors after recovery",
   );
+  assert.deepEqual(
+    remoteRequests,
+    [],
+    "Unified browser requests stay on one origin",
+  );
   console.log(
     JSON.stringify(
       {
         result: "passed",
         checks: [
-          "Standalone child build loaded by dev and production hosts",
+          unified
+            ? "React production assets loaded from the unified origin"
+            : "Standalone child build loaded by dev and production hosts",
           "Cookie login, role scope and no frontend permission bypass",
           "Base route, URL filters, refresh and browser history",
           "Shadow DOM styles, Ant Design modal/select portals and 390px layout",
