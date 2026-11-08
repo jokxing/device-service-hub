@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { loadMicroApp } from "qiankun";
-import { TICKETS_APP } from "./tickets";
+import type { ServiceNavigationRequest } from "@device-service-hub/contracts";
+
+import type { MicroAppDefinition } from "./types";
 
 // React effect cleanup cannot await. Serialize all mount/unmount work, including StrictMode.
 let lifecycleQueue: Promise<unknown> = Promise.resolve();
@@ -10,8 +12,15 @@ function schedule(task: () => Promise<void>) {
   return result;
 }
 
-export function useTicketsApp() {
+export function useMicroApp(
+  definition: MicroAppDefinition,
+  onNavigate?: (message: ServiceNavigationRequest) => void,
+) {
   const container = useRef<HTMLDivElement>(null);
+  const navigateRef = useRef(onNavigate);
+  useLayoutEffect(() => {
+    navigateRef.current = onNavigate;
+  }, [onNavigate]);
   const [phase, setPhase] = useState<"loading" | "mounted" | "failed">(
     "loading",
   );
@@ -27,9 +36,15 @@ export function useTicketsApp() {
       if (disposed) return;
       app = loadMicroApp(
         {
-          ...TICKETS_APP,
+          name: definition.name,
+          entry: definition.entry,
           container: slot,
-          props: { basePath: TICKETS_APP.basePath },
+          props: {
+            basePath: definition.basePath,
+            onNavigate: (message: ServiceNavigationRequest) => {
+              if (!disposed) navigateRef.current?.(message);
+            },
+          },
         },
         {
           sandbox: { strictStyleIsolation: true },
@@ -40,7 +55,7 @@ export function useTicketsApp() {
               signal: AbortSignal.timeout(15000),
             });
             if (!response.ok)
-              throw new Error("Ticket application asset unavailable");
+              throw new Error("Micro application asset unavailable");
             return response;
           },
         },
@@ -58,9 +73,9 @@ export function useTicketsApp() {
         } finally {
           slot.remove();
         }
-      }).catch(() => console.error("工单子应用卸载失败"));
+      }).catch(() => console.error("子应用卸载失败：" + definition.name));
     };
-  }, []);
+  }, [definition]);
   // qiankun 2 caches failed HTML/lifecycle promises; reload also clears that cache.
   return { container, phase, retry: () => window.location.reload() };
 }

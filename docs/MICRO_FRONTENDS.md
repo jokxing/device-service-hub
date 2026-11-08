@@ -1,93 +1,100 @@
 # Web 微前端集成
 
-## 当前交付与边界
+## 当前交付
 
-`apps/shell` 是设备服务协同台主应用，通过 qiankun 加载现有 `apps/web` React 后台。两者独立构建，后台继续支持原有独立入口；没有复制页面或另建业务后端。Next.js 门户与 RN 保持独立，Vue 设备子应用和跨子应用业务通信留待下一增量。
+`apps/shell` 使用 qiankun 2.10.16 集成 React 工单后台与 Vue 设备台账。三个应用独立构建，共用既有 NestJS/PostgreSQL；React 后台原入口保留，Next.js 门户与 RN 保持独立。
 
-本阶段是单主应用、单 React 子应用的本地集成验证，不代表已完成完整的 React/Vue 多应用平台或生产部署。
+Vue 子应用提供当前账号授权设备列表、详情、刷新、空态和错误处理，不增加设备编辑、删除或新的业务后端。登录与退出沿用 React 服务入口，不建设第二套认证系统或跨域 SSO。
 
-## 技术取舍
+## 应用和构建边界
 
-- 使用稳定版 qiankun 2.10.16；核对时 npm `latest` 仍为 2.x，3.x 原生 ESM/Vite 支持位于 RC 通道。暂不为接入改用预发布运行时，也不替换已有 Vite。
-- 后台默认入口保留 Vite ESM 和 HMR。另用 `vite.micro.config.ts` 的 Library Mode 输出 UMD 生命周期及独立 HTML/CSS，适配 qiankun 2。两种构建共用页面、Provider、路由与业务 API，只有启动方式不同。
-- 子应用运行包包含自己的 React/Ant Design，首步优先保证版本与生命周期独立；暂不进行运行时依赖共享或包体积优化。兼容构建为单包，普通后台构建仍有既有包体积提示，不将其解释为性能优化已完成。
-- 使用 qiankun 的 JS 沙箱及 Shadow DOM 样式隔离。此选项属于 qiankun 2，3.x 已提示将移除，未来升级需重新评估，不能只修改版本号。沙箱用于可信应用的运行隔离，不构成对不可信源码的安全边界。
+| 工作区 | 独立入口 | 主应用路由 | 兼容构建资源服务 |
+| --- | --- | --- | --- |
+| `apps/shell` | 5174 开发 / 4174 构建预览 | `/` 总览 | 不适用 |
+| `apps/web` | 5173 开发 / 4173 预览 | `/tickets/*` | 5175 |
+| `apps/devices` | 5176 开发 / 4176 预览 | `/devices`、`/devices/:id` | 5177 |
 
-参考：[qiankun 2 生命周期](https://v2.qiankun.umijs.org/guide/getting-started/)、[qiankun 2 API](https://v2.qiankun.umijs.org/api/)、[Vite Library Mode](https://vite.dev/guide/build.html#library-mode)、[qiankun 版本状态](https://github.com/umijs/qiankun)。本项目使用公开 API 自行实现适配，不复制第三方业务源码或素材。
+- 沿用稳定版 qiankun 2；核对时 3.x 的 Vite 原生 ESM 支持仍处 RC 通道。React/Vue 独立入口保留 Vite ESM，兼容构建单独输出 UMD 生命周期和 HTML/CSS。两种入口共用本应用页面，不复制业务源码。
+- Vue 使用 3.5.45、Router 4.6.4、Vite 8 和 vue-tsc；不额外安装状态库或组件库。只读页面使用原生控件和 CSS Modules，React 后台继续使用 Ant Design。
+- 兼容构建包含各自运行时，暂不共享 React/Vue 依赖。独立后台仍有既有包体积提示，不宣称已完成包体优化。
+- Vue UMD 导出名与注册名同为 `device-service-devices`。Vue 初始化会写入框架全局，不能只依赖 qiankun 对“最后写入全局变量”的导出推断。
+- Shadow DOM 为两个子应用隔离静态样式。React 的 StyleProvider 和 Ant Design 浮层/消息容器保持在子应用内部；Vue 不向主应用注入页面样式。qiankun 2 的 strictStyleIsolation 已提示未来版本将移除，升级需重新评估。
 
-## 目录与责任
+参考：[qiankun 2 生命周期](https://v2.qiankun.umijs.org/guide/getting-started/)、[qiankun 2 API](https://v2.qiankun.umijs.org/api/)、[Vite Library Mode](https://vite.dev/guide/build.html#library-mode)、[Vue Application API](https://vuejs.org/api/application)、[Vue TypeScript](https://vuejs.org/guide/typescript/overview)。适配代码使用公开 API 自行实现，不复制第三方业务源码或素材。
 
-| 位置 | 责任 |
-| --- | --- |
-| `apps/shell/src/App.tsx` | 主应用路由，组合布局与页面 |
-| `apps/shell/src/layouts`、`pages` | 主导航、总览和子应用承载页面 |
-| `apps/shell/src/micro/tickets.ts` | 固定的子应用名称、资源入口、路由前缀 |
-| `apps/shell/src/micro/useTicketsApp.ts` | 加载状态、资源读取超时和挂载/卸载串行协调 |
-| `apps/web/src/app/createApplication.tsx` | 两种入口共用的 React 根节点与 Provider 创建/销毁 |
-| `apps/web/src/main.tsx` | 原有独立后台入口 |
-| `apps/web/src/micro.ts` | bootstrap/mount/unmount；只负责容器与生命周期，不实现业务 |
-| `apps/web/vite.micro.config.ts` | UMD、HTML/CSS 和子应用资源 CORS |
+## 目录职责与生命周期
 
-主应用不跨工作区导入后台页面、Hook 或会话 Provider。当前 props 仅传递固定的 `basePath`，不传账号、角色授权、Cookie 或令牌；无需提前抽象跨应用状态总线。
+- 主应用 `App.tsx` 组装路由，`layouts` 管理外壳和导航，`pages` 组合业务入口。`micro/apps.ts` 集中应用名称、地址与前缀，`MicroAppView` 共用加载/失败界面，`useMicroApp` 共用串行挂载与卸载。
+- 切换 React/Vue 时等待旧实例卸载；StrictMode 不同时创建两个活动实例。应用内部路由变化不重新挂载；通信回调使用当前值，卸载后的回调被忽略。
+- React `main.tsx` 与 `micro.ts` 共用 `app/createApplication.tsx`。卸载调用 React Root.unmount，既有 Hook 取消读取并清理表单/图片内存；取消写请求不等于事务回滚。
+- Vue `App.vue` 只组装 `layouts/DevicesLayout.vue`，会话在当前应用实例内提供，设备页面归 `features/devices`。`shared` 只包含传输、读取生命周期和跨页面视觉样式。
+- Vue 每次挂载创建独立 App、Router、history 和会话。卸载执行 app.unmount/history.destroy，组件读取通过 AbortController 取消；不使用模块级可变用户缓存。
+- 导航选中态从 URL 推导：总览只匹配 `/`，工单匹配 `/tickets/*`，设备匹配 `/devices/*`。筛选、详情、刷新与前进后退保留真实路由。
+- 子应用未知路由只显示兜底页面，不重定向到本应用首页；共享 history 下，离开子应用时也会收到主应用的路由事件，兜底重定向会抢回主应用导航。Vue 未知页面提供显式返回链接。
+- 主布局通过 ResizeObserver 提供剩余视口高度 `--micro-viewport-height`；登录按剩余区域居中，独立入口回退至 100dvh。短屏自然滚动，观察器在卸载时断开。
+- 资源加载失败显示错误和“重新加载”。qiankun 2 会缓存失败的入口或生命周期 Promise，重试刷新当前文档以清理失败缓存；不自动重试业务写请求。
 
-## 路由与生命周期
+## 最小通信协议
 
-- 主应用拥有 `/` 总览和 `/tickets/*` 承载区域；后台 BrowserRouter 以 `/tickets` 为 basename。原独立 `/service/admin/tickets` 在主应用中成为 `/tickets/service/admin/tickets`。
-- 主导航“工单后台”按整个 `/tickets/*` 路由范围标记选中，覆盖登录、设备、工单及演示页面；点击仍进入管理员工单入口。“工作台总览”仅在主应用根路径选中，不另存导航状态。
-- 筛选和分页继续使用原 URL 参数，真实页面与演示入口仍各自保留。演示角色不能改变真实服务身份。
-- `mount` 只在传入容器内查询根节点，创建 React Root；`unmount` 调用 React 卸载，释放页面 Effect、请求与界面状态。既有请求 Hook 保持取消读取，取消写请求不等于事务回滚。
-- 主应用将异步挂载和卸载串行执行，防止 StrictMode 或快速切换时新旧实例同时占用容器；每次进入使用独立承载节点。
-- 资源加载失败显示错误与“重新加载”。qiankun 2 缓存失败的入口或生命周期 Promise，重试采用刷新当前文档，清理失败缓存后恢复原路径；不自动重试业务写请求。
+共享包根入口只声明 `ServiceNavigationRequest` 类型，不提供 UI、身份缓存或事件总线。Vue 通过主应用注入的回调发送两种消息：
 
-## 样式与浮层
+```json
+{"version":1,"action":"sign-in"}
+{"version":1,"action":"open-device","deviceId":"device-ac001"}
+```
 
-静态 CSS 位于子应用 Shadow DOM；公共变量和基础文字样式同时覆盖独立文档根与子应用根。Ant Design CSS-in-JS 使用每次挂载独立的 StyleProvider cache，写入同一 ShadowRoot。ConfigProvider 的浮层容器和 App 的消息/通知容器指向子应用根，避免弹窗、下拉菜单与图片预览逃逸到主页面 body。
+主应用将输入视为 unknown，核对版本、动作及设备 ID 格式后映射到固定内部路径，不接受任意 URL。`sign-in` 转到 `/tickets/login`；`open-device` 转到 `/tickets/service/devices?deviceId=...`，React 读取真实详情并打开弹窗，刷新后仍可还原。关闭弹窗只清除该参数，保留其他查询条件。
 
-主应用采用 CSS Modules，只有基础字体、背景和 body 约定留在全局。未启用 Tailwind Preflight，没有通过全局覆盖主应用解决子应用样式问题。
+消息不传账号、角色或令牌。Vue 和 React 各自通过服务端会话重新读取设备权限；伪造设备 ID 仍由后端返回 404。前端消息校验不构成业务授权，沙箱也不是不可信代码的安全边界。
 
-主布局用 ResizeObserver 测量顶部栏与导航的实际高度，通过继承的 `--micro-viewport-height` 提供剩余动态视口高度；布局卸载时断开观察。登录页按该区域居中，独立运行回退到 `100dvh`，不写死主导航高度。短屏容纳不下表单时保留内边距并自然滚动，不裁切按钮。
+## 会话与数据范围
 
-## 登录与后端边界
+Vue 只调用 GET `/api/auth/me`、`/api/devices`、`/api/devices/:id`，共用现有 HttpOnly Cookie 与后端授权。管理员读取现有设备范围，两名报修用户各自读取授权设备，维修人员没有独立设备授权时显示空态，不因进入微前端扩大权限。
 
-主应用 `/api` 同源代理至既有 NestJS，保留浏览器原始 Origin；只增加本地主应用 5174、4174 两个明确允许的来源，不使用 `*`，也不伪造为旧后台来源。API 仍仅监听本机，数据库结构与业务规则不变。
+新挂载先复核会话；401 清除身份和设备内容，换账号后重新请求。错误读取可显式重试，旧请求取消后不回填。当前没有跨标签页登录广播或集中退出；不能将本地共享 Cookie 等同于完整单点登录。
 
-当前登录由 React 后台负责。页面通过服务端有效 Cookie 会话读取身份，NestJS 决定数据范围；主导航不构成授权。开发环境同 hostname 的后台和主应用会共享原 `/api` Cookie，端口本身不是 Cookie 隔离边界；重新挂载时重新查询身份。尚未实现多子应用登录广播、集中退出或跨域 SSO，不将共享 Cookie 等同于完整单点登录方案。
+主应用同源 `/api` 代理保留浏览器原 Origin，后端继续只允许明确配置的来源。5174/4174 为已有允许项；Vue 只读独立服务不新增写请求来源。所有服务仅监听本机，数据库模型、迁移及权限规则未修改。
 
-## 本地启动
+## 本地运行
 
-先启动本项目数据库和 API，见 [API_SETUP.md](API_SETUP.md)。构建并在两个终端启动：
+先启动本项目数据库/API，再构建：
 
 ```sh
 npm run build:micro
-npm run preview:micro:web
 ```
 
+分别在三个终端运行：
+
 ```sh
+npm run preview:micro:web
+npm run preview:micro:devices
 npm run dev:shell
 ```
 
-Windows 使用 `scripts/npm-local.ps1 run <脚本名>`，保留项目内缓存与临时目录设置。访问 `http://127.0.0.1:5174`。React 兼容构建资源服务为 `127.0.0.1:5175`，它只提供资源，业务入口通过主应用打开，不把该资源地址当作独立后台。
+Windows 通过 `scripts/npm-local.ps1 run <脚本名>` 执行，缓存与临时文件留项目 .local。访问 `http://127.0.0.1:5174`。5175/5177 只提供兼容资源，不能作为业务入口；独立开发使用 `dev` 或 `dev:devices`。
 
 | 命令 | 用途 |
 | --- | --- |
-| `build:micro:web` | 构建后台兼容包至 `apps/web/dist/micro` |
-| `build:shell` | 构建主应用至 `apps/shell/dist` |
-| `build:micro` | 顺序构建上述两个产物 |
-| `preview:micro:web` | 5175 子应用资源预览，仅允许 5174/4174 读取 |
-| `dev:shell` | 5174 主应用开发服务及 API 代理 |
-| `preview:shell` | 4174 主应用生产构建预览及 API 代理 |
-| `verify:micro` | 已启动 4174/5174/5175 后的真实集成验证 |
+| `build:micro:web` | React 兼容构建，输出 `apps/web/dist/micro` |
+| `build:devices` | Vue 类型检查与独立构建，输出 `apps/devices/dist` |
+| `build:micro:devices` | Vue 兼容构建，输出 `apps/devices/dist/micro` |
+| `build:shell` | 主应用独立构建 |
+| `build:micro` | 顺序构建上述产物 |
+| `preview:shell`、`preview:devices` | 4174/4176 的生产构建预览，用于自动化检查 |
+| `test:micro-navigation` | 协议动作、版本、设备 ID 与任意 URL 拒绝 |
+| `verify:micro` | React 子应用、导航与登录布局回归 |
+| `verify:micro-devices` | Vue、跨框架通信与生命周期验证 |
 
-根 `build` 已包含微前端两个构建。修改后台源码后需重新执行 `build:micro:web` 并刷新主应用；微前端兼容入口不承诺 HMR。原有 `dev` 仍提供 5173 独立后台 HMR。
+根 build 包含上述构建。兼容入口修改后需重建并刷新，不承诺 HMR；独立入口保留各自 Vite 开发体验。根 .env 若显式配置 WEB_ORIGINS，保留旧项并包含 5174/4174 的精确来源，修改后重启 API，不公开凭据。
 
-根 `.env` 若显式配置 `WEB_ORIGINS`，保留已有项并添加 `http://127.0.0.1:5174`、`http://127.0.0.1:4174`，随后重启 API。公开 `.env.example` 仅提供来源与占位配置，不保存私有凭据。
+## 验证范围
 
-## 验证记录
+2026-11-08：Vue 集成首轮通过独立/兼容构建、管理员/两名报修用户/维修人员四角色范围、越权详情与 React 再鉴权、401 清理、换账号、详情直达/刷新/前进后退、Vue→主应用→React 详情跳转、390px 卡片、读取失败重试和资源入口失败恢复。Vue 内部路由保持原实例；反复切换两个子应用后只有一个活动根节点，路由监听数量稳定，离页会触发未完成读取的 AbortSignal。
 
-2026-11-07：`verify:micro` 首轮通过独立兼容构建的加载、真实 Cookie 登录、管理员/两名报修人范围、前端角色拦截与后端 403、筛选 URL、直达/刷新/前进后退、Shadow DOM 和 Ant Design 弹窗/下拉菜单、390px 布局。连续四次挂载/卸载保持一个 React 根，卸载后的路由监听数量稳定；资源入口不可用时显示错误，恢复后整页重载可重新进入。
+最终全项目 build、Vue 类型检查、test:micro-navigation、verify:api、verify:micro-devices、verify:micro、verify:connected-ui 和 verify:ui 均通过，已核对桌面/390px/详情/跨应用界面截图。开发主应用 5174 与生产预览 4174 都完成 Vue→React 详情导航，Vue 独立预览 4176 可读取同一授权数据。Vue 兜底页已明确禁止自动重定向，避免在共享 history 中抢回主应用导航；该行为已纳入未知路径和跨应用测试。
 
-验证仅创建本轮随机工单，结束后精确清理该工单及测试会话，不修改人工记录。尚未验证 Vue 子应用、跨子应用通信、其他浏览器、生产反向代理或线上发布；没有将局部监听检查描述为全局内存泄漏证明。
+验证只创建/撤销测试会话，不修改人工设备和工单。协议检查拒绝外链、未知版本/动作及非法 ID。浏览器验证使用本地 Edge，尚未覆盖其他浏览器、生产反向代理、部署、跨域登录或复杂全局状态同步；局部监听检查不等同于全局内存泄漏证明。
 
-最终全项目构建、`verify:api`、`verify:micro`、`verify:connected-ui`、`verify:web-photos` 和 `verify:ui` 通过。独立演示回归曾捕获一次 `useContext` 运行错误，依赖树检查未发现 Web 多版本 React，单独重跑通过；该次错误根因尚未复现，不将其归因为已修复的缓存问题。门户构建首次遇到 Windows EPERM，原命令重新构建通过，未修改门户代码或放宽类型检查。
+首步演示回归曾出现一次 useContext 错误，单独重跑通过，根因未复现；未将其归因为已修复的缓存问题。此次 Vue 验证过程中 API 曾暂时不可用，恢复后完整重跑通过，没有向业务请求添加自动重试。
 
-截图：[主应用总览](screenshots/micro-shell-overview.png)、[React 工单后台](screenshots/micro-tickets-desktop.png)、[窄屏](screenshots/micro-tickets-mobile.png)、[详情弹窗](screenshots/micro-ticket-detail.png)、[加载失败](screenshots/micro-load-failure.png)。
+截图：[Vue 设备台账](screenshots/micro-vue-devices.png)、[设备详情](screenshots/micro-vue-device-detail.png)、[窄屏](screenshots/micro-vue-devices-mobile.png)、[跨应用详情](screenshots/micro-device-navigation.png)、[Vue 加载失败](screenshots/micro-vue-load-failure.png)、[React 后台](screenshots/micro-tickets-desktop.png)。

@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Alert, Button, Empty, Spin } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "../app/routes";
 import ContentCard from "../shared/components/ContentCard";
 import ServicePageHeader from "../shared/components/ServicePageHeader";
@@ -14,6 +14,7 @@ import ConnectedCreateTicketModal from "../features/tickets/components/Connected
 export default function ConnectedDevicesPage() {
   const { user, clearSession } = useSession();
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
   const load = useCallback(
     (signal: AbortSignal) => devicesApi.list(signal),
     [],
@@ -24,7 +25,13 @@ export default function ConnectedDevicesPage() {
     error,
     refresh,
   } = useApiResource(load, clearSession);
-  const [selectedId, setSelectedId] = useState<string>();
+  const selectedId = params.get("deviceId") || undefined;
+  function selectDevice(id?: string) {
+    const next = new URLSearchParams(params);
+    if (id) next.set("deviceId", id);
+    else next.delete("deviceId");
+    setParams(next);
+  }
   const [repairDeviceId, setRepairDeviceId] = useState<string>();
   const repairDevice = devices?.find((device) => device.id === repairDeviceId);
   return (
@@ -55,7 +62,7 @@ export default function ConnectedDevicesPage() {
         ) : devices?.length ? (
           <DeviceTable
             visibleDevices={devices}
-            onView={setSelectedId}
+            onView={selectDevice}
             onReport={user?.role === "reporter" ? setRepairDeviceId : undefined}
           />
         ) : (
@@ -66,7 +73,7 @@ export default function ConnectedDevicesPage() {
         <ConnectedDeviceDetail
           key={selectedId}
           id={selectedId}
-          onClose={() => setSelectedId(undefined)}
+          onClose={() => selectDevice()}
         />
       )}
       {repairDevice && (

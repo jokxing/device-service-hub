@@ -8,6 +8,8 @@
 
 `apps/shell` 已通过 qiankun 加载现有后台。`main.tsx` 和 `micro.ts` 共用 `app/createApplication.tsx` 的 Provider 与根节点管理；独立路由不带前缀，挂载时使用 `/tickets` basename。独立构建、沙箱/浮层、身份与卸载边界见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)，不向门户或 RN 引入 qiankun。
 
+`apps/devices` 为 Vue 只读设备子应用，按 App/布局/业务模块/共享传输分层。主应用通过公共 MicroAppView/useMicroApp 管理两个子应用；Vue 的版本化导航回调由主应用映射为 React 设备详情 URL。ConnectedDevicesPage 的 `deviceId` 查询参数驱动真实详情弹窗，支持直达和刷新；设备数据仍由后端会话授权，不将 URL 或通信消息作为权限依据。
+
 管理员真实列表与首次分派使用 `/service/admin/tickets`，详情字段复用 TicketRecordDetails，列表/分派/详情弹窗分别组织。服务端权限和事务规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)，演示身份不参与管理接口授权。
 
 管理员详情组合 `features/tickets/photos/AdminTicketPhotos`，通过 Cookie 读取 RN 上传的现场照片并放大预览。图片请求复用共享传输和读取 Hook，关闭时取消读取并释放内存 URL；通用详情字段不包含请求或鉴权逻辑。边界及验证见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。

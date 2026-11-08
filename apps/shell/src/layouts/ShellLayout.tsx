@@ -1,7 +1,7 @@
 import styles from "../app.module.css";
 import { useLayoutEffect, useRef } from "react";
 import { Link, NavLink, Outlet, useMatch } from "react-router-dom";
-import { TICKETS_APP } from "../micro/tickets";
+import { TICKETS_APP, DEVICES_APP } from "../micro/apps";
 
 export default function ShellLayout() {
   const ticketsActive = useMatch(`${TICKETS_APP.basePath}/*`) !== null;
@@ -53,6 +53,7 @@ export default function ShellLayout() {
         >
           工单后台
         </Link>
+        <NavLink to={DEVICES_APP.basePath}>设备台账</NavLink>
       </nav>
       <main className={styles["shell-content"]}>
         <Outlet />

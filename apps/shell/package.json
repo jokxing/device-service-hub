@@ -9,6 +9,7 @@
     "preview": "vite preview --host 127.0.0.1 --port 4174 --strictPort"
   },
   "dependencies": {
+    "@device-service-hub/contracts": "^0.1.0",
     "qiankun": "2.10.16",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

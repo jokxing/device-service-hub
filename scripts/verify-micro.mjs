@@ -330,7 +330,7 @@ try {
     .waitFor();
   assert.deepEqual(
     errors.filter(
-      (message) => !message.includes("Ticket application asset unavailable"),
+      (message) => !message.includes("Micro application asset unavailable"),
     ),
     [],
     "No unexpected runtime errors after recovery",

@@ -31,6 +31,11 @@ export interface DeviceSummary {
   enabled: boolean;
 }
 
+/** Versioned navigation messages only; never send credentials or trust client roles. */
+export type ServiceNavigationRequest =
+  | { version: 1; action: "sign-in" }
+  | { version: 1; action: "open-device"; deviceId: string };
+
 export type TicketPriority = "normal" | "urgent";
 export type TicketStatus =
   | "pending"
