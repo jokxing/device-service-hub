@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { expectedLocalDeviceCodes } from "./lib/local-fixtures.mjs";
 import { randomUUID, createHash } from "node:crypto";
 import { openLocalApi } from "./lib/local-api.mjs";
 import { nativeRequest as request } from "./lib/native-api.mjs";
@@ -79,7 +80,7 @@ try {
     401,
   );
   const accounts = [
-    ["admin", ["AC-001", "WP-002"]],
+    ["admin", await expectedLocalDeviceCodes(local.root)],
     ["reporter.a", ["AC-001"]],
     ["reporter.b", ["WP-002"]],
     ["technician", []],

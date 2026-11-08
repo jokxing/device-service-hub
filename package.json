@@ -91,7 +91,16 @@
     "build:micro:unified": "npm run build:micro && npm run build --workspace apps/shell -- --mode unified --outDir dist/unified",
     "preview:micro:unified": "node scripts/preview-micro-unified.mjs",
     "test:micro-server": "node --test scripts/test-micro-server.mjs",
-    "verify:micro-unified": "npm run test:micro-server && node scripts/verify-micro.mjs --unified && node scripts/verify-micro-devices.mjs --unified"
+    "verify:micro-unified": "npm run test:micro-server && node scripts/verify-micro.mjs --unified && node scripts/verify-micro-devices.mjs --unified",
+    "remote:mobile:setup": "node scripts/setup-remote-mobile.mjs",
+    "remote:mobile:disable": "node scripts/setup-remote-mobile.mjs --disable",
+    "remote:mobile:start": "node scripts/start-remote-mobile.mjs",
+    "test:remote-mobile": "node --test scripts/test-remote-mobile.mjs",
+    "verify:remote-mobile": "node scripts/verify-remote-mobile.mjs",
+    "prebuild:mobile:android": "npm run prebuild:android --workspace apps/mobile",
+    "build:mobile:apk": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-mobile-apk.ps1",
+    "verify:remote-mobile:public": "node scripts/verify-remote-mobile.mjs --public",
+    "verify:mobile-apk:android": "node scripts/verify-mobile-apk-android.mjs"
   },
   "overrides": {
     "react-native-gesture-handler": "2.32.0",

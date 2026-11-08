@@ -28,7 +28,7 @@ React + TypeScript + Vite 已有模块拆分、路由、表单及完整工单内
 
 ## 阶段三：RN 客户端
 
-- 当前增量：`apps/mobile` 已交付 Expo/RN 工程、服务首页、须知、导航、主题与安全区，完成 Android 模拟器 + Expo Go、浏览器预览及 Android JS bundle 导出；已接入原生鉴权、SecureStore、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果，未生成独立 APK，见 [MOBILE.md](MOBILE.md)。
+- 当前增量：`apps/mobile` 已交付 Expo/RN 工程、服务首页、须知、导航、主题与安全区，完成 Android 模拟器 + Expo Go、浏览器预览及 Android JS bundle 导出；已接入原生鉴权、SecureStore、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。独立内测 APK 已生成并在 MuMu Android 15 通过受限 HTTPS 文字闭环，实体手机与本包相机/相册仍待验证，见 [MOBILE.md](MOBILE.md) 和 [异地移动端内测](REMOTE_MOBILE_TEST.md)。
 - 已接入设备二维码相机入口、编号查询及 Web 设备标签，范围与验证边界见 [MOBILE.md](MOBILE.md)。RN 已接入拍照/相册补充现场照片与维修人员查看，边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)；Web 管理员已接入照片只读查看与放大预览，门户附件仍后置。后端继续单一 NestJS，保留 Web Origin 防护；各步确认后实施。
 - 到此阶段新增 `apps/mobile`，使用 Expo 共用 NestJS。先实现登录和文字业务，再加入扫码、拍照上传、本人报修、维修任务与处理确认；按需要补充后端上传能力。
 - 完成标准：Android 优先验证关键链路及权限拒绝、网络失败处理；Expo Go、模拟器、真机、开发构建和独立安装包分别记录，未验证项明确说明。iPhone 依设备、构建和签名条件安排。

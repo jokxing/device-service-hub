@@ -7,7 +7,8 @@
     "start": "expo start --localhost --port 8081",
     "web": "expo start --web --localhost --port 8081",
     "check": "tsc --noEmit && expo install --check",
-    "build": "tsc --noEmit && expo export --platform android --output-dir dist/android && expo export --platform web --output-dir dist/web"
+    "build": "tsc --noEmit && expo export --platform android --output-dir dist/android && expo export --platform web --output-dir dist/web",
+    "prebuild:android": "expo prebuild --platform android --no-install"
   },
   "dependencies": {
     "@device-service-hub/contracts": "^0.1.0",

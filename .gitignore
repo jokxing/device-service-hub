@@ -10,3 +10,8 @@ out/
 *.local
 *.tsbuildinfo
 apps/api/src/generated/
+
+# Expo generated Android project and local signing artifacts
+apps/mobile/android/
+*.jks
+*.keystore

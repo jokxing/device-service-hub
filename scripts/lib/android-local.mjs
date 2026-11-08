@@ -14,6 +14,12 @@ export function openLocalAndroid() {
     : {};
   const adbPath = process.env.DSH_ADB_PATH ?? config.adbPath;
   const serial = process.env.DSH_ANDROID_SERIAL ?? config.serial;
+  const serverPort = config.adbServerPort;
+  if (
+    serverPort !== undefined &&
+    (!Number.isInteger(serverPort) || serverPort < 1024 || serverPort > 65535)
+  )
+    throw new Error("Invalid local ADB server port");
   if (
     !adbPath ||
     !path.isAbsolute(adbPath) ||
@@ -36,13 +42,22 @@ export function openLocalAndroid() {
     fs.mkdirSync(env[name], { recursive: true });
   }
   function run(args, binary = false) {
-    return execFileSync(adbPath, ["-s", serial, ...args], {
-      env,
-      windowsHide: true,
-      timeout: 20000,
-      maxBuffer: 16 * 1024 * 1024,
-      encoding: binary ? undefined : "utf8",
-    });
+    return execFileSync(
+      adbPath,
+      [
+        ...(serverPort ? ["-P", String(serverPort)] : []),
+        "-s",
+        serial,
+        ...args,
+      ],
+      {
+        env,
+        windowsHide: true,
+        timeout: 20000,
+        maxBuffer: 16 * 1024 * 1024,
+        encoding: binary ? undefined : "utf8",
+      },
+    );
   }
   function capture(name, temporary = false) {
     if (!/^[a-z0-9-]+\.png$/.test(name))

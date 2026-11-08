@@ -94,7 +94,7 @@ Web 构建产物输出到 `apps/web/dist`。部署前需为前端路由配置 HT
 
 门户启动使用 `npm run dev:portal`，访问 `http://127.0.0.1:3000/login`。会话与来源配置、生产构建及验证命令见 [Next.js 门户](docs/PORTAL.md)。
 
-RN 启动使用 `npm run dev:mobile:web`，浏览器预览为 `http://127.0.0.1:8081`；Android 模拟器可通过 ADB reverse 在 Expo Go 中运行。`npm run check:mobile` 检查依赖与类型，`npm run build:mobile` 导出 Android JS bundle 与 Web 预览。启动、缓存及验证边界见 [移动端说明](docs/MOBILE.md)。当前未生成本项目独立 APK/AAB，未验证实体手机。
+RN 启动使用 `npm run dev:mobile:web`，浏览器预览为 `http://127.0.0.1:8081`；Android 模拟器可通过 ADB reverse 在 Expo Go 中运行。`npm run check:mobile` 检查依赖与类型，`npm run build:mobile` 导出 Android JS bundle 与 Web 预览。另已生成本地签名的独立 Android 内测 APK，并在 MuMu Android 15 验证受限 HTTPS 登录与文字工单闭环，运行无需 Expo Go 或 Metro。安装包与凭据仅存 `.local`，构建及权限边界见 [异地移动端内测](docs/REMOTE_MOBILE_TEST.md)；实体手机、本包相机/相册及 iOS 原生尚未验证，没有生成 AAB 或发布商店。
 
 报修入口、数据范围和防重复提交说明见 [文字报修与本人记录](docs/TEXT_REPAIR.md)。
 

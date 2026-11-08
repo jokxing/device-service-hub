@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { expectedLocalDeviceCodes } from "./lib/local-fixtures.mjs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { loadEnvFile } from "node:process";
@@ -164,9 +165,12 @@ try {
       404,
     );
     const admin = await login("admin");
-    assert.equal(
-      (await request("/devices", { cookie: admin.cookie })).value.length,
-      2,
+    const expectedCodes = await expectedLocalDeviceCodes(root);
+    assert.deepEqual(
+      (await request("/devices", { cookie: admin.cookie })).value
+        .map((device) => device.code)
+        .sort(),
+      expectedCodes.sort(),
     );
     const technician = await login("technician");
     assert.deepEqual(

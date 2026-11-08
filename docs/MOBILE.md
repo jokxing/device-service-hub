@@ -57,6 +57,8 @@ apps/mobile/
 
 ## 启动与构建
 
+异地 Android 独立安装包、局部构建工具链、专用测试账号及受限 HTTPS 入口另见 [异地移动端内测](REMOTE_MOBILE_TEST.md)。JS 静态导出与 APK 验收分别记录；默认 Expo Go 入口仍保留。
+
 使用根目录依赖与锁文件。当前 Windows 环境通过 `scripts/npm-local.ps1` 执行 npm，缓存与临时文件保存在项目 `.local`。
 
 ```sh
@@ -86,13 +88,13 @@ npm run verify:device-camera-android # 相机预览、输入暂停和权限拒�
 
 浏览器预览地址为 `http://127.0.0.1:8081`。两个开发命令共用端口，择一启动；同一个 Metro 可以同时服务 Expo Go 与浏览器。脚本禁止自动打开系统浏览器，可手动打开预览链接。
 
-构建产物分别位于 `apps/mobile/dist/android` 与 `apps/mobile/dist/web`。Android 导出包含 JS/Hermes bundle 和资源，尚未生成本项目独立 APK/AAB，不需要 Android Studio、Gradle 编译或云构建。根 `npm run build` 继续覆盖既有 Web/API/门户，移动端单独执行 `build:mobile`。
+`build:mobile` 的静态导出分别位于 `apps/mobile/dist/android` 与 `apps/mobile/dist/web`，Android 导出仅为 JS/Hermes bundle 和资源。另已交付本地签名的独立 Android 内测 APK，产物、密钥、工具链与端点配置均留在 `.local`；使用 `build:mobile:apk` 与 `verify:mobile-apk:android`，边界见 [异地移动端内测](REMOTE_MOBILE_TEST.md)。根 `npm run build` 继续覆盖 Web/API/门户；没有调用云构建或生成 AAB。
 
 `.expo`、`node_modules`、`dist`、私有环境、下载文件及工具路径配置均配置忽略；不提交运行容器 APK、模拟器镜像或缓存。
 
 ## Android 模拟器
 
-当前验证复用已安装的 MuMu Android 15 与其 ADB，没有安装 Android Studio 或完整 Android SDK。通过 [Expo 官方 SDK 57 下载入口](https://expo.dev/go?sdkVersion=57&platform=android&device=false)取得 Expo Go 运行容器并安装到该模拟器。无需 Expo 账号或收费构建服务。
+原 Expo Go 验证复用 MuMu Android 15 及其 ADB，通过 [Expo 官方 SDK 57 下载入口](https://expo.dev/go?sdkVersion=57&platform=android&device=false)取得运行容器。独立 APK 阶段另在项目 `.local` 配置命令行 SDK/JDK/Gradle，不安装 Android Studio、不改系统环境；MuMu 仍复用原实例，专用 ADB 服务端口可通过本地配置的 `adbServerPort` 指定。无需 Expo 账号或收费构建服务。
 
 ADB 工具绝对路径与设备 serial 放在被忽略的 `.local/android-device.json`，键名分别为 `adbPath`、`serial`；也可通过 `DSH_ADB_PATH`、`DSH_ANDROID_SERIAL` 指定。公开文件不保存个人安装路径。
 
@@ -169,7 +171,8 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 | React Native Web 导出与 390px 浏览器预览 | 通过，包含路由、刷新、返回和无运行错误检查 |
 | MuMu Android 15 + Expo Go | 通过原生首页/须知，以及真实登录、设备详情、冷启动恢复、退出撤销、账号隔离与 401 清理 |
 | 实体 Android 手机、iPhone | 未验证 |
-| 本项目独立 APK/AAB、原生开发构建 | 未生成 |
+| 本项目独立 APK | 已生成本地签名 release 包，MuMu Android 15 通过 HTTPS 文字闭环；相机/相册、本包光学识别与实体手机待验证 |
+| AAB、原生开发构建 | 未生成，未发布商店 |
 | 原生鉴权与授权设备 API | 已接入，接口边界与账号归属验证通过 |
 | 原生文字报修、本人分页记录与详情 | 已接入；服务端权限与八路并发防重验证通过 |
 | 原生报修异常重试与记录恢复 | MuMu + Expo Go 验证通过：网关丢弃成功响应后同意图重试只留一单，详情冷启动恢复，跨账号详情拒绝 |
@@ -196,7 +199,7 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 - Web 真实设备详情通过 Ant Design QRCode 生成标签，格式为 `device-service-hub:v1:AC-001`；演示设备不生成真实标签。二维码只携带业务编号，不包含账号、令牌或授权；编号为 1～64 位 ASCII 字母、数字、点、下划线或短横线，首位为字母或数字。
 - 纯编解码集中在 `@device-service-hub/contracts/device-tags` 子入口，Web 与 RN 共用。相机只接受明确版本的本平台标签，不打开或请求外部链接；手动输入同时接受设备编号和标签内容。
 - 原生 GET `/api/mobile/devices/resolve?code=AC-001` 使用 NativeSessionGuard、DTO 和既有 DevicesService 数据范围。报修用户只能查授权设备；管理员沿用全设备范围；维修人员通过任务获取设备信息，不新增独立设备权限。不存在和无权访问统一返回 404；停用设备可读，但不提供报修入口。
-- 相机由用户主动开启，仅请求相机权限；拒绝或启动失败时保留手动输入，永久拒绝提供系统设置入口。不请求麦克风，不保存或上传相机画面。`app.json` 的 camera 插件用于后续原生构建配置，本轮未生成原生工程或独立安装包。
+- 相机由用户主动开启，仅请求相机权限；拒绝或启动失败时保留手动输入，永久拒绝提供系统设置入口。不请求麦克风，不保存或上传相机画面。`app.json` 的 camera 插件已进入独立 APK 原生构建；实体摄像头光学识别仍需真机验证。
 - 识别回调同步锁定后暂停预览，再查询后端；失败需明确重新扫码。编辑编号暂停识别；离页、后台和查询期间卸载相机，读取请求在离页时取消，避免重复跳转与旧响应覆盖。
 - MuMu + Expo Go 已验证编号及完整标签输入、授权查询、外链拒绝和越权提示；这些结果不表示相机实际解码成功。用户已人工验证 MuMu 实时截屏扫码 → 设备详情 → 报修及后续文字闭环；实体 Android/iPhone 摄像头扫码仍待验证。相机就绪回调、输入暂停、拒绝权限后手动查询已通过；先前自动验证相机预览为灰色；后续实时截屏扫码已通过用户人工验收，实体摄像头光学扫码仍待验证。权限验证结束后恢复 Expo Go 原有系统相机授权。
 
@@ -208,4 +211,4 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 
 ## 下一增量
 
-现场照片规则、原生入口及验证边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。Web 管理员已支持现场照片查看，门户附件后置。微前端已集成 React 工单后台、Vue 设备台账及最小导航通信，见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)；RN 保持独立，真机与安装包仍按实际条件安排。
+现场照片规则、原生入口及验证边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。Web 管理员已支持现场照片查看，门户附件后置。微前端已集成 React 工单后台、Vue 设备台账及最小导航通信，见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)。RN 保持独立，独立 APK 已在 MuMu Android 15 通过 HTTPS 文字闭环验收；实体手机安装、摄像头扫码/拍照与 iOS 原生仍待验证。
