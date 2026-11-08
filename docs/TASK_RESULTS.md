@@ -10,7 +10,7 @@
 | POST `/api/tasks/:id/result` | 首次成功和同意图重放均返回 201，返回当前任务 |
 | 原有任务、本人报修与管理员详情 | 在各自原有数据范围内展示结果及操作记录 |
 
-结果提交接口仅执行 **processing → confirming**。用户确认由独立本人接口执行，见 [TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)；退回、修改已提交结果、图片附件或改派尚未实现。
+结果提交接口仅执行 **processing → confirming**。用户确认由独立本人接口执行，见 [TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)；退回、修改已提交结果、维修结果照片或改派尚未实现。工单现场照片独立于处理结果，见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。
 
 ## 权限与校验
 

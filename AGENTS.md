@@ -12,7 +12,7 @@
 - 未获当前任务明确授权，不更换技术栈、重组目录、添加状态库或组件库、批量升级依赖。
 - 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复、授权设备查询、文字报修、本人记录、确认完成及维修任务查询/接单、文字处理结果；RN 已支持待分派工单补充现场照片；微前端已接入 React 工单后台、Vue 设备台账与最小导航通信；Web 上传与门户附件界面、改派、退回/再次提交和支付尚未实现，不提前扩展范围。
 - Git 提交、推送、部署和仓库可见性修改需要明确授权。
-- `apps/portal` 已交付登录、授权设备查询、文字报修、本人记录与完成确认，修改前阅读 [PORTAL.md](docs/PORTAL.md)。使用 App Router；Server Components 负责设备/本人记录查询，Client Components 承担表单与确认交互。图片上传、RN 与微前端仍需按步确认。
+- `apps/portal` 已交付登录、授权设备查询、文字报修、本人记录与完成确认，修改前阅读 [PORTAL.md](docs/PORTAL.md)。使用 App Router；Server Components 负责设备/本人记录查询，Client Components 承担表单与确认交互。门户图片上传及其他新增能力仍需按步确认；RN 与微前端现有范围见各模块文档。
 - 不读取无关项目或私有业务资料，不复制来源或授权不明确的代码与素材。
 - 移动端任务阅读 [MOBILE.md](docs/MOBILE.md)。使用 Expo SDK 57 兼容依赖与 Expo Router；src/app 只组装路由，业务页面留 features，原生颜色/字号/间距留 shared/theme。保留现有 Web React 版本，不全局替换 React 或把 Web 组件/CSS/存储直接搬入 RN。
 - RN 业务接口路径和传输类型集中在对应 `features/<业务>/api.ts`；页面使用业务 Hook，Hook 保持读取取消与账号切换清理。共享请求只负责传输，不认识设备或工单。会话 Provider 提供统一鉴权读取与写入入口，业务 API 通过参数使用它，不自行读取或保存凭据。

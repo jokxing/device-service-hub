@@ -18,7 +18,7 @@
 
 处理中任务的文字结果由 SubmitTaskResultModal 管理，入口使用统一 canSubmitTaskResult 规则；三种角色均通过 TicketRecordDetails 显示同一结果，规范与验证见 [TASK_RESULTS.md](TASK_RESULTS.md)。报修人确认由 ConfirmTicketModal 管理，入口共用 canConfirmTicket；本人详情携带当前版本，路由和账号变化清理旧弹窗。见 [TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)，退回与再次提交尚未交付。
 
-后续按 [产品与架构演进路线](ROADMAP.md)依次推进 React 后台业务闭环、Next.js 用户门户、RN 和微前端。保留现有 Web 后台与 NestJS，门户和移动端到阶段才创建；不将全部 Web 迁移到 Next.js。
+React 后台、Next.js 用户门户、RN 和微前端已按 [产品与架构演进路线](ROADMAP.md)完成当前本地交付范围。各应用保留独立入口，共用 NestJS 业务后端；后续功能按实际业务需求增量交付。
 
 ## 目录职责
 
@@ -73,14 +73,14 @@ App → DemoProvider → AppLayout → 页面 → 业务组件
 ```
 
 - DemoProvider 保存演示角色和工单，跨页面导航保留，浏览器刷新后恢复样例。
-- `useDemoTickets` 是演示数据适配入口，页面不直接修改 fixtures。将来接真实 API 时替换数据入口，纯规则和呈现组件尽量保留。
+- `useDemoTickets` 是演示数据适配入口，页面不直接修改 fixtures。真实业务使用独立会话与 API 适配，复用适用的纯规则和呈现组件。
 - 过滤后的工单、统计和可见设备根据当前数据计算，不另外存一份可变状态。
 - 工单筛选和分页通过 URL 参数管理，支持前进后退；无效状态、页码会回退。输入关键词替换当前历史项，避免每个字符都产生一条历史记录。
 - 表单字段、附件选择、处理说明归弹窗本地管理；关闭后销毁，重新打开不残留输入。
 - 详情、分派对象归对应页面管理。页面路径或角色变化时卸载页面内容，清除原页面弹窗。设备详情也使用受控组件，避免全局弹窗跨页残留。
 - 展示动作和演示操作均调用 `canTransition`，避免多处维护不同的迁移规则。
 
-演示角色和工单归属依赖虚构账号姓名，仅用于 UI 演示。真实设备入口使用独立的 SessionProvider、Cookie 会话、数据库用户 ID 和授权关系，不读取演示账号。前端规则不构成授权保障；未来工单接口仍需服务端状态约束、事务、幂等和并发校验。
+演示角色和工单归属依赖虚构账号姓名，仅用于 UI 演示。真实设备入口使用独立的 SessionProvider、Cookie 会话、数据库用户 ID 和授权关系，不读取演示账号。前端规则不构成授权保障；真实工单接口独立执行服务端状态约束、事务、幂等和并发校验。
 
 ## 真实设备服务入口
 
@@ -113,7 +113,7 @@ App → DemoProvider → AppLayout → 页面 → 业务组件
 
 ## 验证方式
 
-- `npm run build`：TypeScript 和生产构建。
+- `npm run build`：Web、API、门户与微前端类型检查及生产构建；RN 检查与导出单独执行。
 - `npm run test:business`：5 项关键规则测试，使用 Node.js 24 执行可擦除 TypeScript，无额外测试编译器。
 - `npm run verify:ui`：覆盖工单闭环、角色范围、路由刷新/前进后退、跨页数据保留、表单清理、设备详情离页清理和窄屏。脚本默认使用 Windows 已安装的 Edge，其他环境需调整浏览器配置。
 - `npm run verify:shared-ui`：使用本地真实 API 核对五类提交弹窗的重复点击、Esc/遮罩关闭限制、401、实际超时、离页取消，以及真实第二页的 URL 筛选和手机分页。临时数据按本轮提交编号清理。

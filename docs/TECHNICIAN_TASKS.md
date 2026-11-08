@@ -63,7 +63,7 @@ API 检查覆盖本人列表与计数、分页筛选、跨维修人员、未分�
 
 测试仅针对专用本地数据库，临时工单按本轮随机 requestId 和报修人清理，分派/接单记录随工单级联清理；临时账号只按本轮随机 ID 删除。不会按名称、角色或标题批量删除人工数据。截图可能包含已清理的临时记录。
 
-处理中任务可通过独立结果接口提交文字说明，见 [TASK_RESULTS.md](TASK_RESULTS.md)。报修用户确认后，当前维修人员可只读完成记录，见 [TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)。退回、上传、改派与生产环境交付尚未实现；原生文字处理结果提交见 [MOBILE.md](MOBILE.md)。
+处理中任务可通过独立结果接口提交文字说明，见 [TASK_RESULTS.md](TASK_RESULTS.md)。报修用户确认后，当前维修人员可只读完成记录，见 [TICKET_CONFIRMATION.md](TICKET_CONFIRMATION.md)。退回、Web 上传、改派与生产环境交付尚未实现；原生文字处理结果见 [MOBILE.md](MOBILE.md)，RN 现场照片上传与维修人员只读查看见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。
 
 ### 实际验证记录（2026-11-06）
 

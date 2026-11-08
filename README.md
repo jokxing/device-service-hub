@@ -4,6 +4,8 @@
 
 项目设计结合十余年前端开发经验，以及 SaaS 后台、权限体系、多端交付和 Node.js 项目经验，重点体现业务建模、模块化架构、服务端数据权限与长期可维护性。
 
+**快速了解：[面试官导览：业务链路、各端界面与代码入口](docs/INTERVIEW_GUIDE.md)。** 本地真实业务从 React `/login`、`/service/*` 或 Next.js 门户进入；React 默认首页为内存演示。
+
 核心流程：**设备查询 → 提交报修 → 管理员分派 → 维修人员接单处理 → 报修用户确认 → 查看维修记录**。
 
 目前包含 React Web 完整流程演示，以及连接 NestJS、PostgreSQL 的最小文字业务闭环：登录与授权设备查询 → 报修 → 首次分派 → 维修人员接单 → 提交处理结果 → 报修用户确认完成。Next.js 用户门户已接入同一报修与确认流程。RN 客户端已接入真实登录、SecureStore 会话恢复、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。
@@ -13,7 +15,7 @@
 - **业务与权限建模**：区分报修用户、管理员和维修人员的操作与数据范围；会话身份、设备授权和工单归属由服务端校验。
 - **并发一致性**：报修通过用户与提交编号的唯一约束防重；分派采用版本条件更新，并在同一事务中写入操作记录，处理重复请求与多人竞争。
 - **可维护架构**：前端按布局、页面、业务模块和公共能力分工；后端按控制器、服务、DTO、鉴权和查询投影组织，保持事务边界清晰。
-- **接口契约**：npm workspaces 管理前后端和共享传输类型；共享包不暴露 ORM 实体、内部会话记录或界面实现，为后续门户与移动端保留边界。
+- **接口契约**：npm workspaces 管理前后端和共享传输类型；共享包不暴露 ORM 实体、内部会话记录或界面实现，后台、门户与移动端保持独立边界。
 - **交互一致性**：筛选与分页同步 URL，桌面表格与移动卡片适配同一业务数据，统一标题、间距和操作反馈。
 - **质量验证**：关键链路覆盖越权、并发冲突、响应丢失重试和重启持久化；迁移前备份，临时测试数据定向清理。
 
@@ -47,13 +49,18 @@
 
 [RN 结果表单](docs/screenshots/mobile-android-result-form.png) · [RN 维修任务](docs/screenshots/mobile-android-tasks.png) · [RN 接单窗口](docs/screenshots/mobile-android-accept-dialog.png) · [RN 确认窗口](docs/screenshots/mobile-android-confirm-dialog.png) · [RN 报修列表](docs/screenshots/mobile-android-my-tickets.png) · [RN 报修详情](docs/screenshots/mobile-android-ticket-detail.png) · [RN 设备列表](docs/screenshots/mobile-android-devices.png) · [RN 设备详情](docs/screenshots/mobile-android-device-detail.png) · [RN 模拟器首页](docs/screenshots/mobile-android-home.png) · [RN 模拟器须知](docs/screenshots/mobile-android-guide.png) · [RN 浏览器预览](docs/screenshots/mobile-web-home.png)
 
-## 已实现
+## 内存演示
 
 - 工单工作台：状态统计、关键词与状态筛选、分页、详情时间线及 CSV 导出。
 - 报修流程：新建报修、分派与改派、接单、提交处理结果、用户确认、退回与取消。
 - 设备台账与维修记录查询。
 - 三种演示角色的数据范围：管理员查看全部样例；报修用户查看本人记录与授权设备；维修人员查看当前分派任务。
 - 页面路由、响应式布局、CSS Modules，以及公共类型、常量和工具方法。
+
+以上流程中的改派、退回与取消仅属于内存演示，不代表真实 API 已提供这些操作。
+
+## 真实业务交付
+
 - NestJS 真实登录、数据库会话、退出登录，以及按用户授权查询设备列表和详情。
 - 真实文字报修、本人分页列表与详情；校验设备授权和启用状态，数据库唯一约束与内容摘要处理并发重复请求。
 - 管理员真实工单列表、状态筛选、详情及首次分派；版本条件更新、事务与操作记录处理重复提交和并发竞争。
@@ -69,15 +76,17 @@
 
 工作区包含 `apps/web`、`apps/api`、Next.js App Router 门户 `apps/portal`、Expo/RN 客户端 `apps/mobile`、qiankun 主应用 `apps/shell`、Vue 设备子应用 `apps/devices` 和提供传输类型及纯设备标签协议的 `packages/contracts`。移动端使用 SDK 57、Expo Router、React Native 原生组件与 StyleSheet，按 SDK 兼容组合独立管理 React 版本。
 
-演进顺序为 React 后台业务闭环、Next.js 用户门户、React Native 客户端与 Web 微前端集成，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户文字业务已贯通至本人确认完成；RN 的报修与维修人员文字链路已贯通，管理员分派继续使用 Web 后台；已接入设备二维码入口与授权查询；RN 图片上传与 Web 管理员看图已接入；主应用已接入 React 工单后台、Vue 设备台账和最小导航通信，见 [微前端集成](docs/MICRO_FRONTENDS.md)；Web 上传与门户附件界面尚未实现，现有 React 后台与 Node.js 业务后端继续保留。
+React 后台、Next.js 用户门户、React Native 客户端与 Web 微前端已完成当前本地交付范围，详见 [产品与架构演进路线](docs/ROADMAP.md)。门户与 RN 文字链路已贯通至本人确认完成，管理员分派继续使用 Web 后台；RN 已接入设备扫码与现场照片，Web 管理员可看图；微前端已集成 React 工单后台、Vue 设备台账与最小导航通信。各端共用 NestJS，界面、导航、存储与设备能力分别实现。
 
 ## 快速开始
 
 推荐 Node.js 24、npm 11。在仓库根目录执行：
 
-```sh
-npm ci
-npm run dev
+Windows 使用项目脚本管理 npm 缓存与临时目录，不安装全局工具：
+
+```powershell
+.\scripts\npm-local.ps1 ci
+.\scripts\npm-local.ps1 run dev
 ```
 
 打开 [本地预览](http://127.0.0.1:5173/)，默认进入 `/tickets`；另有 `/devices` 和 `/records`。
@@ -123,3 +132,24 @@ RN 启动使用 `npm run dev:mobile:web`，浏览器预览为 `http://127.0.0.1:
 API 与 PostgreSQL 实际重启后，原会话和授权设备仍可读取，持久化复核通过。
 
 主 JS 包仍有构建体积提示，按需加载与资源优化留待后续处理。
+
+## 验证环境与交付限制
+
+| 环境 | 已验证范围 | 待验证范围 |
+| --- | --- | --- |
+| Windows Edge | React 演示与真实业务、Next.js 门户、微前端生命周期、统一入口与窄屏 | 其他浏览器、生产反向代理 |
+| MuMu Android 15 + Expo Go | 原生文字闭环与异常重试、人工实时截屏扫码、相册和虚拟系统相机上传 | 实体摄像头与实体手机 |
+| 独立 release APK + MuMu Android 15 | 无 Metro / Expo Go 的 HTTPS 登录、设备范围、报修、接单、结果、确认与会话恢复 | 本包扫码、相机、相册与实体手机 |
+| iPhone 浏览器 | 临时隧道 Hello World 连通性 | 门户完整业务、iOS 原生 |
+
+安装包、密钥、账号凭据、实际测试地址和个人操作记录只存 `.local`。异地内测依赖电脑、数据库、API、受限转发与隧道保持运行；临时隧道可能失效，域名改变后当前 APK 需重建。未生成 AAB、未发布商店，尚未交付公网生产环境。详细证据分别见各模块文档，不能将模拟器验收记为实体手机通过。
+
+## 文档索引
+
+| 主题 | 文档 |
+| --- | --- |
+| 当前阶段、完成标准与后续范围 | [产品与架构演进路线](docs/ROADMAP.md) |
+| 前后端分层与协作约束 | [Web 结构](docs/ARCHITECTURE.md)、[后端结构](docs/BACKEND_ARCHITECTURE.md)、[AGENTS.md](AGENTS.md) |
+| 环境与业务规则 | [API 启动与验证](docs/API_SETUP.md)及上文各工单用例文档 |
+| 各端架构与验证 | [Next.js 门户](docs/PORTAL.md)、[RN 客户端](docs/MOBILE.md)、[微前端](docs/MICRO_FRONTENDS.md) |
+| 附件与独立安装包 | [现场照片](docs/TICKET_PHOTOS.md)、[异地移动端内测](docs/REMOTE_MOBILE_TEST.md) |

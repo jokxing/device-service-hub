@@ -2,7 +2,7 @@
 
 ## 当前交付范围
 
-`apps/mobile` 是独立 Expo / React Native 工作区。首步交付服务首页、报修须知、原生 Stack 导航、主题、安全区与滚动布局，完成浏览器预览及 Android 模拟器运行验证。
+`apps/mobile` 是独立 Expo / React Native 工作区，提供服务首页、报修须知、原生 Stack 导航、主题、安全区与滚动布局，已完成浏览器预览和 Android 模拟器验证。
 
 已接通真实登录、会话恢复、退出、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。已接入设备二维码相机入口及手动编号查询，已接入报修详情拍照/相册补充照片及维修任务只读查看；管理员分派继续使用 Web 后台。设备与工单来自同一 NestJS/PostgreSQL，范围由服务端决定；现有 Web 与门户继续保留。
 
@@ -15,6 +15,8 @@
 
 ```text
 apps/mobile/
+├─ app.config.ts          # 本地 APK 模式配置，默认保留 app.json
+├─ plugins/               # 局部 Android 内测签名与权限插件
 ├─ app.json
 ├─ metro.config.cjs
 ├─ package.json
@@ -158,11 +160,11 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 - npm、TEMP/TMP、浏览器配置、Expo 用户设置、ADB 用户目录和 Gradle 用户缓存均通过启动脚本指向 `.local`，不安装全局 CLI。
 - Expo CLI 57 的用户目录使用进程级 `__UNSAFE_EXPO_HOME_DIRECTORY` 覆盖；该设置只由启动脚本传入，不放入项目 `.env` 或客户端变量。
 - RN DevTools 的 DotSlash 在 Windows 使用系统 Known Folder 路径，需要单独设置 `DOTSLASH_CACHE`。本地脚本已将其指向 `.local/dotslash`；说明见 [DotSlash 缓存配置](https://github.com/facebook/dotslash/blob/main/website/docs/flags.md)。
-- 当前步骤曾发现调试器生成的系统盘缓存，已停止进程、核对本轮新建条目并清理，再验证底层工具报告的缓存路径为项目目录。没有删除既有用户文件或安装目录。
+- 缓存位置以底层工具实际报告为准；仅设置 APPDATA/TEMP 不能保证 Expo 与 DotSlash 使用项目目录。
 
 ## 验证记录与边界
 
-2026-11-06～2026-11-07：
+2026-11-06～2026-11-08；Expo Go 与独立 APK 结果分别记录：
 
 | 验证项 | 当前结果 |
 | --- | --- |
@@ -209,6 +211,6 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 
 已支持待分派工单拍照/相册补充照片，维修人员在本人任务只读查看。图片规则、磁盘与数据库边界及验证记录见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。
 
-## 下一增量
+## 后续验收边界
 
 现场照片规则、原生入口及验证边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。Web 管理员已支持现场照片查看，门户附件后置。微前端已集成 React 工单后台、Vue 设备台账及最小导航通信，见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)。RN 保持独立，独立 APK 已在 MuMu Android 15 通过 HTTPS 文字闭环验收；实体手机安装、摄像头扫码/拍照与 iOS 原生仍待验证。
