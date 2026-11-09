@@ -2,14 +2,14 @@
 
 import { Alert, Button, Form, Input } from "antd";
 import type { LoginInput } from "@device-service-hub/contracts";
-import { clientPost } from "../../../shared/api/http";
+import { loginAccount } from "../api";
 import { useApiMutation } from "../../../shared/hooks/useApiMutation";
 
 export default function LoginForm() {
   const { submitting, error, run } = useApiMutation("尚未确认登录结果，请重试");
   function submit(values: LoginInput) {
     return run(
-      (signal) => clientPost("/api/auth/login", values, signal),
+      (signal) => loginAccount(values, signal),
       () => window.location.replace("/devices"),
     );
   }

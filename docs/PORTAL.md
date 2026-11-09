@@ -35,15 +35,23 @@ apps/portal/
    │  ├─ api/tickets/[id]/confirm/route.ts
    │  └─ error.tsx、not-found.tsx
    ├─ features/auth/
+   │  ├─ api.ts（客户端登录与退出请求）
    │  ├─ components/（登录表单与退出按钮）
    │  └─ server/（会话读取与登录/退出适配）
    ├─ features/devices/
    │  ├─ components/（设备卡片与状态）
    │  └─ server/queries.ts
    ├─ features/tickets/
+   │  ├─ api.ts（客户端报修与完成确认请求）
    │  ├─ components/（报修表单、记录卡片、详情、状态标签、确认操作与弹窗）
    │  ├─ server/（本人查询与提交适配）
    │  └─ constants.ts、types.ts、rules.ts、tickets.module.css
+   ├─ features/quotes/
+   │  ├─ api.ts（客户端报价确认请求）
+   │  ├─ components/、server/（报价展示、确认与服务端适配）
+   │  └─ types.ts、rules.ts、quotes.module.css
+   ├─ features/orders/
+   │  └─ components/、server/（订单快照展示与查询）
    └─ shared/
       ├─ components/（公共页头与布局样式）
       ├─ api/、hooks/（客户端请求与提交生命周期）
@@ -52,6 +60,8 @@ apps/portal/
 ```
 
 页面只组合业务组件。`shared/server` 使用 `server-only`，不依赖业务模块；业务权限仍由 NestJS 决定。共享接口类型来自 `packages/contracts`，不跨工作区导入 Vite 页面、React Router、DOM 工具或身份上下文。
+
+客户端业务请求集中在对应 `features/auth/api.ts`、`features/tickets/api.ts` 和 `features/quotes/api.ts`，统一维护门户接口路径、参数及返回类型，动态 ID 在该层编码。组件调用具名业务函数，继续负责表单、提交编号、版本与导航；`shared/api/http.ts` 只处理通用传输，不生成请求编号或自动重试。服务端查询与 NestJS 转发仍留在各模块 `server/`，内部地址和 Cookie 配置不进入客户端模块。
 
 ## 渲染、会话与缓存
 

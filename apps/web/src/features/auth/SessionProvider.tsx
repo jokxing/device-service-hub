@@ -34,8 +34,9 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     return () => controller.abort();
   }, [attempt]);
 
-  async function signIn(input: LoginInput) {
-    const result = await authApi.login(input);
+  async function signIn(input: LoginInput, signal?: AbortSignal) {
+    const result = await authApi.login(input, signal);
+    signal?.throwIfAborted();
     setUser(result.user);
     setStatus("authenticated");
   }
@@ -43,8 +44,9 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     setUser(null);
     setStatus("anonymous");
   }, []);
-  async function signOut() {
-    await authApi.logout();
+  async function signOut(signal?: AbortSignal) {
+    await authApi.logout(signal);
+    signal?.throwIfAborted();
     clearSession();
   }
   function retry() {

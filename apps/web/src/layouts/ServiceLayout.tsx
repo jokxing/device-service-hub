@@ -1,27 +1,30 @@
-import { useState } from "react";
-import { App, Button, Space } from "antd";
+import { Button, Space } from "antd";
 import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { ROUTES } from "../app/routes";
 import { useSession } from "../features/auth/sessionContext";
 import SessionFeedback from "../features/auth/components/SessionFeedback";
+import { useApiMutation } from "../shared/hooks/useApiMutation";
 import { ROLE_LABELS } from "../shared/constants/roles";
 import styles from "./service.module.css";
 
 export default function ServiceLayout() {
-  const { user, status, signOut } = useSession();
-  const { message } = App.useApp();
-  const [leaving, setLeaving] = useState(false);
+  const { user, status, signOut, clearSession } = useSession();
+  const {
+    submitting: leaving,
+    error,
+    run,
+  } = useApiMutation({
+    onUnauthorized: clearSession,
+    fallbackError: "退出未完成，请核对登录状态后重试",
+  });
   if (status === "loading" || status === "unavailable")
     return <SessionFeedback />;
   if (!user) return <Navigate to={ROUTES.login} replace />;
-  async function logout() {
-    setLeaving(true);
-    try {
-      await signOut();
-    } catch {
-      message.error("退出失败，请稍后重试");
-      setLeaving(false);
-    }
+  function logout() {
+    return run(
+      (signal) => signOut(signal),
+      () => {},
+    );
   }
   return (
     <div className={styles.page}>
@@ -34,11 +37,12 @@ export default function ServiceLayout() {
           <span>
             {user.name} · {ROLE_LABELS[user.role]}
           </span>
-          <Button onClick={logout} loading={leaving}>
+          <Button onClick={logout} loading={leaving} disabled={leaving}>
             退出登录
           </Button>
         </Space>
       </header>
+      {error && <p role="alert">{error}</p>}
       <nav className={styles.nav} aria-label="设备服务导航">
         <NavLink
           to={ROUTES.serviceDevices}

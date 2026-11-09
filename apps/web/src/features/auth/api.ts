@@ -8,10 +8,12 @@ import { apiRequest } from "../../shared/api/http";
 export const authApi = {
   me: (signal?: AbortSignal) =>
     apiRequest<SessionResponse>("/auth/me", { signal }),
-  login: (input: LoginInput) =>
+  login: (input: LoginInput, signal?: AbortSignal) =>
     apiRequest<LoginResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify(input),
+      signal,
     }),
-  logout: () => apiRequest<void>("/auth/logout", { method: "POST" }),
+  logout: (signal?: AbortSignal) =>
+    apiRequest<void>("/auth/logout", { method: "POST", signal }),
 };

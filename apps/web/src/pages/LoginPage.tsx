@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Alert, Button, Card, Form, Input } from "antd";
 import { ToolOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
@@ -6,26 +5,23 @@ import type { LoginInput } from "@device-service-hub/contracts";
 import { ROUTES } from "../app/routes";
 import { useSession } from "../features/auth/sessionContext";
 import SessionFeedback from "../features/auth/components/SessionFeedback";
+import { useApiMutation } from "../shared/hooks/useApiMutation";
 import styles from "../features/auth/auth.module.css";
 
 export default function LoginPage() {
   const { status, signIn } = useSession();
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const { submitting, error, run } = useApiMutation({
+    fallbackError: "尚未确认登录结果，请重试",
+  });
   if (status === "authenticated")
     return <Navigate to={ROUTES.serviceDevices} replace />;
   if (status === "loading" || status === "unavailable")
     return <SessionFeedback />;
-  async function submit(values: LoginInput) {
-    setSubmitting(true);
-    setError("");
-    try {
-      await signIn(values);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "登录失败，请重试");
-    } finally {
-      setSubmitting(false);
-    }
+  function submit(values: LoginInput) {
+    return run(
+      (signal) => signIn(values, signal),
+      () => {},
+    );
   }
   return (
     <div className={styles.login}>
@@ -40,7 +36,11 @@ export default function LoginPage() {
         {error && (
           <Alert type="error" showIcon title={error} className="mb-5" />
         )}
-        <Form<LoginInput> layout="vertical" onFinish={submit}>
+        <Form<LoginInput>
+          layout="vertical"
+          onFinish={submit}
+          disabled={submitting}
+        >
           <Form.Item
             name="username"
             label="账号"

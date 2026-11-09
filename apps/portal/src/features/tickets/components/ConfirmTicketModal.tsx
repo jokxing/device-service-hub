@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import type { ReporterTicketRecord } from "@device-service-hub/contracts";
 import MutationModal from "../../../shared/components/MutationModal";
 import { useApiMutation } from "../../../shared/hooks/useApiMutation";
-import { clientPost } from "../../../shared/api/http";
+import { confirmTicket } from "../api";
 import type { ConfirmationTicket } from "../types";
 import styles from "../tickets.module.css";
 
@@ -23,8 +22,8 @@ export default function ConfirmTicketModal({
   function confirm() {
     return run(
       (signal) =>
-        clientPost<ReporterTicketRecord>(
-          `/api/tickets/${encodeURIComponent(ticket.id)}/confirm`,
+        confirmTicket(
+          ticket.id,
           { requestId, expectedVersion: ticket.version },
           signal,
         ),

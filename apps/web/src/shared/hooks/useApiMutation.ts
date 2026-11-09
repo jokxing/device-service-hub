@@ -3,7 +3,7 @@ import { ApiError } from "../api/http";
 
 const DEFAULT_TIMEOUT_MS = 15000;
 interface Options {
-  onUnauthorized: () => void;
+  onUnauthorized?: () => void;
   fallbackError: string;
   timeoutMs?: number;
 }
@@ -54,7 +54,8 @@ export function useApiMutation({
         (controller.signal.aborted && controller.signal.reason !== "timeout")
       )
         return;
-      if (error instanceof ApiError && error.status === 401) onUnauthorized();
+      if (error instanceof ApiError && error.status === 401 && onUnauthorized)
+        onUnauthorized();
       else setError(error instanceof ApiError ? error.message : fallbackError);
     } finally {
       window.clearTimeout(timer);

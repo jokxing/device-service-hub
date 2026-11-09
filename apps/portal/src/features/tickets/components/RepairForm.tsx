@@ -6,9 +6,8 @@ import { Alert, Button, Form, Input, Select } from "antd";
 import type {
   CreateTicketInput,
   DeviceSummary,
-  TicketRecord,
 } from "@device-service-hub/contracts";
-import { clientPost } from "../../../shared/api/http";
+import { createTicket } from "../api";
 import { useApiMutation } from "../../../shared/hooks/useApiMutation";
 import { PRIORITY_LABELS, TICKET_LIMITS } from "../constants";
 import styles from "../tickets.module.css";
@@ -34,8 +33,7 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
       (signal) => {
         if (intent.current?.fingerprint !== fingerprint)
           intent.current = { fingerprint, requestId: crypto.randomUUID() };
-        return clientPost<TicketRecord>(
-          "/api/tickets",
+        return createTicket(
           { ...payload, requestId: intent.current.requestId },
           signal,
         );

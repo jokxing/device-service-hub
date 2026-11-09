@@ -36,6 +36,8 @@
     "verify:confirmations-ui": "node scripts/verify-confirmations-ui.mjs",
     "verify:shared-ui": "node scripts/verify-shared-ui.mjs",
     "verify:connected-ui": "node scripts/verify-connected-ui.mjs",
+    "test:web-http": "node --test scripts/test-web-http.mjs",
+    "verify:web-http-ui": "node scripts/verify-web-http-ui.mjs",
     "test:business": "node --test scripts/test-business-rules.mjs",
     "test:quotes": "node --test scripts/test-quote-rules.mjs",
     "verify:quotes": "node scripts/verify-quotes.mjs",

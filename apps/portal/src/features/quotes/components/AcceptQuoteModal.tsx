@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { ServiceOrderRecord } from "@device-service-hub/contracts";
 import { formatCents } from "@device-service-hub/contracts/quote-rules";
 import MutationModal from "../../../shared/components/MutationModal";
 import { useApiMutation } from "../../../shared/hooks/useApiMutation";
-import { clientPost } from "../../../shared/api/http";
+import { acceptQuote } from "../api";
 import type { QuoteActionTicket, ConfirmationQuote } from "../types";
 
 export default function AcceptQuoteModal({
@@ -30,12 +29,7 @@ export default function AcceptQuoteModal({
   );
   function confirm() {
     return run(
-      (signal) =>
-        clientPost<ServiceOrderRecord>(
-          `/api/tickets/${encodeURIComponent(ticket.id)}/quote/accept`,
-          input,
-          signal,
-        ),
+      (signal) => acceptQuote(ticket.id, input, signal),
       () =>
         window.location.replace(`/tickets/${encodeURIComponent(ticket.id)}`),
     );

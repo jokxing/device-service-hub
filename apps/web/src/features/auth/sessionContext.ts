@@ -4,8 +4,8 @@ import type { LoginInput, PublicUser } from "@device-service-hub/contracts";
 interface SessionState {
   user: PublicUser | null;
   status: "loading" | "authenticated" | "anonymous" | "unavailable";
-  signIn: (input: LoginInput) => Promise<void>;
-  signOut: () => Promise<void>;
+  signIn: (input: LoginInput, signal?: AbortSignal) => Promise<void>;
+  signOut: (signal?: AbortSignal) => Promise<void>;
   clearSession: () => void;
   retry: () => void;
 }
