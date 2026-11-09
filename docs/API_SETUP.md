@@ -4,6 +4,8 @@
 
 后端目录、Controller/Service/Guard 等职责，以及新增功能的放置约定见 [BACKEND_ARCHITECTURE.md](BACKEND_ARCHITECTURE.md)。
 
+报价型工单已支持首版报价和本人确认后生成唯一订单，规则与验证见 [QUOTES.md](QUOTES.md)。新增订单迁移前须备份本项目本地库；已有报价保持原状态，不自动生成订单。`verify:orders` 与 `verify:portal-quotes` 使用随机临时记录，不改写人工工单。
+
 ## 运行环境
 
 - Node.js 24、npm 11。

@@ -32,6 +32,7 @@ model User {
   confirmations TicketConfirmation[]
   photos TicketPhoto[]
   quotes TicketQuote[]
+  ordersConfirmed ServiceOrder[]
 }
 
 model Device {
@@ -67,6 +68,11 @@ enum TicketServiceMode {
 
 enum QuoteStatus {
   pending
+  accepted
+}
+
+enum ServiceOrderStatus {
+  awaiting_start
 }
 
 model Ticket {
@@ -94,6 +100,7 @@ model Ticket {
   confirmation TicketConfirmation?
   photos TicketPhoto[]
   quotes TicketQuote[]
+  order ServiceOrder?
 
   @@unique([reporterId, requestId])
   @@index([reporterId, createdAt, id])
@@ -189,6 +196,7 @@ model TicketQuote {
   ticket          Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   actor           User @relation(fields: [actorId], references: [id], onDelete: Restrict)
   items           QuoteItem[]
+  order           ServiceOrder?
 
   @@unique([ticketId, revision])
   @@unique([actorId, requestId])
@@ -206,6 +214,41 @@ model QuoteItem {
   quote          TicketQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
   @@unique([quoteId, position])
+}
+
+model ServiceOrder {
+  id              String @id @default(uuid())
+  number          Int @unique @default(autoincrement())
+  ticketId        String @unique
+  quoteId         String @unique
+  quoteRevision   Int
+  status          ServiceOrderStatus @default(awaiting_start)
+  currency        String @default("CNY") @db.Char(3)
+  totalCents      Int
+  actorId         String
+  requestId       String @db.Uuid
+  expectedVersion Int
+  createdAt       DateTime @default(now())
+  ticket          Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  quote           TicketQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  confirmedBy     User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  items           ServiceOrderItem[]
+
+  @@unique([actorId, requestId])
+}
+
+model ServiceOrderItem {
+  id             String @id @default(uuid())
+  orderId        String
+  position       Int
+  name           String @db.VarChar(60)
+  quantity       Int
+  unitPriceCents Int
+  amountCents    Int
+  note           String @db.VarChar(200)
+  order          ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, position])
 }
 
 model DeviceAccess {

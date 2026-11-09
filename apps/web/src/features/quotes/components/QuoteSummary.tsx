@@ -9,7 +9,9 @@ export default function QuoteSummary({ quote }: { quote: QuoteRecord }) {
     <div aria-label="报价明细">
       <div className={styles.row}>
         <strong>报价第 {quote.revision} 版</strong>
-        <Tag color="processing">待用户确认</Tag>
+        <Tag color={quote.status === "accepted" ? "success" : "processing"}>
+          {quote.status === "accepted" ? "已确认" : "待用户确认"}
+        </Tag>
       </div>
       <p className={`muted ${styles.meta}`}>
         {quote.actor.name} · {formatDateTime(new Date(quote.createdAt))}
@@ -32,7 +34,9 @@ export default function QuoteSummary({ quote }: { quote: QuoteRecord }) {
         报价合计：¥{formatCents(quote.totalCents)}（人民币）
       </p>
       <p className="muted">
-        本报价已保存，尚未获用户确认，不代表订单成立或付款。
+        {quote.status === "accepted"
+          ? "用户已确认本版报价并生成服务订单；报价确认不代表已付款。"
+          : "本报价已保存，尚未获用户确认，不代表订单成立或付款。"}
       </p>
     </div>
   );

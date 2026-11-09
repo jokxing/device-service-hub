@@ -102,6 +102,8 @@ NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常�
 
 `modules/quotes` 承担报价读取与首版提交，独立组织 Controller、Service、DTO 和查询投影。工单条件更新、报价及条目在同一事务写入；金额由服务端计算，已发布内容不可覆盖。TaskResultsService 限制报价型任务提交结果，Web/原生适配共用约束。规则及增量迁移见 [QUOTES.md](QUOTES.md)。
 
+`modules/orders` 承担本人报价确认和订单快照读取，DTO、查询投影、序列化分开组织；一次事务更新报价状态、工单版本并创建唯一订单及条目。报价与订单读取复用工单模块内的 `ticketReadScope`，不把管理员范围用于本人入口。当前不开放支付、取消或开工，已有结果提交限制保持有效。
+
 出现重复复杂查询、可独立维护的数据访问职责时，可增加模块内部 Repository。业务流程和授权决策仍属于 Service；Repository 不接受 HTTP 对象，不反向调用 Controller。
 
 文字报修由 Service 在事务中检查设备授权和启用状态后插入工单，唯一约束保证并发防重；查询投影、摘要和序列化各有明确文件。未来涉及更多表更新时仍由一个用例确定事务边界，不能让多个 Repository 各自提交，造成部分成功。

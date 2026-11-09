@@ -52,7 +52,9 @@ try {
   assert.equal(check(await read(a.cookie, task.id), 200), null);
   for (const cookie of [undefined, admin, reporter])
     check(await submit(cookie, task.id), cookie ? 403 : 401);
-  check(await read(reporter, task.id), 403);
+  assert.equal(check(await read(reporter, task.id), 200), null);
+  const reporterB = await local.login("reporter.b");
+  check(await read(reporterB, task.id), 404);
   for (const id of [other.id, randomUUID()]) {
     check(await read(a.cookie, id), 404);
     check(await submit(a.cookie, id), 404);

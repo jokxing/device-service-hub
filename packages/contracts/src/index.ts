@@ -51,11 +51,28 @@ export interface QuoteRecord {
   id: string;
   ticketId: string;
   revision: number;
-  status: "pending";
+  status: "pending" | "accepted";
   currency: "CNY";
   totalCents: number;
   createdAt: string;
   actor: TicketPerson;
+  items: (QuoteItemInput & { amountCents: number })[];
+}
+export interface AcceptQuoteInput extends TicketCommandInput {
+  quoteId: string;
+  quoteRevision: number;
+}
+export interface ServiceOrderRecord {
+  id: string;
+  code: string;
+  ticketId: string;
+  quoteId: string;
+  quoteRevision: number;
+  status: "awaiting_start";
+  currency: "CNY";
+  totalCents: number;
+  createdAt: string;
+  confirmedBy: TicketPerson;
   items: (QuoteItemInput & { amountCents: number })[];
 }
 export type TicketStatus =
@@ -107,6 +124,7 @@ export type AcceptTicketInput = TicketCommandInput;
 export type ConfirmTicketInput = TicketCommandInput;
 export interface ReporterTicketRecord extends TicketRecord {
   version: number;
+  serviceMode: TicketServiceMode;
 }
 export interface SubmitTicketResultInput extends TicketCommandInput {
   description: string;

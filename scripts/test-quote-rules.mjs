@@ -7,12 +7,40 @@ import {
 } from "@device-service-hub/contracts/quote-rules";
 import { canSubmitQuote } from "../apps/web/src/features/quotes/quoteRules.ts";
 import { canSubmitTaskResult } from "../apps/web/src/features/tickets/taskRules.ts";
+import { canAcceptQuote } from "../apps/portal/src/features/quotes/rules.ts";
 
 const item = (quantity, unitPriceCents) => ({
   name: "配件",
   quantity,
   unitPriceCents,
   note: "",
+});
+
+test("门户仅对待确认报价且尚无订单的本人处理中工单显示确认入口", () => {
+  const ticket = { status: "processing", serviceMode: "quoted", result: null };
+  assert.equal(canAcceptQuote(ticket, { status: "pending" }, false), true);
+  assert.equal(canAcceptQuote(ticket, { status: "accepted" }, false), false);
+  assert.equal(canAcceptQuote(ticket, { status: "pending" }, true), false);
+  assert.equal(
+    canAcceptQuote(
+      { ...ticket, serviceMode: "direct" },
+      { status: "pending" },
+      false,
+    ),
+    false,
+  );
+  assert.equal(
+    canAcceptQuote(
+      { ...ticket, status: "completed" },
+      { status: "pending" },
+      false,
+    ),
+    false,
+  );
+  assert.equal(
+    canAcceptQuote({ ...ticket, result: {} }, { status: "pending" }, false),
+    false,
+  );
 });
 test("金额从十进制文本精确转换，禁止静默截断或科学计数法", () => {
   for (const [text, cents] of [

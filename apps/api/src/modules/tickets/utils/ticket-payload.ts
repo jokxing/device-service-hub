@@ -57,8 +57,8 @@ export function toTicketRecord(row: TicketRow): TicketRecord {
 export function toReporterTicketRecord(
   row: ReporterTicketRow,
 ): ReporterTicketRecord {
-  const { version, ...record } = row;
-  return { ...toTicketRecord(record), version };
+  const { version, serviceMode, ...record } = row;
+  return { ...toTicketRecord(record), version, serviceMode };
 }
 
 export function toTaskTicketRecord(row: TaskTicketRow): TaskTicketRecord {

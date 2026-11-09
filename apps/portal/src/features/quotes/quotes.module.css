@@ -1,0 +1,44 @@
+.section {
+  margin-top: 24px;
+}
+.items {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0;
+}
+.item {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-width: 0;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.note {
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+.total {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 24px 0 16px;
+}
+.status {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #edf2fc;
+  color: #245aa5;
+}
+.actions {
+  margin-top: 20px;
+}

@@ -12,18 +12,17 @@ import { DatabaseService } from "../../database/database.service";
 import { Prisma } from "../../generated/prisma/client";
 import type { SubmitQuoteDto } from "./dto/submit-quote.dto";
 import { QUOTE_SELECT } from "./quotes.select";
+import { ticketReadScope } from "../tickets/utils/ticket-read-scope";
 
 @Injectable()
 export class QuotesService {
   constructor(private readonly database: DatabaseService) {}
 
   private async accessibleTicket(actor: PublicUser, ticketId: string) {
-    if (actor.role !== "admin" && actor.role !== "technician")
-      throw new ForbiddenException("仅管理员或当前维修人员可以查看报价");
     const ticket = await this.database.ticket.findFirst({
       where: {
         id: ticketId,
-        ...(actor.role === "technician" ? { assigneeId: actor.id } : {}),
+        ...ticketReadScope(actor),
       },
       select: { id: true },
     });
@@ -39,9 +38,7 @@ export class QuotesService {
     const quote = await this.database.ticketQuote.findFirst({
       where: {
         ticketId,
-        ...(actor.role === "technician"
-          ? { ticket: { assigneeId: actor.id } }
-          : {}),
+        ticket: ticketReadScope(actor),
       },
       orderBy: { revision: "desc" },
       select: QUOTE_SELECT,

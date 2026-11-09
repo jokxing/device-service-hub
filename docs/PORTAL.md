@@ -6,6 +6,12 @@
 
 门户只对报修用户开放。管理员与维修人员继续使用 React 后台；门户已贯通最小文字业务闭环，图片上传、退回和重新打开尚未接入。现有 React 用户入口保留为回归基线。设备仍为虚构样例，接口和数据库会话是真实实现，没有硬件通信。
 
+需报价工单的本人详情已增加报价查看、指定版本确认和服务订单快照。确认由 NestJS 原子完成，个人数据 no-store，订单不代表付款；拒绝/修订、取消、开工和支付尚未开放，见 [维修报价与订单](QUOTES.md)。
+
+新增 `features/quotes` 的服务端查询、确认交互与转发，以及 `features/orders` 的订单快照查询/展示；`app/api/tickets/[id]/quote/accept/route.ts` 只组装转发。报修、完成确认和报价确认共用 `features/auth/server/commands.ts` 的 `reporterPost`，保留调用方原 UUID 与版本，不跨应用导入后台 Hook 或绕过 NestJS。报价及订单条目展示在门户内部复用 `QuoteItems`。
+
+相关增量执行 `verify:orders`、`verify:portal-quotes`，并回归 `verify:portal`、`verify:portal-tickets` 和 `verify:portal-confirmations`；共享种子账号套件串行运行。
+
 ## 目录职责
 
 ```text

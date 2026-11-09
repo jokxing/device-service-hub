@@ -35,7 +35,7 @@ export default function MutationModal({
       confirmLoading={submitting}
       keyboard={!submitting}
       closable={!submitting}
-      maskClosable={!submitting}
+      mask={{ closable: !submitting }}
       cancelButtonProps={{ disabled: submitting }}
       okButtonProps={{
         disabled: submitting,

@@ -49,6 +49,7 @@ export const TASK_TICKET_SELECT = {
 export const REPORTER_TICKET_SELECT = {
   ...TICKET_PUBLIC_SELECT,
   version: true,
+  serviceMode: true,
 } as const satisfies Prisma.TicketSelect;
 
 export type ReporterTicketRow = Prisma.TicketGetPayload<{
