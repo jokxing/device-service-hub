@@ -49,6 +49,10 @@ export class TaskResultsService {
     const current = await this.tasks.detail(actor, id);
     const previous = await this.replay(actor, id, input);
     if (previous) return previous;
+    if (current.serviceMode === "quoted")
+      throw new ConflictException(
+        "需报价任务须完成报价确认及订单开工，当前不能提交处理结果",
+      );
     if (
       current.status !== "processing" ||
       current.version !== input.expectedVersion
@@ -61,6 +65,7 @@ export class TaskResultsService {
             id,
             assigneeId: actor.id,
             status: "processing",
+            serviceMode: "direct",
             version: input.expectedVersion,
           },
           data: { status: "confirming", version: { increment: 1 } },

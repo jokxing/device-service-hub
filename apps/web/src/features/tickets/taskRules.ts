@@ -6,7 +6,7 @@ export function canAcceptTask(task: Pick<TaskTicketRecord, "status">): boolean {
 }
 
 export function canSubmitTaskResult(
-  task: Pick<TaskTicketRecord, "status">,
+  task: Pick<TaskTicketRecord, "status" | "serviceMode">,
 ): boolean {
-  return task.status === "processing";
+  return task.status === "processing" && task.serviceMode === "direct";
 }

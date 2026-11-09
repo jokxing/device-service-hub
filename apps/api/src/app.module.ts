@@ -4,9 +4,10 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { OriginGuard } from "./modules/auth/guards/origin.guard";
 import { DevicesModule } from "./modules/devices/devices.module";
 import { TicketsModule } from "./modules/tickets/tickets.module";
+import { QuotesModule } from "./modules/quotes/quotes.module";
 
 @Module({
-  imports: [AuthModule, DevicesModule, TicketsModule],
+  imports: [AuthModule, DevicesModule, TicketsModule, QuotesModule],
   providers: [{ provide: APP_GUARD, useClass: OriginGuard }],
 })
 export class AppModule {}

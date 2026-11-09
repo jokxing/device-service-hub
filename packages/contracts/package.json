@@ -6,6 +6,10 @@
     ".": {
       "types": "./src/index.ts"
     },
+    "./quote-rules": {
+      "types": "./src/quote-rules.ts",
+      "default": "./src/quote-rules.ts"
+    },
     "./device-tags": {
       "types": "./src/device-tags.ts",
       "default": "./src/device-tags.ts"

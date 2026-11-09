@@ -29,6 +29,7 @@ export const TICKET_PUBLIC_SELECT = {
 export const ADMIN_TICKET_SELECT = {
   ...TICKET_PUBLIC_SELECT,
   version: true,
+  serviceMode: true,
   reporter: { select: { id: true, name: true } },
   assignment: {
     select: {
@@ -42,6 +43,7 @@ export const ADMIN_TICKET_SELECT = {
 export const TASK_TICKET_SELECT = {
   ...TICKET_PUBLIC_SELECT,
   version: true,
+  serviceMode: true,
 } as const satisfies Prisma.TicketSelect;
 
 export const REPORTER_TICKET_SELECT = {

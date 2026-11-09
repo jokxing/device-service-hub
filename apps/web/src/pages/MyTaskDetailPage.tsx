@@ -16,6 +16,7 @@ import {
 } from "../features/tickets/taskRules";
 import { tasksApi } from "../features/tickets/tasks-api";
 import styles from "../features/tickets/connected.module.css";
+import TicketQuoteSection from "../features/quotes/components/TicketQuoteSection";
 
 function MyTaskDetailContent() {
   const { id = "" } = useParams();
@@ -66,10 +67,23 @@ function MyTaskDetailContent() {
           </Spin>
         ) : (
           <div className={styles.record}>
+            <p className="muted">
+              服务方式：{data.serviceMode === "quoted" ? "需报价" : "直接处理"}
+            </p>
             <TicketRecordDetails ticket={data} />
           </div>
         )}
       </ContentCard>
+      {data?.serviceMode === "quoted" && !loading && !error && (
+        <div className="mt-5">
+          <TicketQuoteSection
+            key={data.id}
+            ticketId={data.id}
+            task={data}
+            onSubmitted={refresh}
+          />
+        </div>
+      )}
       {taskToAccept && (
         <AcceptTaskModal
           key={taskToAccept.id}

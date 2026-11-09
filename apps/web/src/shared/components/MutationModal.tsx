@@ -7,6 +7,7 @@ interface Props extends PropsWithChildren {
   submitting: boolean;
   error: string;
   submitDisabled?: boolean;
+  scrollBody?: boolean;
   onSubmit: () => void;
   onClose: () => void;
 }
@@ -17,6 +18,7 @@ export default function MutationModal({
   submitting,
   error,
   submitDisabled = false,
+  scrollBody = false,
   onSubmit,
   onClose,
   children,
@@ -27,6 +29,18 @@ export default function MutationModal({
       title={title}
       okText={okText}
       cancelText="取消"
+      style={scrollBody ? { top: 24 } : undefined}
+      styles={
+        scrollBody
+          ? {
+              body: {
+                maxHeight: "calc(100dvh - 200px)",
+                overflowY: "auto",
+                paddingInlineEnd: 4,
+              },
+            }
+          : undefined
+      }
       onOk={() => {
         if (!submitting && !submitDisabled) onSubmit();
       }}

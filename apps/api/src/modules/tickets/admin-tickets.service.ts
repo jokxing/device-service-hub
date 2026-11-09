@@ -102,13 +102,19 @@ export class AdminTicketsService {
       where: {
         actorId_requestId: { actorId: actor.id, requestId: input.requestId },
       },
-      select: { ticketId: true, assigneeId: true, expectedVersion: true },
+      select: {
+        ticketId: true,
+        assigneeId: true,
+        expectedVersion: true,
+        serviceMode: true,
+      },
     });
     if (!previous) return null;
     if (
       previous.ticketId !== id ||
       previous.assigneeId !== input.assigneeId ||
-      previous.expectedVersion !== input.expectedVersion
+      previous.expectedVersion !== input.expectedVersion ||
+      previous.serviceMode !== (input.serviceMode ?? "direct")
     )
       throw new ConflictException("提交编号已用于不同分派，请刷新工单后重试");
     return this.detail(actor, id);
@@ -152,6 +158,7 @@ export class AdminTicketsService {
             status: "assigned",
             assigneeId: input.assigneeId,
             assignedAt: now,
+            serviceMode: input.serviceMode ?? "direct",
             version: { increment: 1 },
           },
         });
@@ -164,6 +171,7 @@ export class AdminTicketsService {
             assigneeId: input.assigneeId,
             requestId: input.requestId,
             expectedVersion: input.expectedVersion,
+            serviceMode: input.serviceMode ?? "direct",
             createdAt: now,
           },
         });

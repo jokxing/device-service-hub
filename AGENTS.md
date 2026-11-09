@@ -8,6 +8,7 @@
 
 - 阶段顺序遵循 [ROADMAP.md](docs/ROADMAP.md)：React 后台业务闭环 → Next.js 用户门户 → RN 客户端 → 微前端。保留现有 React 后台和 NestJS 后端；新应用到对应阶段经确认再创建，不同时铺开。
 - 每次只完成当前确认的一步。范围外的问题先说明，不顺带扩建系统。
+- 报价当前仅交付 React 首版提交与管理员只读，规则见 [QUOTES.md](docs/QUOTES.md)。管理员首次分派确定 direct/quoted，旧工单默认 direct；报价型任务的结果提交由 Web/原生共用服务拦截。用户确认、订单与支付按后续单步授权实施。
 - 沿用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules、npm workspaces 和根锁文件。
 - 未获当前任务明确授权，不更换技术栈、重组目录、添加状态库或组件库、批量升级依赖。
 - 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复、授权设备查询、文字报修、本人记录、确认完成及维修任务查询/接单、文字处理结果；RN 已支持待分派工单补充现场照片；微前端已接入 React 工单后台、Vue 设备台账与最小导航通信；Web 上传与门户附件界面、改派、退回/再次提交和支付尚未实现，不提前扩展范围。
@@ -94,6 +95,7 @@
 - 已授权的 Android 独立 APK 内测使用 `build:mobile:apk` 和 `verify:mobile-apk:android`，见 [异地移动端内测](docs/REMOTE_MOBILE_TEST.md)。工具链、原生工程、签名、账号、端点与 APK 不提交；默认 Expo Go 配置不变。对外只能转发受限移动入口，不直连整个 API，不扩大 Web Origin 白名单或开放原简单密码账号。实际内测窗和进程以 `.local` 为准，不自动新建隧道、覆盖凭据或清理人工工单。
 - 微前端统一生产构建入口使用 `build:micro:unified`、`preview:micro:unified`，与 4174 原预览互斥；相关变更运行 `verify:micro-unified`。静态资源缺失必须返回 404，页面路由才可回退 HTML；API 转发保留 Origin、Cookie、方法及响应状态，不自动重试写请求或扩大后端白名单。该脚本只用于本地验证，不当作公网部署交付。
 - 不提交 `.local`、`node_modules`、构建产物、真实 `.env`、凭据或个人操作记录。公开文档不包含个人绝对路径或对话过程。
+- 报价变更执行 `run test:quotes`、`run verify:quotes` 和 `run verify:quotes-ui`。金额使用整数分，公开报价不含内部幂等摘要；根 contracts 保持类型入口，`quote-rules` 子入口只输出纯金额规则与限制。新迁移先备份专用本地库，验证旧数据与默认直接处理方式，不修改历史迁移或覆盖人工记录。
 - 公开文档采用产品与工程交付表述，突出业务建模、架构取舍、数据权限、并发一致性、可维护性及验证证据，不加入学习任务、练习安排或教程式要求。十余年前端经历不等同于十余年 React/RN 经历；不虚构生产规模、客户案例或性能指标。
 - 如实标明演示数据、未实现能力以及 Mock、模拟器、真机和安装包各自验证范围，不包装为商业生产经验。
 - 完成时说明修改、实际检查结果与未验证范围；结构变化同步维护文档，不能声称未执行的检查已通过。

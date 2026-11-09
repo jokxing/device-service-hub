@@ -37,6 +37,27 @@ export type ServiceNavigationRequest =
   | { version: 1; action: "open-device"; deviceId: string };
 
 export type TicketPriority = "normal" | "urgent";
+export type TicketServiceMode = "direct" | "quoted";
+export interface QuoteItemInput {
+  name: string;
+  quantity: number;
+  unitPriceCents: number;
+  note: string;
+}
+export interface SubmitQuoteInput extends TicketCommandInput {
+  items: QuoteItemInput[];
+}
+export interface QuoteRecord {
+  id: string;
+  ticketId: string;
+  revision: number;
+  status: "pending";
+  currency: "CNY";
+  totalCents: number;
+  createdAt: string;
+  actor: TicketPerson;
+  items: (QuoteItemInput & { amountCents: number })[];
+}
 export type TicketStatus =
   | "pending"
   | "assigned"
@@ -80,6 +101,7 @@ export interface TicketCommandInput {
 }
 export interface AssignTicketInput extends TicketCommandInput {
   assigneeId: string;
+  serviceMode?: TicketServiceMode;
 }
 export type AcceptTicketInput = TicketCommandInput;
 export type ConfirmTicketInput = TicketCommandInput;
@@ -91,6 +113,7 @@ export interface SubmitTicketResultInput extends TicketCommandInput {
 }
 export interface TaskTicketRecord extends TicketRecord {
   version: number;
+  serviceMode: TicketServiceMode;
 }
 export interface TaskTicketPage {
   items: TaskTicketRecord[];
@@ -101,6 +124,7 @@ export interface TaskTicketPage {
 export interface AdminTicketRecord extends TicketRecord {
   reporter: TicketPerson;
   version: number;
+  serviceMode: TicketServiceMode;
   assignment: {
     actor: TicketPerson;
     assignee: TicketPerson;

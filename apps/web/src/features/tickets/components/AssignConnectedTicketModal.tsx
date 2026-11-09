@@ -1,6 +1,9 @@
 import { useCallback, useRef } from "react";
 import { Alert, Button, Form, Select } from "antd";
-import type { AdminTicketRecord } from "@device-service-hub/contracts";
+import type {
+  AdminTicketRecord,
+  TicketServiceMode,
+} from "@device-service-hub/contracts";
 import { useSession } from "../../auth/sessionContext";
 import { useApiResource } from "../../../shared/hooks/useApiResource";
 import { useApiMutation } from "../../../shared/hooks/useApiMutation";
@@ -29,21 +32,42 @@ export default function AssignConnectedTicketModal({
     loading,
     refresh,
   } = useApiResource(load, clearSession);
-  const [form] = Form.useForm<{ assigneeId: string }>();
+  const [form] = Form.useForm<{
+    assigneeId: string;
+    serviceMode: TicketServiceMode;
+  }>();
   const { submitting, error, run } = useApiMutation({
     onUnauthorized: clearSession,
     fallbackError: "尚未确认分派结果，可重试相同选择，或关闭后刷新列表核对。",
   });
-  const intent = useRef<{ assigneeId: string; requestId: string } | null>(null);
-  function submit({ assigneeId }: { assigneeId: string }) {
+  const intent = useRef<{
+    assigneeId: string;
+    serviceMode: TicketServiceMode;
+    requestId: string;
+  } | null>(null);
+  function submit({
+    assigneeId,
+    serviceMode,
+  }: {
+    assigneeId: string;
+    serviceMode: TicketServiceMode;
+  }) {
     return run((signal) => {
-      if (intent.current?.assigneeId !== assigneeId)
-        intent.current = { assigneeId, requestId: crypto.randomUUID() };
+      if (
+        intent.current?.assigneeId !== assigneeId ||
+        intent.current.serviceMode !== serviceMode
+      )
+        intent.current = {
+          assigneeId,
+          serviceMode,
+          requestId: crypto.randomUUID(),
+        };
       return adminTicketsApi.assign(
         ticket.id,
         {
           requestId: intent.current.requestId,
           assigneeId,
+          serviceMode,
           expectedVersion: ticket.version,
         },
         signal,
@@ -88,6 +112,7 @@ export default function AssignConnectedTicketModal({
         layout="vertical"
         onFinish={submit}
         disabled={submitting || loading}
+        initialValues={{ serviceMode: "direct" }}
       >
         <Form.Item
           name="assigneeId"
@@ -102,6 +127,19 @@ export default function AssignConnectedTicketModal({
               value: person.id,
               label: person.name,
             }))}
+          />
+        </Form.Item>
+        <Form.Item
+          name="serviceMode"
+          label="服务方式"
+          rules={[{ required: true }]}
+        >
+          <Select
+            aria-label="服务方式"
+            options={[
+              { value: "direct", label: "直接处理" },
+              { value: "quoted", label: "需报价" },
+            ]}
           />
         </Form.Item>
       </Form>

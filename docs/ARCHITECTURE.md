@@ -12,6 +12,8 @@
 
 管理员真实列表与首次分派使用 `/service/admin/tickets`，详情字段复用 TicketRecordDetails，列表/分派/详情弹窗分别组织。服务端权限和事务规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)，演示身份不参与管理接口授权。
 
+首次分派可选择直接处理或需报价；维修任务与管理员详情组合 `features/quotes` 的报价表单和只读摘要。金额规则通过 contracts 的 `quote-rules` 子入口复用，首版提交、迁移与权限边界见 [维修报价](QUOTES.md)。报价型任务不显示结果提交，服务端仍独立拦截。
+
 管理员详情组合 `features/tickets/photos/AdminTicketPhotos`，通过 Cookie 读取 RN 上传的现场照片并放大预览。图片请求复用共享传输和读取 Hook，关闭时取消读取并释放内存 URL；通用详情字段不包含请求或鉴权逻辑。边界及验证见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。
 
 维修人员通过 `/service/tasks` 及详情路由查询本人任务与接单，页面组合 TaskTicketsList 和 AcceptTaskModal，复用详情字段、卡片、分页参数与服务布局。规则见 [TECHNICIAN_TASKS.md](TECHNICIAN_TASKS.md)，任务身份来自数据库会话，数据范围由服务端按当前分派关系约束。

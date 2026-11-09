@@ -25,7 +25,11 @@ export function taskFixtures(local, db, prefix) {
   }
   async function task(
     owner,
-    { stage = "processing", title = "文字处理结果验收 " + Date.now() } = {},
+    {
+      stage = "processing",
+      title = "文字处理结果验收 " + Date.now(),
+      serviceMode = "direct",
+    } = {},
   ) {
     const { admin, reporter } = await identities();
     const requestId = randomUUID();
@@ -49,6 +53,7 @@ export function taskFixtures(local, db, prefix) {
       body: {
         requestId: randomUUID(),
         assigneeId: owner.id,
+        ...(serviceMode === "quoted" ? { serviceMode } : {}),
         expectedVersion: 0,
       },
     });

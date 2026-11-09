@@ -6,6 +6,7 @@ import { useSession } from "../../auth/sessionContext";
 import { adminTicketsApi } from "../admin-api";
 import TicketRecordDetails from "./TicketRecordDetails";
 import AdminTicketPhotos from "../photos/AdminTicketPhotos";
+import TicketQuoteSection from "../../quotes/components/TicketQuoteSection";
 
 export default function AdminTicketDetail({
   id,
@@ -44,6 +45,11 @@ export default function AdminTicketDetail({
             column={1}
             items={[
               {
+                key: "serviceMode",
+                label: "服务方式",
+                children: data.serviceMode === "quoted" ? "需报价" : "直接处理",
+              },
+              {
                 key: "reporter",
                 label: "报修用户",
                 children: data.reporter.name,
@@ -60,6 +66,11 @@ export default function AdminTicketDetail({
             ]}
           />
           <TicketRecordDetails ticket={data} />
+          {data.serviceMode === "quoted" && (
+            <div className="mt-5">
+              <TicketQuoteSection ticketId={data.id} />
+            </div>
+          )}
           <AdminTicketPhotos key={data.id} ticketId={data.id} />
         </>
       )}
