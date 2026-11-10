@@ -20,6 +20,7 @@ test("门户仅对待确认报价且尚无订单的本人处理中工单显示�
   const ticket = { status: "processing", serviceMode: "quoted", result: null };
   assert.equal(canAcceptQuote(ticket, { status: "pending" }, false), true);
   assert.equal(canAcceptQuote(ticket, { status: "accepted" }, false), false);
+  assert.equal(canAcceptQuote(ticket, { status: "rejected" }, false), false);
   assert.equal(canAcceptQuote(ticket, { status: "pending" }, true), false);
   assert.equal(
     canAcceptQuote(

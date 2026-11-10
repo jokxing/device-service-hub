@@ -33,6 +33,7 @@ model User {
   photos TicketPhoto[]
   quotes TicketQuote[]
   ordersConfirmed ServiceOrder[]
+  quoteRejections QuoteRejection[]
 }
 
 model Device {
@@ -69,6 +70,7 @@ enum TicketServiceMode {
 enum QuoteStatus {
   pending
   accepted
+  rejected
 }
 
 enum ServiceOrderStatus {
@@ -197,8 +199,23 @@ model TicketQuote {
   actor           User @relation(fields: [actorId], references: [id], onDelete: Restrict)
   items           QuoteItem[]
   order           ServiceOrder?
+  rejection       QuoteRejection?
 
   @@unique([ticketId, revision])
+  @@unique([actorId, requestId])
+}
+
+model QuoteRejection {
+  id              String @id @default(uuid())
+  quoteId         String @unique
+  actorId         String
+  reason          String @db.VarChar(500)
+  requestId       String @db.Uuid
+  expectedVersion Int
+  createdAt       DateTime @default(now())
+  quote           TicketQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  actor           User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
   @@unique([actorId, requestId])
 }
 

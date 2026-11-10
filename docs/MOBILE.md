@@ -50,6 +50,7 @@ apps/mobile/
 ### 模块扩展约定
 
 - 每个业务模块的 `api.ts` 集中接口路径、参数和共享传输类型；页面使用 `useDevices`、`useDevice` 等业务 Hook，不拼接 HTTP 地址。Hook 负责请求状态、取消和清理，业务 API 不保存界面状态。
+- 本人报修请求的分页大小由 `features/tickets/constants.ts` 的 `TICKET_PAGE_SIZE` 管理，任务请求沿用 `features/tasks/constants.ts` 的 `TASK_PAGE_SIZE`；当前均为 10 条。分页按钮按服务端返回的 pageSize/total 判断，不在页面重复固定每页数量，也不跨端强制共用配置。
 - 认证模块的 API 负责登录、身份核对与撤销；SessionProvider 管理会话生命周期和统一鉴权读取/写入。设备 API 接收鉴权读取函数，不读取 SecureStore、不复制 401 处理，也不把凭据传给页面。
 - `shared/api` 只负责地址、HTTP 与通用错误，不导入业务模块。`shared/constants/roles.ts` 保存跨页面角色名称，须知中的职责说明保留在 `features/service/content.ts`；角色文案不构成访问权限判断。
 - 公共颜色、字号、行高、间距、圆角与控件尺寸统一使用 theme；页面特有尺寸保留在局部 StyleSheet。业务模块按实际规模增加 `components/`、`hooks/` 等子目录，不为后续设想预建目录。

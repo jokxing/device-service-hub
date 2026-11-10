@@ -43,6 +43,8 @@
     "verify:quotes": "node scripts/verify-quotes.mjs",
     "verify:quotes-ui": "node scripts/verify-quotes-ui.mjs",
     "verify:orders": "node scripts/verify-orders.mjs",
+    "verify:quote-rejections": "node scripts/verify-quote-rejections.mjs",
+    "verify:portal-quote-rejections": "node scripts/verify-portal-quote-rejections.mjs",
     "verify:portal-quotes": "node scripts/verify-portal-quotes.mjs",
     "verify:ui": "node scripts/verify-ui.mjs",
     "format": "prettier --write apps/web/src apps/web/vite.micro.config.ts apps/shell/src apps/shell/vite.config.ts apps/devices/src apps/devices/vite.config.ts apps/devices/vite.micro.config.ts apps/portal/src apps/portal/next.config.ts apps/portal/tsconfig.json apps/mobile/src apps/mobile/app.json apps/mobile/tsconfig.json apps/mobile/metro.config.cjs apps/api/src apps/api/prisma.config.ts packages/contracts/src \"scripts/**/*.mjs\"",

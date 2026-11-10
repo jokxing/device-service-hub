@@ -9,12 +9,16 @@ import type {
   AuthenticatedRead,
   AuthenticatedPost,
 } from "../../shared/api/http";
+import { TICKET_PAGE_SIZE } from "./constants";
 export const listMyTickets = (
   request: AuthenticatedRead,
   page: number,
   signal?: AbortSignal,
 ) =>
-  request<TicketPage>(`/mobile/tickets/mine?page=${page}&pageSize=10`, signal);
+  request<TicketPage>(
+    `/mobile/tickets/mine?page=${page}&pageSize=${TICKET_PAGE_SIZE}`,
+    signal,
+  );
 export const getMyTicket = (
   request: AuthenticatedRead,
   id: string,

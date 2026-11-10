@@ -6,6 +6,7 @@ import type {
   ConfirmTicketInput,
 } from "@device-service-hub/contracts";
 import { apiRequest } from "../../shared/api/http";
+import { ticketListQuery } from "./ticketQuery";
 
 export const connectedTicketsApi = {
   confirm: (id: string, input: ConfirmTicketInput, signal?: AbortSignal) =>
@@ -24,7 +25,7 @@ export const connectedTicketsApi = {
       signal,
     }),
   mine: (page: number, signal?: AbortSignal) =>
-    apiRequest<TicketPage>(`/tickets/mine?page=${page}&pageSize=10`, {
+    apiRequest<TicketPage>(`/tickets/mine?${ticketListQuery(page)}`, {
       signal,
     }),
   detail: (id: string, signal?: AbortSignal) =>

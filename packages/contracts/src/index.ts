@@ -51,16 +51,20 @@ export interface QuoteRecord {
   id: string;
   ticketId: string;
   revision: number;
-  status: "pending" | "accepted";
+  status: "pending" | "accepted" | "rejected";
   currency: "CNY";
   totalCents: number;
   createdAt: string;
   actor: TicketPerson;
   items: (QuoteItemInput & { amountCents: number })[];
+  rejection: { reason: string; actor: TicketPerson; createdAt: string } | null;
 }
 export interface AcceptQuoteInput extends TicketCommandInput {
   quoteId: string;
   quoteRevision: number;
+}
+export interface RejectQuoteInput extends AcceptQuoteInput {
+  reason: string;
 }
 export interface ServiceOrderRecord {
   id: string;

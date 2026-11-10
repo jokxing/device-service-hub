@@ -4,6 +4,7 @@ export const QUOTE_LIMITS = {
   items: 20,
   name: 60,
   note: 200,
+  rejectionReason: 500,
   quantity: 999,
   unitPriceCents: 10_000_000,
   totalCents: 100_000_000,

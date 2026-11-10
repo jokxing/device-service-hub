@@ -32,6 +32,7 @@ export const TICKET_LIMITS = {
   result: 2000,
 } as const;
 export const TICKET_PAGE_SIZE = 6;
+export const CONNECTED_TICKET_PAGE_SIZE = 10;
 export const ATTACHMENT_POLICY: FilePolicy = {
   allowedTypes: ["image/jpeg", "image/png", "image/webp"],
   maxSizeBytes: 5 * 1024 * 1024,

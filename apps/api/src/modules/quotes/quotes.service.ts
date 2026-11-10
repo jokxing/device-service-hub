@@ -13,6 +13,7 @@ import { Prisma } from "../../generated/prisma/client";
 import type { SubmitQuoteDto } from "./dto/submit-quote.dto";
 import { QUOTE_SELECT } from "./quotes.select";
 import { ticketReadScope } from "../tickets/utils/ticket-read-scope";
+import { toQuoteRecord } from "./utils/quote-payload";
 
 @Injectable()
 export class QuotesService {
@@ -43,9 +44,7 @@ export class QuotesService {
       orderBy: { revision: "desc" },
       select: QUOTE_SELECT,
     });
-    return quote
-      ? { ...quote, currency: "CNY", createdAt: quote.createdAt.toISOString() }
-      : null;
+    return quote ? toQuoteRecord(quote) : null;
   }
 
   private async replay(
@@ -139,11 +138,7 @@ export class QuotesService {
           select: QUOTE_SELECT,
         });
       });
-      return {
-        ...quote,
-        currency: "CNY",
-        createdAt: quote.createdAt.toISOString(),
-      };
+      return toQuoteRecord(quote);
     } catch (error) {
       if (
         error instanceof ConflictException ||

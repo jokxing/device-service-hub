@@ -3,6 +3,7 @@ import type {
   TicketPriority,
 } from "@device-service-hub/contracts";
 export const TICKET_LIMITS = { title: 60, description: 500 } as const;
+export const TICKET_PAGE_SIZE = 10;
 export const STATUS_LABELS: Record<TicketStatus, string> = {
   pending: "待分派",
   assigned: "待接单",

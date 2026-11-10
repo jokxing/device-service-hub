@@ -8,6 +8,13 @@ export const QUOTE_SELECT = {
   totalCents: true,
   createdAt: true,
   actor: { select: { id: true, name: true } },
+  rejection: {
+    select: {
+      reason: true,
+      createdAt: true,
+      actor: { select: { id: true, name: true } },
+    },
+  },
   items: {
     orderBy: { position: "asc" },
     select: {
