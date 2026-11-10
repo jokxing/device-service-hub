@@ -4,7 +4,24 @@ import {
   calculateQuote,
   formatCents,
   parsePriceCents,
+  canRequireQuote,
 } from "@device-service-hub/contracts/quote-rules";
+
+test("服务方式纠错只允许无结果的待接单和处理中直接处理工单", () => {
+  const ticket = {
+    serviceMode: "direct",
+    status: "processing",
+    result: null,
+    confirmation: null,
+  };
+  assert.equal(canRequireQuote(ticket), true);
+  assert.equal(canRequireQuote({ ...ticket, status: "assigned" }), true);
+  for (const status of ["pending", "confirming", "completed", "cancelled"])
+    assert.equal(canRequireQuote({ ...ticket, status }), false);
+  assert.equal(canRequireQuote({ ...ticket, serviceMode: "quoted" }), false);
+  assert.equal(canRequireQuote({ ...ticket, result: {} }), false);
+  assert.equal(canRequireQuote({ ...ticket, confirmation: {} }), false);
+});
 import {
   canSubmitQuote,
   canReviseQuote,

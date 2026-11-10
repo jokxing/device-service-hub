@@ -33,7 +33,7 @@ export default function OrderSnapshot({
         <dd>{order.confirmedBy.name}</dd>
         <dt>确认时间</dt>
         <dd>{formatDate(order.createdAt)}</dd>
-        <dt>支付状态</dt>
+        <dt>真实支付</dt>
         <dd>未接入支付</dd>
         {order.start && (
           <>

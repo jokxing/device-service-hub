@@ -30,7 +30,7 @@ export default function OrderSummary({ order }: { order: ServiceOrderRecord }) {
             label: "确认记录",
             children: `${order.confirmedBy.name} · ${formatDateTime(new Date(order.createdAt))}`,
           },
-          { key: "payment", label: "支付状态", children: "未接入支付" },
+          { key: "payment", label: "真实支付", children: "未接入支付" },
         ]}
       />
       {order.start && (

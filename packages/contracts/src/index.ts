@@ -98,6 +98,21 @@ export interface CancelOrderInput extends TicketCommandInput {
   reason: string;
 }
 export type StartOrderInput = TicketCommandInput;
+export interface CreateMockPaymentInput {
+  requestId: string;
+}
+export interface PaymentRecord {
+  id: string;
+  code: string;
+  orderId: string;
+  channel: "mock";
+  currency: "CNY";
+  amountCents: number;
+  status: "pending" | "closed";
+  createdAt: string;
+  closedAt: string | null;
+  closeReason: "order_cancelled" | null;
+}
 export interface ServiceOrderSummary extends Pick<
   ServiceOrderRecord,
   | "id"
@@ -164,6 +179,9 @@ export interface AssignTicketInput extends TicketCommandInput {
   assigneeId: string;
   serviceMode?: TicketServiceMode;
 }
+export interface RequireQuoteInput extends TicketCommandInput {
+  reason: string;
+}
 export type AcceptTicketInput = TicketCommandInput;
 export type ConfirmTicketInput = TicketCommandInput;
 export interface ReporterTicketRecord extends TicketRecord {
@@ -187,6 +205,11 @@ export interface AdminTicketRecord extends TicketRecord {
   reporter: TicketPerson;
   version: number;
   serviceMode: TicketServiceMode;
+  serviceModeChange: {
+    actor: TicketPerson;
+    reason: string;
+    createdAt: string;
+  } | null;
   assignment: {
     actor: TicketPerson;
     assignee: TicketPerson;

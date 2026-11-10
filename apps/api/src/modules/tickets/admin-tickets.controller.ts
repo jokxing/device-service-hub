@@ -21,11 +21,25 @@ import { SessionGuard } from "../auth/guards/session.guard";
 import { AdminTicketsService } from "./admin-tickets.service";
 import { StatusTicketsQueryDto } from "./dto/status-tickets-query.dto";
 import { AssignTicketDto } from "./dto/assign-ticket.dto";
+import { RequireQuoteDto } from "./dto/require-quote.dto";
+import { TicketServiceModeService } from "./ticket-service-mode.service";
 
 @Controller("admin/tickets")
 @UseGuards(SessionGuard)
 export class AdminTicketsController {
-  constructor(private readonly tickets: AdminTicketsService) {}
+  constructor(
+    private readonly tickets: AdminTicketsService,
+    private readonly serviceMode: TicketServiceModeService,
+  ) {}
+
+  @Post(":id/require-quote")
+  requireQuote(
+    @CurrentUser() actor: PublicUser,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Body() input: RequireQuoteDto,
+  ): Promise<AdminTicketRecord> {
+    return this.serviceMode.requireQuote(actor, id, input);
+  }
 
   @Get()
   list(

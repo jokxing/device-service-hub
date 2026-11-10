@@ -102,11 +102,13 @@ NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常�
 
 `modules/quotes` 承担报价读取、首版提交和被拒绝后的修订，独立组织 Controller、Service、DTO 和查询投影。首次与修订复用发布用例；工单条件更新、报价及条目在同一事务写入，新版追加而不覆盖。来源版次、当前分派及工单版本决定是否可修订；发布重放返回原 UUID 的具体版次。历史读取复用现有数据范围，金额由服务端计算。TaskResultsService 限制未开工报价型任务提交结果，Web/原生适配共用约束。规则及增量迁移见 [QUOTES.md](QUOTES.md)。
 
-`modules/orders` 承担本人报价确认、订单快照及分页列表/独立详情读取，DTO、查询投影、序列化分开组织；一次事务更新报价状态、工单版本并创建唯一订单及条目。报价与订单读取复用工单模块内的 `ticketReadScope`，不把管理员范围用于本人入口。`OrderCancellationsService` 单独管理本人待开工订单取消：原工单版本条件更新、工单/订单终态及取消审计在同一事务，重放重新校验归属，保留原报价和金额快照。OrderStartsService 负责当前维修员开工，订单 awaiting_start → in_progress、工单版本和开工审计同事务；与取消竞争同一工单行，重放重新检查当前分派。OrdersModule 导出 OrderFulfillmentService，工单结果/完成确认用例传入原事务客户端，在锁定工单行后同步订单待确认/完成；由订单模块维护订单状态规则，不另开事务或重复写审计。当前不开放支付。
+`modules/orders` 承担本人报价确认、订单快照及分页列表/独立详情读取，DTO、查询投影、序列化分开组织；一次事务更新报价状态、工单版本并创建唯一订单及条目。报价与订单读取复用工单模块内的 `ticketReadScope`，不把管理员范围用于本人入口。`OrderCancellationsService` 单独管理本人待开工订单取消：原工单版本条件更新、工单/订单终态及取消审计在同一事务，重放重新校验归属，保留原报价和金额快照。OrderStartsService 负责当前维修员开工，订单 awaiting_start → in_progress、工单版本和开工审计同事务；与取消竞争同一工单行，重放重新检查当前分派。OrdersModule 导出 OrderFulfillmentService，工单结果/完成确认用例传入原事务客户端，在锁定工单行后同步订单待确认/完成；由订单模块维护订单状态规则，不另开事务或重复写审计。当前仅开放本地模拟支付单创建与只读，真实支付未接入。
 
 `modules/quotes/quote-rejections.service.ts` 承担本人拒绝报价，独立 DTO 校验原因与指定版次，事务更新报价、工单版本和拒绝审计。与订单确认竞争同一工单行，原 UUID 重放重新校验归属并返回具体报价；不以拒绝变更工单维修状态或创建订单。
 
 订单列表使用独立 OrdersQueryDto 与最小摘要投影，详情复用工单公开字段投影；行与总数使用相同 ticketReadScope，在 RepeatableRead 中按确认时间/ID 稳定排序。响应不输出内部 UUID 意图、原版本或 ORM 字段。
+
+modules/payments 负责模拟支付单 DTO、最小查询投影、当前报修归属和订单金额快照；事务中先锁定工单再核对订单/意图。PaymentsModule 仅导出 PaymentLifecycleService，供取消用例传入原事务关闭待支付记录，不另开事务。管理员/本人可读，维修员不开放；没有支付 SDK、回调或外部渠道适配。
 
 出现重复复杂查询、可独立维护的数据访问职责时，可增加模块内部 Repository。业务流程和授权决策仍属于 Service；Repository 不接受 HTTP 对象，不反向调用 Controller。
 

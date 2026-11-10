@@ -12,6 +12,7 @@ import OrderSummary from "../features/orders/components/OrderSummary";
 import QuoteItems from "../features/quotes/components/QuoteItems";
 import TicketRecordDetails from "../features/tickets/components/TicketRecordDetails";
 import styles from "../features/orders/orders.module.css";
+import AdminOrderPayments from "../features/payments/components/AdminOrderPayments";
 
 function OrderDetailContent() {
   const { id = "" } = useParams();
@@ -49,6 +50,9 @@ function OrderDetailContent() {
               <QuoteItems items={data.items} />
             </div>
           </ContentCard>
+          {user?.role === "admin" && (
+            <AdminOrderPayments key={data.id} orderId={data.id} />
+          )}
           <div className="mt-5">
             <ContentCard title="关联工单与处理记录">
               <div className={styles.content}>

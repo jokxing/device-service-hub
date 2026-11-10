@@ -1,5 +1,6 @@
-import { useCallback } from "react";
-import { Alert, Descriptions, Modal, Spin } from "antd";
+import { useCallback, useState } from "react";
+import { Alert, Button, Descriptions, Modal, Spin } from "antd";
+import { canRequireQuote } from "@device-service-hub/contracts/quote-rules";
 import { useApiResource } from "../../../shared/hooks/useApiResource";
 import { formatDateTime } from "../../../shared/utils/date";
 import { useSession } from "../../auth/sessionContext";
@@ -8,20 +9,24 @@ import TicketRecordDetails from "./TicketRecordDetails";
 import AdminTicketPhotos from "../photos/AdminTicketPhotos";
 import TicketQuoteSection from "../../quotes/components/TicketQuoteSection";
 import TicketOrderSection from "../../orders/components/TicketOrderSection";
+import RequireQuoteModal from "./RequireQuoteModal";
 
 export default function AdminTicketDetail({
   id,
   onClose,
+  onChanged,
 }: {
   id: string;
   onClose: () => void;
+  onChanged: () => void;
 }) {
   const { clearSession } = useSession();
   const load = useCallback(
     (signal: AbortSignal) => adminTicketsApi.detail(id, signal),
     [id],
   );
-  const { data, error, loading } = useApiResource(load, clearSession);
+  const { data, error, loading, refresh } = useApiResource(load, clearSession);
+  const [changeOpen, setChangeOpen] = useState(false);
   return (
     <Modal
       open
@@ -48,7 +53,18 @@ export default function AdminTicketDetail({
               {
                 key: "serviceMode",
                 label: "服务方式",
-                children: data.serviceMode === "quoted" ? "需报价" : "直接处理",
+                children: (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span>
+                      {data.serviceMode === "quoted" ? "需报价" : "直接处理"}
+                    </span>
+                    {canRequireQuote(data) && (
+                      <Button size="small" onClick={() => setChangeOpen(true)}>
+                        改为需报价
+                      </Button>
+                    )}
+                  </div>
+                ),
               },
               {
                 key: "reporter",
@@ -66,6 +82,15 @@ export default function AdminTicketDetail({
                 : []),
             ]}
           />
+          {data.serviceModeChange && (
+            <p className="muted mb-5">
+              服务方式调整：{data.serviceModeChange.actor.name}{" "}
+              将直接处理改为需报价 ·{" "}
+              {formatDateTime(new Date(data.serviceModeChange.createdAt))}
+              <br />
+              调整原因：{data.serviceModeChange.reason}
+            </p>
+          )}
           <TicketRecordDetails ticket={data} />
           {data.serviceMode === "quoted" && (
             <div className="mt-5">
@@ -74,6 +99,17 @@ export default function AdminTicketDetail({
             </div>
           )}
           <AdminTicketPhotos key={data.id} ticketId={data.id} />
+          {changeOpen && (
+            <RequireQuoteModal
+              key={`require-quote:${data.id}`}
+              ticket={data}
+              onClose={() => {
+                setChangeOpen(false);
+                refresh();
+                onChanged();
+              }}
+            />
+          )}
         </>
       )}
     </Modal>

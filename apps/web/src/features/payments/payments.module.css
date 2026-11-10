@@ -1,0 +1,19 @@
+.content {
+  padding: 20px 24px;
+}
+.record {
+  border-top: 1px solid #e6eaf1;
+  margin-top: 16px;
+  padding-top: 16px;
+  overflow-wrap: anywhere;
+}
+.record > strong {
+  display: inline-block;
+  margin-right: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 575px) {
+  .content {
+    padding: 16px;
+  }
+}

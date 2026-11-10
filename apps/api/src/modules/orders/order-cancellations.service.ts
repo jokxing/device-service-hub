@@ -13,10 +13,14 @@ import { Prisma } from "../../generated/prisma/client";
 import type { CancelOrderDto } from "./dto/cancel-order.dto";
 import { ORDER_SELECT } from "./orders.select";
 import { toOrderRecord } from "./utils/order-payload";
+import { PaymentLifecycleService } from "../payments/payment-lifecycle.service";
 
 @Injectable()
 export class OrderCancellationsService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly payments: PaymentLifecycleService,
+  ) {}
 
   private async replay(
     actor: PublicUser,
@@ -96,6 +100,7 @@ export class OrderCancellationsService {
         });
         if (updated.count !== 1)
           throw new ConflictException("订单已变化，请刷新后核对");
+        await this.payments.closeForOrderCancellation(tx, orderId);
         await tx.serviceOrderCancellation.create({
           data: {
             orderId,

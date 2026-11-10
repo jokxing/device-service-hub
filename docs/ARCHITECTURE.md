@@ -12,6 +12,8 @@
 
 管理员真实列表与首次分派使用 `/service/admin/tickets`，详情字段复用 TicketRecordDetails，列表/分派/详情弹窗分别组织。服务端权限和事务规则见 [ADMIN_ASSIGNMENT.md](ADMIN_ASSIGNMENT.md)，演示身份不参与管理接口授权。
 
+管理员详情的 RequireQuoteModal 提供误选直接处理后的单向纠错，入口共用 contracts/quote-rules 的 canRequireQuote；服务端 TicketServiceModeService 在工单行锁下校验关联记录、变更方式并写独立审计，不修改首次分派记录。关闭后同步重读详情与列表，既有报价、订单或结果不可覆盖。
+
 首次分派可选择直接处理或需报价；维修任务与管理员详情组合 `features/quotes` 的报价表单、只读摘要及历史折叠。首版与修订复用表单和条目字段，已拒绝的最新版本可预填为新表单，提交生成新版而不覆盖旧记录。金额规则通过 contracts 的 `quote-rules` 子入口复用，提交、修订与权限边界见 [维修报价](QUOTES.md)。订单区域由 features/orders 组织，维修员可对待开工订单执行开工，门户与后台回看同一记录；入口规则、开工弹窗与请求分别组织，窗口关闭/成功同步重读任务版本。已开工订单使用 canSubmitOrderResult 展示结果入口，复用 SubmitTaskResultModal；未开工则隐藏且服务端独立拦截。用户完成确认复用现有弹窗，订单与工单状态同步。
 
 管理员详情组合 `features/tickets/photos/AdminTicketPhotos`，通过 Cookie 读取 RN 上传的现场照片并放大预览。图片请求复用共享传输和读取 Hook，关闭时取消读取并释放内存 URL；通用详情字段不包含请求或鉴权逻辑。边界及验证见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。
@@ -22,7 +24,7 @@
 
 React 后台、Next.js 用户门户、RN 和微前端已按 [产品与架构演进路线](ROADMAP.md)完成当前本地交付范围。各应用保留独立入口，共用 NestJS 业务后端；后续功能按实际业务需求增量交付。
 
-服务订单使用 /service/orders 与 /service/orders/:id，管理员/维修员分别读取平台及当前分派范围。列表复用 ResponsiveRecordList/CompactRecordCard，订单状态标签归 features/orders；URL 筛选分页由 useOrderListQuery 管理，普通翻页与越界替换分别处理。详情复用 OrderSummary、QuoteItems 和 TicketRecordDetails，保持只读，不复制工单命令。门户独立实现 UI，报修用户的新订单入口以门户为主。
+服务订单使用 /service/orders 与 /service/orders/:id，管理员/维修员分别读取平台及当前分派范围。列表复用 ResponsiveRecordList/CompactRecordCard，订单状态标签归 features/orders；URL 筛选分页由 useOrderListQuery 管理，普通翻页与越界替换分别处理。详情复用 OrderSummary、QuoteItems 和 TicketRecordDetails，维修记录保持只读，不复制工单命令；模拟支付创建与记录由独立 features/payments 组织。门户独立实现 UI，报修用户的新订单入口以门户为主。
 
 ## 目录职责
 

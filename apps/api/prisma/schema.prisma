@@ -36,6 +36,8 @@ model User {
   quoteRejections QuoteRejection[]
   orderCancellations ServiceOrderCancellation[]
   orderStarts ServiceOrderStart[]
+  paymentAttempts PaymentAttempt[]
+  serviceModeChanges TicketServiceModeChange[]
 }
 
 model Device {
@@ -109,12 +111,27 @@ model Ticket {
   photos TicketPhoto[]
   quotes TicketQuote[]
   order ServiceOrder?
+  serviceModeChange TicketServiceModeChange?
 
   @@unique([reporterId, requestId])
   @@index([reporterId, createdAt, id])
   @@index([deviceId])
   @@index([status, createdAt, id])
   @@index([assigneeId])
+}
+
+model TicketServiceModeChange {
+  id String @id @default(uuid()) @db.Uuid
+  ticketId String @unique
+  actorId String
+  requestId String @db.Uuid
+  expectedVersion Int
+  reason String @db.VarChar(500)
+  createdAt DateTime @default(now())
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@unique([actorId, requestId])
 }
 
 model TicketPhoto {
@@ -257,9 +274,40 @@ model ServiceOrder {
   confirmedBy     User @relation(fields: [actorId], references: [id], onDelete: Restrict)
   cancellation    ServiceOrderCancellation?
   start           ServiceOrderStart?
+  payments        PaymentAttempt[]
   items           ServiceOrderItem[]
 
   @@unique([actorId, requestId])
+}
+
+enum PaymentChannel {
+  mock
+}
+
+enum PaymentStatus {
+  pending
+  closed
+}
+
+model PaymentAttempt {
+  id          String @id @default(uuid())
+  number      Int @unique @default(autoincrement())
+  orderId     String
+  actorId     String
+  requestId   String @db.Uuid
+  channel     PaymentChannel @default(mock)
+  status      PaymentStatus @default(pending)
+  currency    String @default("CNY") @db.Char(3)
+  amountCents Int
+  createdAt   DateTime @default(now())
+  closedAt    DateTime?
+  closeReason String? @db.VarChar(30)
+  order       ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actor       User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@unique([actorId, requestId])
+  @@index([orderId, createdAt])
+  // The migration also enforces one pending attempt per order with a partial unique index.
 }
 
 model ServiceOrderStart {

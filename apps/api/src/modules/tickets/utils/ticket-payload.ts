@@ -71,12 +71,25 @@ export function toTaskTicketRecord(row: TaskTicketRow): TaskTicketRecord {
 }
 
 export function toAdminTicketRecord(row: AdminTicketRow): AdminTicketRecord {
-  const { reporter, version, serviceMode, assignment, ...record } = row;
+  const {
+    reporter,
+    version,
+    serviceMode,
+    serviceModeChange,
+    assignment,
+    ...record
+  } = row;
   return {
     ...toTicketRecord(record),
     reporter,
     version,
     serviceMode,
+    serviceModeChange: serviceModeChange
+      ? {
+          ...serviceModeChange,
+          createdAt: serviceModeChange.createdAt.toISOString(),
+        }
+      : null,
     assignment: assignment
       ? { ...assignment, createdAt: assignment.createdAt.toISOString() }
       : null,

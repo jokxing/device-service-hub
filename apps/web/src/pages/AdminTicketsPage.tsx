@@ -62,6 +62,7 @@ function AdminTicketsContent() {
         <AdminTicketDetail
           key={detailId}
           id={detailId}
+          onChanged={refresh}
           onClose={() => setDetailId(undefined)}
         />
       )}

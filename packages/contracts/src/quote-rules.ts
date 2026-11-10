@@ -1,14 +1,30 @@
-import type { QuoteItemInput } from "./index";
+import type { QuoteItemInput, TicketServiceMode, TicketStatus } from "./index";
 
 export const QUOTE_LIMITS = {
   items: 20,
   name: 60,
   note: 200,
   rejectionReason: 500,
+  serviceModeReason: 500,
   quantity: 999,
   unitPriceCents: 10_000_000,
   totalCents: 100_000_000,
 } as const;
+
+/** Display eligibility; the API also checks related quote/order rows under lock. */
+export function canRequireQuote(ticket: {
+  serviceMode: TicketServiceMode;
+  status: TicketStatus;
+  result: unknown;
+  confirmation: unknown;
+}): boolean {
+  return (
+    ticket.serviceMode === "direct" &&
+    (ticket.status === "assigned" || ticket.status === "processing") &&
+    !ticket.result &&
+    !ticket.confirmation
+  );
+}
 
 /** Integer cents only. UI estimation shares these rules; the API recomputes independently. */
 export function calculateQuote(items: readonly QuoteItemInput[]) {

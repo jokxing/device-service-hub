@@ -10,6 +10,8 @@ import TicketDetails from "../../../../features/tickets/components/TicketDetails
 import PageHeader from "../../../../shared/components/PageHeader";
 import { readPage } from "../../../../shared/utils/pagination";
 import styles from "../../../../features/orders/orders.module.css";
+import { getMyPayments } from "../../../../features/payments/server/queries";
+import OrderPayments from "../../../../features/payments/components/OrderPayments";
 
 export const metadata = { title: "订单详情" };
 export default async function MyOrderDetailPage({
@@ -34,7 +36,10 @@ export default async function MyOrderDetailPage({
       readPage(query.page),
       readOrderStatus(query.status),
     );
-  const order = await getMyOrderDetail(id);
+  const [order, payments] = await Promise.all([
+    getMyOrderDetail(id),
+    getMyPayments(id),
+  ]);
   return (
     <>
       <PageHeader
@@ -47,6 +52,7 @@ export default async function MyOrderDetailPage({
       />
       <div className={styles.stack}>
         <OrderSnapshot order={order} />
+        <OrderPayments order={order} payments={payments} />
         <TicketDetails ticket={order.ticket} />
         <Link href={`/tickets/${order.ticketId}`} prefetch={false}>
           前往关联报修，查看或处理当前进度 →

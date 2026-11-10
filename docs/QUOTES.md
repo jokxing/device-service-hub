@@ -1,4 +1,4 @@
-# 维修报价
+# 维修报价、服务订单与模拟支付
 
 ## 当前交付范围
 
@@ -6,11 +6,12 @@ React 真实业务支持管理员在首次分派时选择服务方式，当前�
 
 Next.js 门户已支持本人查看报价、确认指定版本并生成唯一服务订单，在同一报修详情中回看条目与金额快照。订单独立显示待开工、维修中、待用户确认、已完成或已取消，支付显示未接入支付；确认报价不代表付款。
 
-门户支持本人拒绝待确认报价，并在维修员修订后决定最新版本；React 后台与门户保留历史条目、金额及拒绝审计。本人可取消待开工订单，同时结束关联工单；三角色可按数据范围读取取消记录。React 当前维修人员已可开工，三角色可读取开工人与时间；已开工订单支持当前维修员提交处理结果，由本人确认完成；React 后台与门户已提供独立订单列表及只读详情，支持状态筛选和分页；写操作保留在关联工单，支付尚未交付。未开工的报价型任务不能提交维修结果；直接处理工单保留原接单、结果与用户确认闭环。RN 暂未新增报价或订单页面，既有 RN 结果接口同样受服务端限制。
+门户支持本人拒绝待确认报价，并在维修员修订后决定最新版本；React 后台与门户保留历史条目、金额及拒绝审计。本人可取消待开工订单，同时结束关联工单；三角色可按数据范围读取取消记录。React 当前维修人员已可开工，三角色可读取开工人与时间；已开工订单支持当前维修员提交处理结果，由本人确认完成；React 后台与门户已提供独立订单列表及只读详情，支持状态筛选和分页；原维修写操作保留在关联工单；独立订单详情已支持创建和读取本地模拟支付单，真实支付尚未接入。未开工的报价型任务不能提交维修结果；直接处理工单保留原接单、结果与用户确认闭环。RN 暂未新增报价或订单页面，既有 RN 结果接口同样受服务端限制。
 
 ## 服务方式与权限
 
 - 首次分派请求可传 `serviceMode: direct | quoted`，省略时默认为 `direct`。旧工单和旧分派审计均为直接处理；重复分派意图也核对服务方式。
+- 误选直接处理时，管理员可在尚无报价、订单或结果的待接单/处理中工单详情改为需报价，保留首次分派与接单记录，单独记录调整原因并递增工单版本。此入口不支持反向转换，规则见 [管理员分派](ADMIN_ASSIGNMENT.md#误选直接处理后的纠错)。
 - 本步仅在首次分派确定方式，不提供接单后改方式或通用状态修改接口。
 - 管理员可查看当前平台工单报价；仅当前 `assigneeId` 对应的维修人员可提交，必须为 `processing`、`quoted`、工单版本一致且无结果及订单。首次提交要求没有报价；修订要求指定的来源报价是最新已拒绝版本且存在拒绝审计。
 - 报修用户仅可读取本人报价和订单，只有工单报修人可确认或拒绝报价、取消待开工订单；管理员不能代确认、拒绝或取消；当前维修人员可执行订单开工及已开工任务的结果提交。报价与订单查询复用 `ticketReadScope`，不存在及无权访问统一 404。报修人的历史归属与维修人员的当前分派范围分别校验，不因撤销设备查询授权而删除历史报修读取权。
@@ -38,6 +39,8 @@ Next.js 门户已支持本人查看报价、确认指定版本并生成唯一服
 | POST `/api/tickets/:id/quote/revisions` | 接受原工单版本、UUID、`baseQuoteId`、`baseQuoteRevision` 和新版条目；版次由服务端递增，首次及同意图重放返回 201 |
 | POST `/api/tickets/:id/quote/accept` | 本人确认指定报价 ID/版次，原子生成订单；首次与同意图重放返回 201 |
 | POST `/api/tickets/:id/quote/reject` | 本人拒绝指定报价 ID/版次并记录原因；首次与同意图重放返回 201，不生成订单 |
+| GET `/api/orders/:id/payments` | 本人或管理员读取模拟支付记录，维修员不开放 |
+| POST `/api/orders/:id/payments` | 本人创建待开工订单的本地模拟支付单，仅接收 UUID |
 | GET `/api/orders` | 当前数据范围内分页查询订单摘要，支持订单状态筛选 |
 | GET `/api/orders/:id` | 返回范围内订单快照及关联工单公开记录；未知及越权统一 404 |
 | GET `/api/orders/by-ticket/:id` | 当前账号数据范围内返回 `{ order: null }` 或订单快照 |
@@ -136,6 +139,18 @@ React 复用 ResponsiveRecordList 与 CompactRecordCard，桌面表格和窄屏�
 
 本增量未修改数据库 Schema、迁移历史或写业务协议，未新增 RN 订单查询界面、支付或微前端子应用。
 
+## 模拟支付单创建
+
+当前仅接通本地 mock 渠道的支付单创建和读取，状态为 pending（待支付）或 closed（已关闭）。它不代表模拟付款成功，更不代表沙箱或真实交易；未调用微信/支付宝、不产生扣款、费用或外部资源。成功回调、主动查单、超时关闭、退款及真实渠道另行推进。
+
+报修人可为本人待开工订单创建记录，要求源报价 accepted、关联工单 quoted/processing、订单未取消。金额及 CNY 币种从服务端不可变订单快照复制，金额为正整数分；不接受前端金额、渠道、状态、操作者或工单版本。管理员只读，维修员无支付记录接口或 UI 权限，不能因其可以读取维修任务就开放财务记录。
+
+PaymentsService 在事务内先按当前报修归属锁定同一工单行，再读取实际订单及幂等记录；锁顺序与订单取消/开工一致。相同操作者 UUID 绑定具体订单，重放仍校验归属，返回同一支付记录（包括取消后关闭的记录）；不同 UUID 不能重复创建待支付单。数据库以 actorId/requestId 唯一约束和 orderId 的 pending 条件唯一索引兜底；跨订单并发复用同一 UUID 返回 409，不泄漏内部异常。
+
+订单取消用例通过 PaymentsModule 导出的 PaymentLifecycleService，使用原事务客户端关闭 pending 记录并保存关闭原因/时间；订单、工单、取消审计和支付关闭一起提交或回滚。先取消后创建返回 409；先创建后取消保留 closed 记录，不能遗留活动待支付单。创建本身不递增维修版本、不改变履约状态，也不把付款设为现有开工的前置条件；本阶段创建入口仅在待开工开放，支付与维修状态独立。
+
+门户在独立订单详情复用 reporterPost、MutationModal/useApiMutation，固定 UUID 重试，关闭/成功后重读原 URL；个人支付记录 no-store，不把会话或内部意图放入 HTML。后台管理员仅在独立详情只读查看，维修员不请求支付接口。真实支付字段仍标明未接入，模拟记录有独立标题、渠道和状态，不能把创建行为描述为付款完成。
+
 ## 工程与迁移
 
 - `apps/web/src/features/quotes`：表单、只读摘要、请求及报价动作规则，任务和管理员详情负责组合。
@@ -147,6 +162,8 @@ React 复用 ResponsiveRecordList 与 CompactRecordCard，桌面表格和窄屏�
 - `202611090001_ticket_quotes` 仅增加服务方式、报价及条目，保留旧表、旧记录与历史迁移；旧方式默认 `direct`。
 - `202611090002_quote_orders` 增加 accepted 状态和订单快照表，保留原报价及工单，不自动接受旧报价或为旧工单补订单。
 - `202611090003_quote_rejections` 增加 rejected 状态和拒绝审计表，保留旧工单、报价及订单，不修改既有报价决定。恢复仍采用备份验证与前向修复，不直接覆盖已有业务库。
+- `202611100004_mock_payments` 新增模拟支付渠道/状态及 PaymentAttempt，旧订单不自动生成支付单；pending 条件唯一索引由迁移维护，不能用 db push 替代迁移。
+- `202611100005_mock_payment_closed_reason` 补充关闭原因非空约束，避免 PostgreSQL CHECK 的 UNKNOWN 语义允许闭合字段不完整；不改写已有迁移。
 - `202611100003_order_fulfillment` 只为订单增加 awaiting_confirmation/completed 状态，复用原结果与确认审计，不自动修改旧订单或复制历史记录。
 - `202611100002_order_starts` 增加 in_progress 状态和开工审计表，不自动开工旧订单；开工审计按订单和操作者/UUID 分别唯一。
 - `202611100001_order_cancellations` 增加订单 cancelled 状态及取消审计表，订单与操作者/UUID 唯一约束兜底；保留旧记录，不批量修改工单或订单状态。
@@ -169,6 +186,8 @@ Windows 通过 `scripts/npm-local.ps1 run <脚本名>` 执行：
 - `verify:quote-revisions`：修订来源与归属、金额/DTO、同意图及不同意图并发、历史不可变、旧发布/拒绝请求精确重放、第 3 版订单快照与写入失败回滚。
 - `verify:quote-revisions-ui`：条目预填/取消、表单复用、响应丢失重试、维修员过期窗口、门户旧决定冲突、历史只读、第 3 版确认与后台/手机布局。
 - `test:orders`：取消及开工动作的方式、状态、关联订单及结果/确认入口规则。
+- `verify:mock-payments`：金额/DTO、财务权限、相同/不同/跨订单意图并发、创建与取消竞争、关闭重放、强制失败回滚及归属变化。
+- `verify:mock-payments-ui`：模拟提示、关闭不写入、响应丢失重试、提交中保护、旧窗口冲突、关闭核对、SSR/会话失效/跨用户、管理员只读及维修员排除。
 - `verify:order-queries`：查询 DTO、字段白名单、同时间记录两页排序/总数、五状态筛选、三角色范围、陌生订单及当前分派变化。
 - `verify:order-queries-ui`：后台与门户列表/独立详情、真实第二页、URL 前进后退/刷新、筛选重置/越界、返回链接、手机卡片、SSR/no-store 和跨账号/会话过期。
 - `verify:order-fulfillment`：未开工门槛、结果/确认权限、原版本、同意图/不同意图并发、强制审计失败回滚、金额快照及终态重放。
@@ -197,3 +216,5 @@ Windows 通过 `scripts/npm-local.ps1 run <脚本名>` 执行：
 同日订单履约增量：`verify:order-fulfillment`、`verify:order-fulfillment-ui` 通过，覆盖未开工门槛、角色/当前归属、原版本与参数校验、八路同意图及不同意图竞争、结果和确认审计强制失败时订单/工单整体回滚、快照保持、终态重放及归属变化。页面覆盖共用表单的校验/清理、响应丢失原意图重试、说明变更新意图、提交中保护、关闭重读、过期窗口、会话失效和三角色完成记录。原结果/确认 API 与界面、门户确认、开工/取消、报价/订单、门户认证/报修及 API/后台入口回归通过；原生结果/确认 API 回归及 RN 类型兼容检查通过，全仓库构建通过。迁移前备份归档可读取，迁移后及本轮清理后旧业务表摘要一致，未执行整库恢复演练。已核对[手机结果表单](screenshots/order-result-dialog-mobile.png)、[任务待确认状态](screenshots/order-awaiting-confirmation-task-mobile.png)、[手机完成确认框](screenshots/order-confirm-dialog-mobile.png)、[门户已完成订单](screenshots/portal-order-completed-mobile.png)、[管理员已完成订单](screenshots/order-completed-admin.png)、[维修任务完成记录](screenshots/order-completed-task-desktop.png)。新增履约界面仅完成本地真实 API 与 Edge 验证，未新增 RN 履约入口或验证原生界面、真机、新 APK、支付及公网部署。
 
 同日订单查询增量：`verify:order-queries`、`verify:order-queries-ui` 通过，覆盖三角色列表/总数/详情范围、五状态筛选、查询 DTO、最小字段投影、同时间记录的稳定两页排序、当前分派变化及未知/越权详情。真实浏览器覆盖桌面表格/手机卡片、第二页、直达/刷新/前进后退、跨状态历史返回、筛选重置/越界修正、列表返回链接、空态、门户 SSR/no-store、跨用户和过期会话。普通翻页与越界修正使用独立方法，响应标记当前查询，防止旧筛选结果误修正新 URL。原订单确认、履约、报价、门户认证/报修/完成确认、后台入口和共享提交/分页回归通过；全仓库构建及 RN 类型兼容检查通过。统一微前端构建、订单深链接/刷新/返回列表、原 React/Vue 挂载卸载/权限/样式隔离及导航规则检查通过，临时统一预览已关闭；未发布公网。已核对[管理员订单列表](screenshots/orders-list-admin-desktop.png)、[手机订单列表](screenshots/orders-list-technician-mobile.png)、[后台独立详情](screenshots/order-independent-admin-desktop.png)、[门户独立详情](screenshots/portal-order-independent-mobile.png)、[门户真实第二页](screenshots/portal-orders-list-mobile-page2.png)、[微前端订单深链接](screenshots/micro-order-independent.png)。本增量没有 Schema 或迁移历史变更，临时记录按本轮随机编号清理；未新增 RN 订单界面、真机验证、安装包或支付。
+
+同日模拟支付单增量：verify:mock-payments 与 verify:mock-payments-ui 通过，覆盖仅本人创建、管理员/本人读取及维修员拒绝、DTO 禁止金额/渠道等伪造字段、服务端金额快照、八路相同/不同意图、跨订单复用 UUID、创建与取消竞争、关闭后精确重放、插入失败及取消审计失败时整体回滚、当前归属变化。页面覆盖明确模拟提示、关闭不写入、响应丢失原编号重试、提交中限制、旧窗口冲突、关闭核对、pending/closed SSR/no-store、会话失效与跨用户隔离。原订单取消/查询/确认、门户报价、履约、认证/报修/完成确认、API/后台入口及业务规则回归通过，全仓库构建和 RN 类型兼容检查通过。迁移前备份归档可读取，迁移后及本轮清理后旧业务表摘要一致；未执行整库恢复演练。已核对[手机创建弹窗](screenshots/mock-payment-dialog-mobile.png)、[待支付模拟记录](screenshots/mock-payment-pending-mobile.png)、[订单取消后关闭记录](screenshots/mock-payment-closed-mobile.png)、[管理员只读记录](screenshots/mock-payment-admin-readonly.png)。本增量是本地模拟记录，未实现成功回调、主动查单、超时关单、退款、沙箱或真实交易；未新增 RN 支付界面、真机、安装包或公网验证。

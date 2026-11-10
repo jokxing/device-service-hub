@@ -31,6 +31,13 @@ export const ADMIN_TICKET_SELECT = {
   version: true,
   serviceMode: true,
   reporter: { select: { id: true, name: true } },
+  serviceModeChange: {
+    select: {
+      actor: { select: { id: true, name: true } },
+      reason: true,
+      createdAt: true,
+    },
+  },
   assignment: {
     select: {
       actor: { select: { id: true, name: true } },

@@ -6,9 +6,10 @@ import { OrdersService } from "./orders.service";
 import { OrderCancellationsService } from "./order-cancellations.service";
 import { OrderStartsService } from "./order-starts.service";
 import { OrderFulfillmentService } from "./order-fulfillment.service";
+import { PaymentsModule } from "../payments/payments.module";
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [DatabaseModule, AuthModule, PaymentsModule],
   controllers: [OrdersController],
   providers: [
     OrdersService,

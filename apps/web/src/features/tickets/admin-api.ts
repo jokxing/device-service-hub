@@ -2,6 +2,7 @@ import type {
   AdminTicketPage,
   AdminTicketRecord,
   AssignTicketInput,
+  RequireQuoteInput,
   TicketPerson,
   TicketStatus,
 } from "@device-service-hub/contracts";
@@ -9,6 +10,15 @@ import { apiRequest } from "../../shared/api/http";
 import { ticketListQuery } from "./ticketQuery";
 
 export const adminTicketsApi = {
+  requireQuote: (id: string, input: RequireQuoteInput, signal?: AbortSignal) =>
+    apiRequest<AdminTicketRecord>(
+      `/admin/tickets/${encodeURIComponent(id)}/require-quote`,
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+        signal,
+      },
+    ),
   list: (
     page: number,
     status: TicketStatus | undefined,

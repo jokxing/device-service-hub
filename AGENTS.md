@@ -8,10 +8,10 @@
 
 - 阶段顺序遵循 [ROADMAP.md](docs/ROADMAP.md)：React 后台业务闭环 → Next.js 用户门户 → RN 客户端 → 微前端。保留现有 React 后台和 NestJS 后端；新应用到对应阶段经确认再创建，不同时铺开。
 - 每次只完成当前确认的一步。范围外的问题先说明，不顺带扩建系统。
-- 报价已交付 React 首版提交、被拒绝后修订、按角色读取及历史回看，门户本人确认指定版本并原子生成唯一订单快照，以及本人拒绝报价与原因审计。本人可取消待开工订单，订单/工单终态与取消审计同事务，三角色按数据范围读取，规则见 [QUOTES.md](docs/QUOTES.md)。管理员首次分派确定 direct/quoted，旧工单默认 direct；未开工报价型任务的结果提交由 Web/原生共用服务拦截。当前维修员已支持 Web 订单开工及三角色记录回看；报价型结果/完成确认已复用原用例并同步订单状态，支付按后续单步授权实施，开工不代表付款。
+- 报价已交付 React 首版提交、被拒绝后修订、按角色读取及历史回看，门户本人确认指定版本并原子生成唯一订单快照，以及本人拒绝报价与原因审计。本人可取消待开工订单，订单/工单终态与取消审计同事务，三角色按数据范围读取，规则见 [QUOTES.md](docs/QUOTES.md)。管理员首次分派确定 direct/quoted，旧工单默认 direct；未开工报价型任务的结果提交由 Web/原生共用服务拦截。当前维修员已支持 Web 订单开工及三角色记录回看；报价型结果/完成确认已复用原用例并同步订单状态，已支持门户本人创建模拟支付单、管理员只读及取消联动关闭；模拟成功、超时、退款和真实渠道按后续单步授权实施，创建不代表付款。
 - 沿用 React、TypeScript、Vite、React Router、Ant Design、Tailwind CSS、CSS Modules、npm workspaces 和根锁文件。
 - 未获当前任务明确授权，不更换技术栈、重组目录、添加状态库或组件库、批量升级依赖。
-- 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复、授权设备查询、文字报修、本人记录、确认完成及维修任务查询/接单、文字处理结果；RN 已支持待分派工单补充现场照片；微前端已接入 React 工单后台、Vue 设备台账与最小导航通信；Web 上传与门户附件界面、改派、退回/再次提交和支付尚未实现，不提前扩展范围。
+- 当前包含 Web 完整流程演示，以及 NestJS + PostgreSQL 的最小文字业务闭环。RN 已接入原生登录、SecureStore 会话恢复、授权设备查询、文字报修、本人记录、确认完成及维修任务查询/接单、文字处理结果；RN 已支持待分派工单补充现场照片；微前端已接入 React 工单后台、Vue 设备台账与最小导航通信；Web 上传与门户附件界面、改派、退回/再次提交和真实支付尚未实现，不提前扩展范围。
 - Git 提交、推送、部署和仓库可见性修改需要明确授权。
 - `apps/portal` 已交付登录、授权设备查询、文字报修、本人记录与完成确认，修改前阅读 [PORTAL.md](docs/PORTAL.md)。使用 App Router；Server Components 负责设备/本人记录查询，Client Components 承担表单与确认交互。门户图片上传及其他新增能力仍需按步确认；RN 与微前端现有范围见各模块文档。
 - 不读取无关项目或私有业务资料，不复制来源或授权不明确的代码与素材。
@@ -73,6 +73,7 @@
 - 真实 API 或认证链路变更执行 `run verify:api`，对应 Web 入口变更执行 `run verify:connected-ui`。相关操作需先启动本项目数据库/API；测试只能针对专用本地库，不得使用生产连接。搭建与命令见 `docs/API_SETUP.md`。
 - 真实报修变更执行 `run verify:tickets`、`run verify:tickets-ui`，覆盖并发防重与本人数据范围。记录归属来自会话，创建状态由服务端确定；同一提交意图的防重规则见 `docs/TEXT_REPAIR.md`。测试只能按本轮随机提交编号清理临时记录，不能批量删除人工数据。
 - 管理员分派变更执行 `run verify:assignment`、`run verify:assignment-ui`，检查版本条件更新、同意图重放、两管理员竞争和审计原子性，规则见 `docs/ADMIN_ASSIGNMENT.md`。临时账号只按本轮随机 ID 清理，不修改现有人工账号。
+- 服务方式纠错仅允许管理员将尚无报价、订单或结果的待接单/处理中直接处理工单改为需报价；保留首次分派审计，调整审计与版本更新原子提交。相关变更执行 `run verify:service-mode`、`run verify:service-mode-ui`、`run test:quotes`，规则见 `docs/ADMIN_ASSIGNMENT.md`。
 - 维修任务与接单变更执行 `run verify:tasks`、`run verify:tasks-ui`，规则见 `docs/TECHNICIAN_TASKS.md`。任务列表、计数、详情与接单都按当前 assigneeId 过滤；旧意图重放不能绕过当前归属校验。
 - 文字处理结果变更执行 `run verify:results`、`run verify:results-ui`，规则见 `docs/TASK_RESULTS.md`。说明、版本与请求编号参与重放核对，状态更新和结果记录必须在同一事务。
 - 用户确认变更执行 `run verify:confirmations`、`run verify:confirmations-ui`，规则见 `docs/TICKET_CONFIRMATION.md`。仅本人且有结果的待确认工单可完成，三角色读取同一确认记录；本人详情新增 version，列表契约不变。退回、再次提交和后续阶段需单独确认后实施。
@@ -102,7 +103,8 @@
 - 订单取消变更执行 `run test:orders`、`run verify:order-cancellations`、`run verify:portal-order-cancellations`，并回归报价确认与订单链路。仅本人待开工订单可取消，原因去空白后 1～500 字符，限制复用 ORDER_LIMITS；工单版本条件更新、订单/工单 cancelled 与审计同事务。相同意图精确重放，重新校验当前归属；保留已接受报价和快照，不恢复、重建订单或顺带开放支付。取消记录只读；当前维修员通过独立开工命令操作待开工订单。
 - 订单开工变更执行 `run test:orders`、`run verify:order-starts`、`run verify:order-starts-ui`，并回归订单取消/确认链路。仅当前维修员可开工，原工单版本、订单状态和开工审计同事务；开工/取消竞争同一工单行，重放校验当前分派，开工不代表付款。RN 开工入口仍后置，报价型结果与完成确认由独立履约增量提供。
 - 报价型履约变更执行 `run verify:order-fulfillment`、`run verify:order-fulfillment-ui` 及原结果/完成确认 API 与界面回归。复用原 DTO、表单与审计；TicketsModule 通过 OrdersModule 导出的 OrderFulfillmentService，在同一事务内同步订单待确认/完成，不另开事务。未开工不得提交，完成不代表付款，不顺带扩展 RN UI 或支付。
-- 订单查询变更执行 `run verify:order-queries`、`run verify:order-queries-ui` 及订单/门户回归。React 后台仅管理员/维修员入口，用户新入口在门户；API 列表/总数/详情复用 ticketReadScope，最小摘要投影与独立详情投影分开。按确认时间/ID 排序，同一 RepeatableRead 读取列表与总数；筛选和分页进 URL，普通翻页与越界替换用不同方法。详情只读，业务动作回原工单入口；不扩大 RN、支付或微前端应用范围。
+- 订单查询变更执行 `run verify:order-queries`、`run verify:order-queries-ui` 及订单/门户回归。React 后台仅管理员/维修员入口，用户新入口在门户；API 列表/总数/详情复用 ticketReadScope，最小摘要投影与独立详情投影分开。按确认时间/ID 排序，同一 RepeatableRead 读取列表与总数；筛选和分页进 URL，普通翻页与越界替换用不同方法。订单快照与维修记录只读，原维修动作回工单入口；模拟支付按独立支付模块规则推进，不扩大 RN 或微前端应用范围。
+- 模拟支付变更执行 `run verify:mock-payments`、`run verify:mock-payments-ui` 及订单取消/查询和门户回归。仅本人待开工订单创建，金额来自服务端快照，渠道固定 mock，DTO 只接受 UUID；管理员/本人可读，维修员不开放支付记录。创建先锁同一工单行，支付关闭与订单取消使用同一事务，pending 条件唯一索引及操作者/UUID 唯一约束兜底。无回调、成功/退款或真实渠道时不得扩大交付表述。
 - 公开文档采用产品与工程交付表述，突出业务建模、架构取舍、数据权限、并发一致性、可维护性及验证证据，不加入学习任务、练习安排或教程式要求。十余年前端经历不等同于十余年 React/RN 经历；不虚构生产规模、客户案例或性能指标。
 - 如实标明演示数据、未实现能力以及 Mock、模拟器、真机和安装包各自验证范围，不包装为商业生产经验。
 - 完成时说明修改、实际检查结果与未验证范围；结构变化同步维护文档，不能声称未执行的检查已通过。

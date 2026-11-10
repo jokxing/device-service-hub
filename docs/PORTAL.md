@@ -14,7 +14,9 @@
 
 相关增量执行 `verify:orders`、`verify:portal-quotes`，并回归 `verify:portal`、`verify:portal-tickets` 和 `verify:portal-confirmations`；共享种子账号套件串行运行。
 
-订单列表 /orders 和独立详情 /orders/[id] 已接入，只读取本人数据；列表为服务端分页和状态筛选，详情复用 OrderSnapshot/TicketDetails，操作通过关联报修入口完成。筛选/页码保存在 URL，越界重定向保留筛选；共享 RecordPagination 与原报修页共用。订单查询和会话配置仍留 server-only，执行 verify:order-queries、verify:order-queries-ui 及原门户回归。
+订单列表 /orders 和独立详情 /orders/[id] 已接入，只读取本人数据；列表为服务端分页和状态筛选，详情复用 OrderSnapshot/TicketDetails，原维修操作通过关联报修入口完成，模拟支付在独立支付区域创建。筛选/页码保存在 URL，越界重定向保留筛选；共享 RecordPagination 与原报修页共用。订单查询和会话配置仍留 server-only，执行 verify:order-queries、verify:order-queries-ui 及原门户回归。
+
+独立订单详情已增加 features/payments 的本地模拟支付单入口。Server Components 通过 reporterGet 读取本人记录，Client Component 使用原 MutationModal/useApiMutation 创建；app/api/orders/[id]/payments 只调用 reporterPost。仅待开工订单可创建，金额来自 NestJS 订单快照；创建不代表付款，不接真实渠道。关闭/成功重读当前 URL，保留订单列表筛选上下文。验证使用 verify:mock-payments、verify:mock-payments-ui。
 
 ## 目录职责
 
