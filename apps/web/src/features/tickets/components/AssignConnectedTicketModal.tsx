@@ -108,6 +108,7 @@ export default function AssignConnectedTicketModal({
         />
       )}
       <Form
+        autoComplete="off"
         form={form}
         layout="vertical"
         onFinish={submit}

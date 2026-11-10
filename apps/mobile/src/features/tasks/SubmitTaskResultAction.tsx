@@ -59,6 +59,8 @@ function ResultForm({
       </Text>
       <Text style={typography.text}>处理说明</Text>
       <TextInput
+        autoComplete="off"
+        importantForAutofill="no"
         accessibilityLabel="处理说明"
         multiline
         textAlignVertical="top"

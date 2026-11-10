@@ -65,6 +65,7 @@ export default function TicketFilters({
       )}
       <div className={ticketStyles["filter-bar"]}>
         <Input
+          autoComplete="off"
           aria-label="搜索工单"
           prefix={<SearchOutlined />}
           placeholder="搜索工单编号、报修内容或设备"

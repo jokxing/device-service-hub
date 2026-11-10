@@ -60,6 +60,7 @@ export default function ConnectedCreateTicketModal({
       onSubmit={() => form.submit()}
     >
       <Form<Values>
+        autoComplete="off"
         form={form}
         layout="vertical"
         onFinish={submit}
@@ -67,7 +68,11 @@ export default function ConnectedCreateTicketModal({
         disabled={submitting}
       >
         <Form.Item label="报修设备">
-          <Input value={device.code + " · " + device.name} readOnly />
+          <Input
+            autoComplete="off"
+            value={device.code + " · " + device.name}
+            readOnly
+          />
         </Form.Item>
         <TicketTextFields />
       </Form>

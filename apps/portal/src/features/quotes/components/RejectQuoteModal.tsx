@@ -71,7 +71,12 @@ export default function RejectQuoteModal({
         报价版本：第 {quote.revision} 版 · ¥{formatCents(quote.totalCents)}
         （人民币）
       </p>
-      <Form form={form} layout="vertical" disabled={submitting}>
+      <Form
+        autoComplete="off"
+        form={form}
+        layout="vertical"
+        disabled={submitting}
+      >
         <Form.Item
           name="reason"
           label="拒绝原因"
@@ -81,6 +86,7 @@ export default function RejectQuoteModal({
           ]}
         >
           <Input.TextArea
+            autoComplete="off"
             aria-label="拒绝原因"
             allowClear
             rows={4}

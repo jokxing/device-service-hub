@@ -24,7 +24,7 @@
 
 React 后台、Next.js 用户门户、RN 和微前端已按 [产品与架构演进路线](ROADMAP.md)完成当前本地交付范围。各应用保留独立入口，共用 NestJS 业务后端；后续功能按实际业务需求增量交付。
 
-服务订单使用 /service/orders 与 /service/orders/:id，管理员/维修员分别读取平台及当前分派范围。列表复用 ResponsiveRecordList/CompactRecordCard，订单状态标签归 features/orders；URL 筛选分页由 useOrderListQuery 管理，普通翻页与越界替换分别处理。详情复用 OrderSummary、QuoteItems 和 TicketRecordDetails，维修记录保持只读，不复制工单命令；模拟支付创建与记录由独立 features/payments 组织。门户独立实现 UI，报修用户的新订单入口以门户为主。
+服务订单使用 /service/orders 与 /service/orders/:id，管理员/维修员分别读取平台及当前分派范围。列表复用 ResponsiveRecordList/CompactRecordCard，订单状态标签归 features/orders；URL 筛选分页由 useOrderListQuery 管理，普通翻页与越界替换分别处理。详情复用 OrderSummary、QuoteItems 和 TicketRecordDetails，维修记录保持只读，不复制工单命令；模拟支付创建、确认、查询及退款交互由独立 features/payments 组织；后台仅管理员可记录模拟退款成功，门户本人申请并回看结果，业务事务留在 NestJS。门户独立实现 UI，报修用户的新订单入口以门户为主。
 
 ## 目录职责
 

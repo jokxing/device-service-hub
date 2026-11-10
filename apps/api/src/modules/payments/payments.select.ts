@@ -12,4 +12,18 @@ export const PAYMENT_SELECT = {
   closeReason: true,
   succeededAt: true,
   expiresAt: true,
+  refund: {
+    select: {
+      id: true,
+      reason: true,
+      amountCents: true,
+      createdAt: true,
+      completion: {
+        select: {
+          actor: { select: { id: true, name: true } },
+          createdAt: true,
+        },
+      },
+    },
+  },
 } as const satisfies Prisma.PaymentAttemptSelect;

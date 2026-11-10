@@ -89,12 +89,13 @@ export default function SubmitQuoteModal({
       <TicketActionSummary ticket={task} />
       {baseQuote && (
         <p>
-          基于第 {baseQuote.revision} 版修订 · 
-          将生成第 {baseQuote.revision + 1} 版 · 拒绝原因：
+          基于第 {baseQuote.revision} 版修订 · 将生成第 {baseQuote.revision + 1}{" "}
+          版 · 拒绝原因：
           {baseQuote.rejection?.reason}
         </p>
       )}
       <Form
+        autoComplete="off"
         form={form}
         layout="vertical"
         disabled={submitting}

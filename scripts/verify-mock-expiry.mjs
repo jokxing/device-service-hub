@@ -39,7 +39,10 @@ try {
   const v = await f.orderedTask(tech),
     intent = randomUUID(),
     p = check(await create(v, intent), 201);
-  assert.ok(Date.parse(p.expiresAt) > Date.parse(p.createdAt));
+  assert.equal(
+    Date.parse(p.expiresAt) - Date.parse(p.createdAt),
+    15 * 60 * 1000,
+  );
   await expire(p);
   check(await query(v, other), 404);
   check(await query(v, tech.cookie), 403);

@@ -53,6 +53,7 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
         />
       )}
       <Form<Values>
+        autoComplete="off"
         name="portal-repair"
         layout="vertical"
         initialValues={{ priority: "normal" }}
@@ -61,6 +62,7 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
       >
         <Form.Item label="报修设备">
           <Input
+            autoComplete="off"
             aria-label="报修设备"
             readOnly
             value={`${device.code} · ${device.name}`}
@@ -75,6 +77,7 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
           ]}
         >
           <Input
+            autoComplete="off"
             aria-label="问题标题"
             maxLength={TICKET_LIMITS.title}
             showCount
@@ -90,6 +93,7 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
           ]}
         >
           <Input.TextArea
+            autoComplete="off"
             aria-label="问题描述"
             rows={5}
             maxLength={TICKET_LIMITS.description}

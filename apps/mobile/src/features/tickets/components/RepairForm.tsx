@@ -66,6 +66,8 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
       <View style={styles.field}>
         <Text style={styles.text}>问题标题</Text>
         <TextInput
+          autoComplete="off"
+          importantForAutofill="no"
           accessibilityLabel="问题标题"
           style={styles.input}
           value={title}
@@ -78,6 +80,8 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
       <View style={styles.field}>
         <Text style={styles.text}>问题描述</Text>
         <TextInput
+          autoComplete="off"
+          importantForAutofill="no"
           accessibilityLabel="问题描述"
           style={[styles.input, styles.description]}
           multiline

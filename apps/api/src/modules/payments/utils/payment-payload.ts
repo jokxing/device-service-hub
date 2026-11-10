@@ -11,6 +11,7 @@ export function toPaymentRecord(
     closeReason,
     succeededAt,
     expiresAt,
+    refund,
     ...record
   } = row;
   if (
@@ -21,6 +22,19 @@ export function toPaymentRecord(
     throw new Error("Unknown payment close reason");
   return {
     ...record,
+    refund: refund
+      ? {
+          ...refund,
+          status: refund.completion ? "succeeded" : "requested",
+          completion: refund.completion
+            ? {
+                ...refund.completion,
+                createdAt: refund.completion.createdAt.toISOString(),
+              }
+            : null,
+          createdAt: refund.createdAt.toISOString(),
+        }
+      : null,
     expiresAt: expiresAt.toISOString(),
     currency: "CNY",
     code: `MP-${String(number).padStart(6, "0")}`,

@@ -152,3 +152,7 @@ npm run verify:portal-confirmations  # 门户确认、防重、冲突与账号�
 同日确认增量：Web/API/门户构建、门户确认与报修回归、原确认 API/React 界面及演示界面回归通过。已检查 [手机确认框](screenshots/portal-confirmation-dialog-mobile.png) 和 [完成详情](screenshots/portal-completed-ticket-mobile.png)。这些是本地浏览器与真实 API 验证，不代表移动端真机或生产部署。
 
 模拟支付区域已支持成功确认、刷新查单、截止时间和超时原因展示。过期单在 NestJS 查单时关闭；有效待开工订单无待支付/成功记录时允许重新创建。验证使用 verify:mock-expiry、verify:mock-success，不代表第三方支付接入。
+
+已支持本人待开工模拟成功单的全额退款申请，原因表单复用本应用 MutationModal/useApiMutation。原支付查询返回待处理申请并回看金额、原因、时间；管理员处理结果由同一查询回看，见 [QUOTES.md](QUOTES.md)。
+
+门户退款查询已展示管理员处理结果、处理人与时间；全额模拟退款成功后订单/工单结束，用户无处理权限，不发生真实退款。

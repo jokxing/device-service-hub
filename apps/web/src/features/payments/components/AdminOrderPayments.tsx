@@ -1,3 +1,4 @@
+import CompleteRefundAction from "./CompleteRefundAction";
 import { useCallback } from "react";
 import { Alert, Button, Descriptions, Empty, Spin, Tag } from "antd";
 import { formatCents } from "@device-service-hub/contracts/quote-rules";
@@ -57,6 +58,28 @@ export default function AdminOrderPayments({ orderId }: { orderId: string }) {
                       label: "支付截止时间",
                       children: formatDateTime(new Date(payment.expiresAt)),
                     },
+                    ...(payment.refund
+                      ? [
+                          {
+                            key: "refundStatus",
+                            label: "模拟退款状态",
+                            children:
+                              payment.refund.status === "succeeded"
+                                ? "退款成功（模拟）"
+                                : "申请待处理（模拟）",
+                          },
+                          {
+                            key: "refundReason",
+                            label: "退款原因",
+                            children: payment.refund.reason,
+                          },
+                          {
+                            key: "refundAmount",
+                            label: "申请金额",
+                            children: formatCents(payment.refund.amountCents),
+                          },
+                        ]
+                      : []),
                     { key: "channel", label: "渠道", children: "本地模拟" },
                     {
                       key: "amount",
@@ -89,6 +112,17 @@ export default function AdminOrderPayments({ orderId }: { orderId: string }) {
                       : []),
                   ]}
                 />
+                {payment.refund?.completion && (
+                  <p>
+                    处理人：{payment.refund.completion.actor.name} ·{" "}
+                    {formatDateTime(
+                      new Date(payment.refund.completion.createdAt),
+                    )}
+                  </p>
+                )}
+                {payment.refund?.status === "requested" && (
+                  <CompleteRefundAction payment={payment} />
+                )}
               </article>
             ))
           ) : (

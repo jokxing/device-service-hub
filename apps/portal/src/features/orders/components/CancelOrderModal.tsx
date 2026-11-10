@@ -62,7 +62,12 @@ export default function CancelOrderModal({
         </strong>
       </p>
       <p>原订单金额：¥{formatCents(order.totalCents)}（人民币）</p>
-      <Form form={form} layout="vertical" disabled={submitting}>
+      <Form
+        autoComplete="off"
+        form={form}
+        layout="vertical"
+        disabled={submitting}
+      >
         <Form.Item
           name="reason"
           label="取消原因"
@@ -72,6 +77,7 @@ export default function CancelOrderModal({
           ]}
         >
           <Input.TextArea
+            autoComplete="off"
             aria-label="取消原因"
             rows={4}
             showCount

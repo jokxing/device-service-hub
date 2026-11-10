@@ -102,7 +102,7 @@ NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常�
 
 `modules/quotes` 承担报价读取、首版提交和被拒绝后的修订，独立组织 Controller、Service、DTO 和查询投影。首次与修订复用发布用例；工单条件更新、报价及条目在同一事务写入，新版追加而不覆盖。来源版次、当前分派及工单版本决定是否可修订；发布重放返回原 UUID 的具体版次。历史读取复用现有数据范围，金额由服务端计算。TaskResultsService 限制未开工报价型任务提交结果，Web/原生适配共用约束。规则及增量迁移见 [QUOTES.md](QUOTES.md)。
 
-`modules/orders` 承担本人报价确认、订单快照及分页列表/独立详情读取，DTO、查询投影、序列化分开组织；一次事务更新报价状态、工单版本并创建唯一订单及条目。报价与订单读取复用工单模块内的 `ticketReadScope`，不把管理员范围用于本人入口。`OrderCancellationsService` 单独管理本人待开工订单取消：原工单版本条件更新、工单/订单终态及取消审计在同一事务，重放重新校验归属，保留原报价和金额快照。OrderStartsService 负责当前维修员开工，订单 awaiting_start → in_progress、工单版本和开工审计同事务；与取消竞争同一工单行，重放重新检查当前分派。OrdersModule 导出 OrderFulfillmentService，工单结果/完成确认用例传入原事务客户端，在锁定工单行后同步订单待确认/完成；由订单模块维护订单状态规则，不另开事务或重复写审计。当前仅开放本地模拟支付单创建与只读，真实支付未接入。
+`modules/orders` 承担本人报价确认、订单快照及分页列表/独立详情读取，DTO、查询投影、序列化分开组织；一次事务更新报价状态、工单版本并创建唯一订单及条目。报价与订单读取复用工单模块内的 `ticketReadScope`，不把管理员范围用于本人入口。`OrderCancellationsService` 单独管理本人待开工订单取消：原工单版本条件更新、工单/订单终态及取消审计在同一事务，重放重新校验归属，保留原报价和金额快照。OrderStartsService 负责当前维修员开工，订单 awaiting_start → in_progress、工单版本和开工审计同事务；与取消竞争同一工单行，重放重新检查当前分派。OrdersModule 导出 OrderFulfillmentService，工单结果/完成确认用例传入原事务客户端，在锁定工单行后同步订单待确认/完成；由订单模块维护订单状态规则，不另开事务或重复写审计。支付模块见下节，真实支付未接入。
 
 `modules/quotes/quote-rejections.service.ts` 承担本人拒绝报价，独立 DTO 校验原因与指定版次，事务更新报价、工单版本和拒绝审计。与订单确认竞争同一工单行，原 UUID 重放重新校验归属并返回具体报价；不以拒绝变更工单维修状态或创建订单。
 
@@ -152,3 +152,12 @@ OriginGuard 仅对明确标注 NativeClient 的控制器使用原生传输约束
 现场照片使用工单模块内 `attachments/`，Controller、TicketPhotosService、PhotoStore 分工；附件表元数据与随机文件键分离，图片目录不开放静态访问。状态/数量在工单行锁内核对，幂等 UUID 与原始内容摘要绑定；文件失败清理和数据库/文件系统的崩溃边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。
 
 Web 管理员照片只读路由位于 AdminTicketsController，沿用 SessionGuard。AdminTicketsService 先执行既有管理员限制，再复用 TicketPhotosService 读取元数据与图片；不增加上传路由，不复制附件授权和文件逻辑，也不改变原生传输约束。
+
+
+## 模拟支付与退款边界
+
+modules/payments 按用例拆分 PaymentsService、PaymentLifecycleService、RefundRequestsService 和 RefundCompletionsService。创建/查单/确认负责支付意图与终态，Lifecycle 在调用方事务中处理取消联动与超时关闭；退款申请与处理使用独立记录，不覆盖原支付事实。DTO、查询白名单和序列化各自维护，内部意图与数据库实体不直接暴露。
+
+创建由本人执行，金额来自订单快照；管理员查询并处理模拟退款，维修员无金融接口权限。本人归属、管理员角色、状态与金额均由服务端校验。订单写操作与支付/退款竞争同一工单行锁；退款完成、工单/订单结束与取消审计同事务，重复意图核对固定目标。模拟成功不是外部支付回调。
+
+支付时间按 UTC 保存，API 新单的截止时间精确为创建后 900000ms，数据库默认值显式 UTC；超时关闭采用访问时处理，没有定时任务。规则、迁移与验证命令统一见 [QUOTES.md](QUOTES.md)，不新增微服务、渠道 SDK 或收费资源。

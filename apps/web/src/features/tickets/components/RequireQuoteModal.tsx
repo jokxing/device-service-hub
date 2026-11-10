@@ -52,6 +52,7 @@ export default function RequireQuoteModal({
         将“直接处理”改为“需报价”，保留当前维修人员与接单记录。后续须提交报价、由报修用户确认并生成订单后开工，才能提交处理结果。
       </p>
       <Form
+        autoComplete="off"
         form={form}
         layout="vertical"
         disabled={submitting}
@@ -66,6 +67,7 @@ export default function RequireQuoteModal({
           ]}
         >
           <Input.TextArea
+            autoComplete="off"
             aria-label="调整原因"
             rows={3}
             maxLength={QUOTE_LIMITS.serviceModeReason}

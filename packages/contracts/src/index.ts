@@ -101,7 +101,19 @@ export type StartOrderInput = TicketCommandInput;
 export interface CreateMockPaymentInput {
   requestId: string;
 }
+export interface RequestMockRefundInput {
+  requestId: string;
+  reason: string;
+}
 export interface PaymentRecord {
+  refund: {
+    id: string;
+    status: "requested" | "succeeded";
+    completion: { actor: TicketPerson; createdAt: string } | null;
+    reason: string;
+    amountCents: number;
+    createdAt: string;
+  } | null;
   id: string;
   code: string;
   orderId: string;

@@ -14,6 +14,7 @@ export default function TicketTextFields() {
         ]}
       >
         <Input
+          autoComplete="off"
           maxLength={TICKET_LIMITS.title}
           placeholder="例如：空调运行但不制冷"
         />
@@ -27,6 +28,7 @@ export default function TicketTextFields() {
         ]}
       >
         <Input.TextArea
+          autoComplete="off"
           rows={4}
           maxLength={TICKET_LIMITS.description}
           showCount

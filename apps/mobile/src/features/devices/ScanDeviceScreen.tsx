@@ -41,6 +41,8 @@ function Scanner() {
       )}
       <Text style={typography.text}>手动输入设备编号</Text>
       <TextInput
+        autoComplete="off"
+        importantForAutofill="no"
         accessibilityLabel="设备编号或二维码内容"
         value={input}
         onFocus={scan.pause}

@@ -1,3 +1,4 @@
+import RequestRefundAction from "./RequestRefundAction";
 import MockPaymentAction, { RefreshPayments } from "./MockPaymentAction";
 import type {
   PaymentRecord,
@@ -68,7 +69,36 @@ export default function OrderPayments({
                   <dd>{formatDate(payment.succeededAt)}</dd>
                 </>
               )}
+              {payment.refund && (
+                <>
+                  <dt>模拟退款状态</dt>
+                  <dd>
+                    {payment.refund.status === "succeeded"
+                      ? "退款成功（模拟）"
+                      : "申请待处理（模拟）"}
+                  </dd>
+                  <dt>申请金额</dt>
+                  <dd>¥{formatCents(payment.refund.amountCents)}</dd>
+                  <dt>申请原因</dt>
+                  <dd>{payment.refund.reason}</dd>
+                  <dt>申请时间</dt>
+                  <dd>{formatDate(payment.refund.createdAt)}</dd>
+                  {payment.refund.completion && (
+                    <>
+                      <dt>处理人</dt>
+                      <dd>{payment.refund.completion.actor.name}</dd>
+                      <dt>处理时间</dt>
+                      <dd>{formatDate(payment.refund.completion.createdAt)}</dd>
+                    </>
+                  )}
+                </>
+              )}
             </dl>
+            {payment.status === "succeeded" &&
+              !payment.refund &&
+              order.status === "awaiting_start" && (
+                <RequestRefundAction payment={payment} />
+              )}
             {payment.status === "pending" &&
               order.status === "awaiting_start" && (
                 <>

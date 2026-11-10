@@ -19,3 +19,15 @@ export function confirmMockPayment(
     "尚未确认模拟结果，请刷新查单后核对。",
   );
 }
+
+export function requestMockRefund(
+  request: Request,
+  orderId: string,
+  paymentId: string,
+) {
+  return reporterPost(
+    request,
+    `/orders/${encodeURIComponent(orderId)}/payments/${encodeURIComponent(paymentId)}/refund`,
+    "尚未确认模拟退款申请结果，请刷新核对。",
+  );
+}

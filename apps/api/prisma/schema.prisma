@@ -38,6 +38,8 @@ model User {
   orderStarts ServiceOrderStart[]
   paymentAttempts PaymentAttempt[]
   serviceModeChanges TicketServiceModeChange[]
+  refundRequests MockRefundRequest[]
+  refundsCompleted MockRefundCompletion[]
 }
 
 model Device {
@@ -300,13 +302,14 @@ model PaymentAttempt {
   status      PaymentStatus @default(pending)
   currency    String @default("CNY") @db.Char(3)
   amountCents Int
-  createdAt   DateTime @default(now())
+  createdAt   DateTime @default(dbgenerated("(clock_timestamp() AT TIME ZONE 'UTC')"))
   closedAt    DateTime?
   closeReason String? @db.VarChar(30)
-  expiresAt DateTime @default(dbgenerated("(CURRENT_TIMESTAMP + interval '15 minutes')"))
+  expiresAt DateTime @default(dbgenerated("((clock_timestamp() AT TIME ZONE 'UTC') + interval '15 minutes')"))
   succeededAt DateTime?
   order       ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
   actor       User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  refund MockRefundRequest?
 
   @@unique([actorId, requestId])
   @@index([orderId, createdAt])
@@ -372,4 +375,29 @@ model Session {
   expiresAt DateTime
   @@index([userId])
   @@index([expiresAt])
+}
+
+model MockRefundRequest {
+ id String @id @default(uuid()) @db.Uuid
+ paymentId String @unique
+ actorId String
+ requestId String @db.Uuid
+ reason String @db.VarChar(500)
+ amountCents Int
+ createdAt DateTime @default(now())
+ completion MockRefundCompletion?
+ payment PaymentAttempt @relation(fields:[paymentId],references:[id],onDelete:Cascade)
+ actor User @relation(fields:[actorId],references:[id],onDelete:Restrict)
+ @@unique([actorId,requestId])
+}
+
+model MockRefundCompletion {
+ id String @id @default(uuid()) @db.Uuid
+ refundId String @unique @db.Uuid
+ actorId String
+ requestId String @db.Uuid
+ createdAt DateTime @default(now())
+ refund MockRefundRequest @relation(fields:[refundId],references:[id],onDelete:Cascade)
+ actor User @relation(fields:[actorId],references:[id],onDelete:Restrict)
+ @@unique([actorId,requestId])
 }

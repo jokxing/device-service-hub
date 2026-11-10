@@ -126,7 +126,10 @@
     "verify:remote-mobile:public": "node scripts/verify-remote-mobile.mjs --public",
     "verify:mobile-apk:android": "node scripts/verify-mobile-apk-android.mjs",
     "verify:mock-success": "node scripts/verify-mock-success.mjs",
-    "verify:mock-expiry": "node scripts/verify-mock-expiry.mjs"
+    "verify:mock-expiry": "node scripts/verify-mock-expiry.mjs",
+    "verify:mock-refunds": "node scripts/verify-mock-refunds.mjs",
+    "verify:refund-completions": "node scripts/verify-refund-completions.mjs",
+    "verify:payment-time": "node scripts/verify-payment-time.mjs"
   },
   "overrides": {
     "react-native-gesture-handler": "2.32.0",

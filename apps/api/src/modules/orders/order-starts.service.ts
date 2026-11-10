@@ -77,6 +77,7 @@ export class OrderStartsService {
                 cancellation: { is: null },
                 start: { is: null },
                 quote: { status: "accepted" },
+                payments: { none: { refund: { isNot: null } } },
               },
             },
           },

@@ -194,6 +194,8 @@ export class PaymentsService {
           throw new ConflictException(
             "已有待支付的模拟支付单，请刷新查看，不能重复创建",
           );
+        const createdAt = new Date();
+        const expiresAt = new Date(createdAt.getTime() + 15 * 60 * 1000);
         return toPaymentRecord(
           await tx.paymentAttempt.create({
             data: {
@@ -203,6 +205,8 @@ export class PaymentsService {
               channel: "mock",
               currency: "CNY",
               amountCents: order.totalCents,
+              createdAt,
+              expiresAt,
             },
             select: PAYMENT_SELECT,
           }),

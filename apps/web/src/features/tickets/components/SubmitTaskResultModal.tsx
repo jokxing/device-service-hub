@@ -51,6 +51,7 @@ export default function SubmitTaskResultModal({
     >
       <TicketActionSummary ticket={task} />
       <Form
+        autoComplete="off"
         form={form}
         layout="vertical"
         onFinish={submit}
@@ -68,6 +69,7 @@ export default function SubmitTaskResultModal({
           ]}
         >
           <Input.TextArea
+            autoComplete="off"
             aria-label="处理说明"
             allowClear
             rows={6}

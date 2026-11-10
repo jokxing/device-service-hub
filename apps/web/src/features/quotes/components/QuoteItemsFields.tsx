@@ -41,6 +41,7 @@ export default function QuoteItemsFields({ disabled }: { disabled: boolean }) {
                 ]}
               >
                 <Input
+                  autoComplete="off"
                   aria-label={`项目名称 ${index + 1}`}
                   maxLength={QUOTE_LIMITS.name}
                 />
@@ -60,6 +61,7 @@ export default function QuoteItemsFields({ disabled }: { disabled: boolean }) {
                   ]}
                 >
                   <InputNumber
+                    autoComplete="off"
                     aria-label={`数量 ${index + 1}`}
                     min={1}
                     max={QUOTE_LIMITS.quantity}
@@ -84,6 +86,7 @@ export default function QuoteItemsFields({ disabled }: { disabled: boolean }) {
                   ]}
                 >
                   <Input
+                    autoComplete="off"
                     aria-label={`单价 ${index + 1}`}
                     inputMode="decimal"
                     placeholder="例如 120.50"
@@ -97,6 +100,7 @@ export default function QuoteItemsFields({ disabled }: { disabled: boolean }) {
                 rules={[{ max: QUOTE_LIMITS.note }]}
               >
                 <Input.TextArea
+                  autoComplete="off"
                   showCount
                   aria-label={`备注 ${index + 1}`}
                   rows={2}

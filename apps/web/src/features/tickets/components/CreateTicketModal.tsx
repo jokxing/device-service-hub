@@ -43,6 +43,7 @@ export default function CreateTicketModal({
         className="mb-5"
       />
       <Form
+        autoComplete="off"
         form={form}
         layout="vertical"
         onFinish={handleSubmit}

@@ -30,6 +30,7 @@ export default function TicketNoteModal({ kind, ticketId, onClose }: Props) {
       cancelText="取消"
     >
       <Input.TextArea
+        autoComplete="off"
         aria-label={meta.field}
         placeholder={meta.placeholder}
         rows={4}
