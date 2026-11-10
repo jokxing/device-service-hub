@@ -8,6 +8,7 @@ import { getMyOrder } from "../../../../features/orders/server/queries";
 import QuoteDetails from "../../../../features/quotes/components/QuoteDetails";
 import QuoteActions from "../../../../features/quotes/components/QuoteActions";
 import OrderSnapshot from "../../../../features/orders/components/OrderSnapshot";
+import OrderActions from "../../../../features/orders/components/OrderActions";
 
 export const metadata = { title: "报修详情" };
 export default async function MyTicketPage({
@@ -41,7 +42,16 @@ export default async function MyTicketPage({
           />
         </>
       )}
-      {order && <OrderSnapshot order={order} />}
+      {order && (
+        <>
+          <OrderSnapshot order={order} />
+          <OrderActions
+            key={`${order.id}:${ticket.version}`}
+            ticket={ticket}
+            order={order}
+          />
+        </>
+      )}
       <QuoteHistory quotes={quotes.slice(1)} />
       <TicketActions
         key={`${ticket.id}:${ticket.version}`}

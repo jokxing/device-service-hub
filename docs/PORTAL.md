@@ -6,9 +6,9 @@
 
 门户只对报修用户开放。管理员与维修人员继续使用 React 后台；门户已贯通最小文字业务闭环，图片上传、退回和重新打开尚未接入。现有 React 用户入口保留为回归基线。设备仍为虚构样例，接口和数据库会话是真实实现，没有硬件通信。
 
-需报价工单的本人详情支持报价查看、指定版本确认、拒绝原因提交与服务订单快照。维修员发布新版后，门户展示当前版供重新决定，并只读回看历史版及拒绝原因。决定由 NestJS 原子完成，个人数据 no-store，订单不代表付款；取消、开工和支付尚未开放，见 [维修报价与订单](QUOTES.md)。拒绝交互与状态回看执行 `verify:quote-rejections` 和 `verify:portal-quote-rejections`；新版展示、旧决定冲突和第 3 版订单验证使用 `verify:quote-revisions-ui`，不增加第二套业务后端。
+需报价工单的本人详情支持报价查看、指定版本确认、拒绝原因提交与服务订单快照。维修员发布新版后，门户展示当前版供重新决定，并只读回看历史版及拒绝原因。本人可取消待开工订单，关联工单同时结束，保留原报价、金额快照与取消记录。决定由 NestJS 原子完成，个人数据 no-store，订单不代表付款；开工和支付尚未开放，见 [维修报价与订单](QUOTES.md)。拒绝交互与状态回看执行 `verify:quote-rejections` 和 `verify:portal-quote-rejections`；新版展示、旧决定冲突和第 3 版订单验证使用 `verify:quote-revisions-ui`，不增加第二套业务后端。
 
-新增 `features/quotes` 的服务端查询、确认交互与转发，以及 `features/orders` 的订单快照查询/展示；`app/api/tickets/[id]/quote/accept/route.ts` 只组装转发。报修、完成确认和报价确认共用 `features/auth/server/commands.ts` 的 `reporterPost`，保留调用方原 UUID 与版本，不跨应用导入后台 Hook 或绕过 NestJS。报价及订单条目展示在门户内部复用 `QuoteItems`。
+新增 `features/quotes` 的服务端查询、确认交互与转发，以及 `features/orders` 的订单快照查询/展示和取消表单；`app/api/tickets/[id]/quote/accept/route.ts`、`app/api/orders/[id]/cancel/route.ts` 只组装转发。报修、完成确认、报价决定及订单取消共用 `features/auth/server/commands.ts` 的 `reporterPost`，保留调用方原 UUID 与版本，不跨应用导入后台 Hook 或绕过 NestJS。报价及订单条目展示在门户内部复用 `QuoteItems`。取消窗口由订单 ID/工单版本标识，关闭重读实际状态，同原因重试复用原意图。验证使用 `verify:order-cancellations` 与 `verify:portal-order-cancellations`。
 
 相关增量执行 `verify:orders`、`verify:portal-quotes`，并回归 `verify:portal`、`verify:portal-tickets` 和 `verify:portal-confirmations`；共享种子账号套件串行运行。
 
@@ -51,7 +51,8 @@ apps/portal/
    │  ├─ components/、server/（报价展示、确认与服务端适配）
    │  └─ types.ts、rules.ts、quotes.module.css
    ├─ features/orders/
-   │  └─ components/、server/（订单快照展示与查询）
+   │  ├─ api.ts、rules.ts、constants.ts、types.ts（取消请求、入口规则与类型）
+   │  └─ components/、server/（订单快照、取消表单、查询与转发）
    └─ shared/
       ├─ components/（公共页头与布局样式）
       ├─ api/、hooks/（客户端请求与提交生命周期）

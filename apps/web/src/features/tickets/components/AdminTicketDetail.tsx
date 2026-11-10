@@ -7,6 +7,7 @@ import { adminTicketsApi } from "../admin-api";
 import TicketRecordDetails from "./TicketRecordDetails";
 import AdminTicketPhotos from "../photos/AdminTicketPhotos";
 import TicketQuoteSection from "../../quotes/components/TicketQuoteSection";
+import TicketOrderSection from "../../orders/components/TicketOrderSection";
 
 export default function AdminTicketDetail({
   id,
@@ -69,6 +70,7 @@ export default function AdminTicketDetail({
           {data.serviceMode === "quoted" && (
             <div className="mt-5">
               <TicketQuoteSection ticketId={data.id} />
+              <TicketOrderSection ticketId={data.id} version={data.version} />
             </div>
           )}
           <AdminTicketPhotos key={data.id} ticketId={data.id} />

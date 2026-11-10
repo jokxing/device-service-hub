@@ -34,6 +34,7 @@ model User {
   quotes TicketQuote[]
   ordersConfirmed ServiceOrder[]
   quoteRejections QuoteRejection[]
+  orderCancellations ServiceOrderCancellation[]
 }
 
 model Device {
@@ -75,6 +76,7 @@ enum QuoteStatus {
 
 enum ServiceOrderStatus {
   awaiting_start
+  cancelled
 }
 
 model Ticket {
@@ -249,7 +251,22 @@ model ServiceOrder {
   ticket          Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   quote           TicketQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   confirmedBy     User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  cancellation    ServiceOrderCancellation?
   items           ServiceOrderItem[]
+
+  @@unique([actorId, requestId])
+}
+
+model ServiceOrderCancellation {
+  id              String @id @default(uuid())
+  orderId         String @unique
+  actorId         String
+  reason          String @db.VarChar(500)
+  requestId       String @db.Uuid
+  expectedVersion Int
+  createdAt       DateTime @default(now())
+  order           ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actor           User @relation(fields: [actorId], references: [id], onDelete: Restrict)
 
   @@unique([actorId, requestId])
 }

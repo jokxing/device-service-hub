@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "exports": {
+    "./order-rules": {
+      "types": "./src/order-rules.ts",
+      "default": "./src/order-rules.ts"
+    },
     ".": {
       "types": "./src/index.ts"
     },

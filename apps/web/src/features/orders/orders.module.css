@@ -1,0 +1,20 @@
+.content {
+  padding: 20px 24px;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 575px) {
+  .content {
+    padding: 16px;
+  }
+}

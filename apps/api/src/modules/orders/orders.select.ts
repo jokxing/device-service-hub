@@ -10,6 +10,13 @@ export const ORDER_SELECT = {
   totalCents: true,
   createdAt: true,
   confirmedBy: { select: { id: true, name: true } },
+  cancellation: {
+    select: {
+      reason: true,
+      createdAt: true,
+      actor: { select: { id: true, name: true } },
+    },
+  },
   items: {
     orderBy: { position: "asc" },
     select: {

@@ -76,12 +76,20 @@ export interface ServiceOrderRecord {
   ticketId: string;
   quoteId: string;
   quoteRevision: number;
-  status: "awaiting_start";
+  status: "awaiting_start" | "cancelled";
   currency: "CNY";
   totalCents: number;
   createdAt: string;
   confirmedBy: TicketPerson;
+  cancellation: {
+    reason: string;
+    actor: TicketPerson;
+    createdAt: string;
+  } | null;
   items: (QuoteItemInput & { amountCents: number })[];
+}
+export interface CancelOrderInput extends TicketCommandInput {
+  reason: string;
 }
 export type TicketStatus =
   | "pending"

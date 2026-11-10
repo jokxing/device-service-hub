@@ -17,6 +17,7 @@ import {
 import { tasksApi } from "../features/tickets/tasks-api";
 import styles from "../features/tickets/connected.module.css";
 import TicketQuoteSection from "../features/quotes/components/TicketQuoteSection";
+import TicketOrderSection from "../features/orders/components/TicketOrderSection";
 
 function MyTaskDetailContent() {
   const { id = "" } = useParams();
@@ -82,6 +83,7 @@ function MyTaskDetailContent() {
             task={data}
             onSubmitted={refresh}
           />
+          <TicketOrderSection ticketId={data.id} version={data.version} />
         </div>
       )}
       {taskToAccept && (

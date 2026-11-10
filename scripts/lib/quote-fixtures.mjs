@@ -32,5 +32,27 @@ export function quoteFixtures(local, db, prefix) {
       quote: result.value,
     };
   }
-  return { ...fixtures, quotedTask };
+  async function orderedTask(owner, options) {
+    const value = await quotedTask(owner, options);
+    const { reporter } = await fixtures.identities();
+    const acceptanceInput = {
+      requestId: randomUUID(),
+      expectedVersion: value.ticket.version,
+      quoteId: value.quote.id,
+      quoteRevision: value.quote.revision,
+    };
+    const result = await local.request(
+      `/tickets/${value.ticket.id}/quote/accept`,
+      { cookie: reporter, method: "POST", body: acceptanceInput },
+    );
+    assert.equal(result.response.status, 201, JSON.stringify(result.value));
+    return {
+      ...value,
+      ticket: { ...value.ticket, version: value.ticket.version + 1 },
+      quote: { ...value.quote, status: "accepted" },
+      order: result.value,
+      acceptanceInput,
+    };
+  }
+  return { ...fixtures, quotedTask, orderedTask };
 }

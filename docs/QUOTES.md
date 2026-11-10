@@ -4,16 +4,16 @@
 
 React 真实业务支持管理员在首次分派时选择服务方式，当前维修人员接单后提交首版多条目报价，并在最新报价被拒绝后编制新版；维修人员与管理员可刷新查看当前版及历史版。金额由 NestJS 计算并保存至 PostgreSQL，报价与工单版本在同一事务写入。
 
-Next.js 门户已支持本人查看报价、确认指定版本并生成唯一服务订单，在同一报修详情中回看条目与金额快照。订单显示待开工、未接入支付；确认报价不代表付款。
+Next.js 门户已支持本人查看报价、确认指定版本并生成唯一服务订单，在同一报修详情中回看条目与金额快照。订单独立显示待开工或已取消，支付显示未接入支付；确认报价不代表付款。
 
-门户支持本人拒绝待确认报价，并在维修员修订后决定最新版本；React 后台与门户保留历史条目、金额及拒绝审计。订单独立列表/管理页面、取消、开工与支付尚未交付。报价型任务不能提交维修结果；直接处理工单保留原接单、结果与用户确认闭环。RN 暂未新增报价或订单页面，既有 RN 结果接口同样受服务端限制。
+门户支持本人拒绝待确认报价，并在维修员修订后决定最新版本；React 后台与门户保留历史条目、金额及拒绝审计。本人可取消待开工订单，同时结束关联工单；三角色可按数据范围读取取消记录。订单独立列表/管理页面、开工与支付尚未交付。报价型任务不能提交维修结果；直接处理工单保留原接单、结果与用户确认闭环。RN 暂未新增报价或订单页面，既有 RN 结果接口同样受服务端限制。
 
 ## 服务方式与权限
 
 - 首次分派请求可传 `serviceMode: direct | quoted`，省略时默认为 `direct`。旧工单和旧分派审计均为直接处理；重复分派意图也核对服务方式。
 - 本步仅在首次分派确定方式，不提供接单后改方式或通用状态修改接口。
 - 管理员可查看当前平台工单报价；仅当前 `assigneeId` 对应的维修人员可提交，必须为 `processing`、`quoted`、工单版本一致且无结果及订单。首次提交要求没有报价；修订要求指定的来源报价是最新已拒绝版本且存在拒绝审计。
-- 报修用户只读本人报价和订单，只有工单报修人可确认或拒绝报价；管理员与当前维修人员只读，不能代操作。报价与订单查询复用 `ticketReadScope`，不存在及无权访问统一 404。报修人的历史归属与维修人员的当前分派范围分别校验，不因撤销设备查询授权而删除历史报修读取权。
+- 报修用户仅可读取本人报价和订单，只有工单报修人可确认或拒绝报价、取消待开工订单；管理员与当前维修人员只读，不能代操作。报价与订单查询复用 `ticketReadScope`，不存在及无权访问统一 404。报修人的历史归属与维修人员的当前分派范围分别校验，不因撤销设备查询授权而删除历史报修读取权。
 - 提交成功后工单状态仍为 `processing`，版本递增一次；报价状态为 `pending`，显示待用户确认。该状态不代表订单成立、付款或允许开工。
 
 ## 金额与版本
@@ -39,6 +39,7 @@ Next.js 门户已支持本人查看报价、确认指定版本并生成唯一服
 | POST `/api/tickets/:id/quote/accept` | 本人确认指定报价 ID/版次，原子生成订单；首次与同意图重放返回 201 |
 | POST `/api/tickets/:id/quote/reject` | 本人拒绝指定报价 ID/版次并记录原因；首次与同意图重放返回 201，不生成订单 |
 | GET `/api/orders/by-ticket/:id` | 当前账号数据范围内返回 `{ order: null }` 或订单快照 |
+| POST `/api/orders/:id/cancel` | 本人取消待开工订单，输入原工单版本、UUID 和原因；首次及同意图重放返回 201 |
 
 服务端先检查角色和当前归属，再读取幂等记录。规范化条目按确定顺序计算摘要；相同操作者与 UUID 重放需核对工单、原版本和摘要，不同内容返回 409。重放仍重新检查当前归属。
 
@@ -56,7 +57,7 @@ Next.js 门户已支持本人查看报价、确认指定版本并生成唯一服
 
 订单保存确认人、时间、原工单版本和内部提交 UUID，形成确认审计。`ticketId`、`quoteId` 各自唯一，`actorId + requestId` 也唯一：相同 UUID 必须核对工单、报价、版次和原版本，一致则返回既有订单；不同 UUID 的竞争返回 409，不能生成第二单。重放也重新校验当前归属。任何一步失败均回滚报价状态、工单版本及订单条目。
 
-订单快照独立存储，读取时不从报价实时拼装金额。当前无独立创建、改价、删除或状态修改接口，报价确认是唯一创建入口。订单编号使用 `SO-` 序号，回滚或并发可能产生间隔，不能当作订单总数或付款凭据。
+订单快照独立存储，读取时不从报价实时拼装金额。报价确认是唯一创建入口，状态变化只通过受限业务命令；当前无独立创建、改价、删除或通用状态修改接口。订单编号使用 `SO-` 序号，回滚或并发可能产生间隔，不能当作订单总数或付款凭据。
 
 门户以 Server Components 读取本人报价与订单，个人数据 no-store；确认操作使用本应用 MutationModal/useApiMutation。窗口内固定原 UUID、工单版本、报价 ID 和版次；成功或关闭后重新读取实际记录。服务端 `reporterPost` 复用原来源、会话、JSON、错误及状态转发，不替换意图、不自动重试、不将后端凭据传入 HTML 或客户端存储。
 
@@ -82,17 +83,28 @@ Web 与门户分别使用各自的历史折叠组件，复用本应用只读报�
 
 本增量复用既有多版本表、唯一约束和拒绝审计，没有修改数据库 Schema 或迁移历史，也不重写旧业务数据。
 
+## 待开工订单取消
+
+仅工单报修人可取消本人 `awaiting_start` 订单；关联工单须为 `quoted/processing`、无结果及完成确认，源报价为 accepted。管理员和当前维修人员仅按原数据范围查看，不提供代取消。原因去首尾空白后 1～500 字符，限制共用 `order-rules` 子入口的 `ORDER_LIMITS`；客户端不能指定操作人、状态或金额。
+
+`OrderCancellationsService` 使用原工单 `expectedVersion` 条件更新并锁定工单行，在同一事务内将工单及订单设为 cancelled、递增工单版本、写入唯一取消审计。审计保存订单、原因、操作者、时间与内部意图；公开字段不包含 UUID 或原版本。任一步失败全部回滚，不能出现订单取消但工单仍可维修的中间结果。
+
+同操作者和 UUID 须核对订单、规范化原因及原版本，一致返回既有订单；不同意图并发只有一个成功，其余返回 409。重放重新校验当前归属。取消保留 accepted 报价、所有版本与原订单金额快照；原确认意图重放返回这个已取消订单，不再创建第二单。取消为终态，不支持恢复、继续维修、重新报价或同工单再次下单。
+
+门户沿用 MutationModal/useApiMutation；相同原因结果不明时保留 UUID 和原版本，原因变化才生成新意图；关闭后读取实际订单，取消网络请求不代表业务回滚。React 管理员及维修任务详情只读展示同一订单和取消记录。支付尚未接入，取消不涉及扣款、退款，也不记录模拟付款；未来接入支付须另行处理取消与支付结果竞争。
+
 ## 工程与迁移
 
 - `apps/web/src/features/quotes`：表单、只读摘要、请求及报价动作规则，任务和管理员详情负责组合。
 - `SubmitQuoteModal` 管理表单实例、金额预估、提交意图和请求；`QuoteItemsFields` 通过父级 Form 上下文管理条目字段、增删与校验，不读取会话或发送请求。`formValues.ts` 统一空条目工厂与提交值转换，每次新增返回独立对象。
 - `apps/api/src/modules/quotes`：Controller 负责 HTTP，Service 负责授权、金额计算与事务，DTO/查询投影单独组织。
 - `apps/api/src/modules/orders`：报价确认与订单快照用例，DTO、查询投影和序列化各有明确职责；沿用单一 NestJS/PostgreSQL。
-- 门户 `features/quotes` 负责报价与确认，`features/orders` 负责订单快照；条目展示在门户内部复用，不导入 Web 后台或 RN UI。
+- 门户 `features/quotes` 负责报价与确认，`features/orders` 负责订单快照、取消表单和请求转发；React `features/orders` 负责订单只读展示。条目展示在门户内部复用，不导入 Web 后台或 RN UI。
 - `packages/contracts` 根入口只输出传输类型；`quote-rules` 子入口为前后端复用的纯金额规则与限制，不包含会话、ORM 或 UI。
 - `202611090001_ticket_quotes` 仅增加服务方式、报价及条目，保留旧表、旧记录与历史迁移；旧方式默认 `direct`。
 - `202611090002_quote_orders` 增加 accepted 状态和订单快照表，保留原报价及工单，不自动接受旧报价或为旧工单补订单。
 - `202611090003_quote_rejections` 增加 rejected 状态和拒绝审计表，保留旧工单、报价及订单，不修改既有报价决定。恢复仍采用备份验证与前向修复，不直接覆盖已有业务库。
+- `202611100001_order_cancellations` 增加订单 cancelled 状态及取消审计表，订单与操作者/UUID 唯一约束兜底；保留旧记录，不批量修改工单或订单状态。
 
 执行迁移前备份专用本地库，并检查备份归档可读取；迁移后核对旧工单与原操作记录摘要及默认方式。备份、校验摘要和恢复操作记录存放被忽略的 `.local`。
 
@@ -111,6 +123,9 @@ Windows 通过 `scripts/npm-local.ps1 run <脚本名>` 执行：
 - `verify:portal-quote-rejections`：拒绝表单、取消清理、同原因重试、原因变化新意图、关闭后核对、过期决定冲突、会话失效、跨账号隔离和后台只读拒绝记录。
 - `verify:quote-revisions`：修订来源与归属、金额/DTO、同意图及不同意图并发、历史不可变、旧发布/拒绝请求精确重放、第 3 版订单快照与写入失败回滚。
 - `verify:quote-revisions-ui`：条目预填/取消、表单复用、响应丢失重试、维修员过期窗口、门户旧决定冲突、历史只读、第 3 版确认与后台/手机布局。
+- `test:orders`：取消动作的方式、状态、关联订单及结果/确认入口规则。
+- `verify:order-cancellations`：角色与归属、原因及版本校验、八路同意图/不同意图竞争、金额快照保持、强制审计失败回滚、确认旧意图重放和归属变化后重放。
+- `verify:portal-order-cancellations`：原因与关闭清理、响应丢失重试、提交中保护、关闭核对、旧窗口冲突、会话失效、跨用户隔离，以及后台管理员/当前维修员只读取消记录。
 
 原有构建、业务规则、登录、分派、任务、结果及共享弹窗按受影响范围回归；套件串行运行，临时工单按本轮随机 UUID 定向清理，不清理人工数据。
 
@@ -118,8 +133,10 @@ Windows 通过 `scripts/npm-local.ps1 run <脚本名>` 执行：
 
 截图已核对：[桌面报价表单](screenshots/quote-form-desktop.png)、[窄屏表单](screenshots/quote-form-mobile.png)、[窄屏表单底部](screenshots/quote-form-mobile-bottom.png)、[报价回看](screenshots/quote-detail-desktop.png)、[窄屏报价](screenshots/quote-detail-mobile.png)、[管理员窄屏只读报价](screenshots/quote-admin-mobile.png)。图中账号与工单为临时验收数据，随后定向清理。
 
-门户证据：[报价详情](screenshots/portal-quote-desktop.png)、[手机确认弹窗](screenshots/portal-quote-confirm-mobile.png)、[订单快照](screenshots/portal-order-desktop.png)、[手机订单](screenshots/portal-order-mobile.png)、[后台已确认报价](screenshots/service-quote-accepted.png)。确认弹窗关闭不等于订单取消；已确认订单当前没有取消入口。RN 报价与订单界面、新 APK、相关真机操作及支付能力未在本增量交付。
+门户证据：[报价详情](screenshots/portal-quote-desktop.png)、[手机确认弹窗](screenshots/portal-quote-confirm-mobile.png)、[订单快照](screenshots/portal-order-desktop.png)、[手机订单](screenshots/portal-order-mobile.png)、[后台已确认报价](screenshots/service-quote-accepted.png)。确认弹窗关闭不等于订单取消；待开工订单的取消由后续独立命令提供。RN 报价与订单界面、新 APK、相关真机操作及支付能力未在本增量交付。
 
 同日报价拒绝增量：拒绝 API 与门户浏览器检查通过，覆盖八路同意图重放、不同意图竞争、确认/拒绝竞争及强制审计写入失败回滚；原报价、订单、门户认证/报修/完成确认、API 与 React 入口回归通过，全仓库构建及 RN 共享类型兼容检查通过。迁移前备份归档可读取，迁移后及验收清理后原业务表摘要一致；未执行整库恢复演练。截图已核对：[手机拒绝表单](screenshots/portal-quote-reject-dialog-mobile.png)、[手机拒绝记录](screenshots/portal-quote-rejected-mobile.png)、[桌面拒绝记录](screenshots/portal-quote-rejected-desktop.png)、[后台只读记录](screenshots/service-quote-rejected.png)。RN 拒绝界面、原生真机及新安装包不在本增量验证范围内。
 
 2026-11-10：修订报价 API 与浏览器验证通过，覆盖八路同意图/不同意图竞争、强制插入失败回滚、旧请求返回原具体版次、历史金额与拒绝记录保持、过期维修员窗口及门户旧版确认冲突、第 3 版确认与订单快照。原首版、拒绝、订单、门户认证/报修/完成确认及 API/React 入口回归通过，全仓库构建和 RN 共享类型兼容检查通过。无数据库 Schema 或迁移历史变更；临时记录按本轮随机编号清理。截图已核对：[手机修订表单](screenshots/quote-revision-form-mobile.png)、[后台手机历史](screenshots/quote-revision-history-mobile.png)、[门户历史](screenshots/portal-quote-revision-history.png)、[手机第 3 版订单](screenshots/portal-quote-revision-order-mobile.png)、[管理员历史记录](screenshots/service-quote-revision-history.png)。本增量未交付 RN 报价界面、新 APK、真机、支付或公网部署。
+
+同日待开工订单取消增量：`test:orders`、取消 API 与门户浏览器检查通过，覆盖八路同意图/不同意图竞争、审计强制失败时订单/工单整体回滚、快照与 accepted 报价保持、旧确认重放返回已取消订单、跨用户与当前归属校验。门户提交中保护、响应丢失重试、关闭重读、旧窗口冲突，以及后台管理员和当前维修员只读记录通过。原报价/订单与修订链路、门户认证/报修/完成确认、API/后台入口及业务规则回归通过，全仓库构建和 RN 共享类型兼容检查通过。迁移前备份归档可读取，迁移后及临时数据清理后旧业务表摘要一致；未执行整库恢复演练。截图已核对：[手机取消弹窗](screenshots/portal-order-cancel-dialog-mobile.png)、[手机取消记录](screenshots/portal-order-cancelled-mobile.png)、[桌面取消记录](screenshots/portal-order-cancelled-desktop.png)、[后台只读取消记录](screenshots/service-order-cancelled.png)。本增量没有 RN 页面、原生真机、新 APK 或支付验证。
