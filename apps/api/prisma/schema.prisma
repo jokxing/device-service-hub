@@ -287,6 +287,7 @@ enum PaymentChannel {
 enum PaymentStatus {
   pending
   closed
+  succeeded
 }
 
 model PaymentAttempt {
@@ -302,6 +303,8 @@ model PaymentAttempt {
   createdAt   DateTime @default(now())
   closedAt    DateTime?
   closeReason String? @db.VarChar(30)
+  expiresAt DateTime @default(dbgenerated("(CURRENT_TIMESTAMP + interval '15 minutes')"))
+  succeededAt DateTime?
   order       ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
   actor       User @relation(fields: [actorId], references: [id], onDelete: Restrict)
 

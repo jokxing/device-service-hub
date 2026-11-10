@@ -1,3 +1,4 @@
+import MockPaymentAction, { RefreshPayments } from "./MockPaymentAction";
 import type {
   PaymentRecord,
   ServiceOrderRecord,
@@ -17,6 +18,7 @@ export default function OrderPayments({
   return (
     <section className={styles.card} aria-label="模拟支付记录">
       <h2 className={styles.cardTitle}>模拟支付单</h2>
+      <RefreshPayments />
       <p className={styles.description}>
         仅用于本地支付流程验证，真实支付未接入；创建记录不代表付款成功。
       </p>
@@ -32,7 +34,11 @@ export default function OrderPayments({
               <span>
                 {payment.status === "pending"
                   ? "待支付（模拟）"
-                  : "已关闭（模拟）"}
+                  : payment.status === "succeeded"
+                    ? "已成功（模拟）"
+                    : payment.closeReason === "expired"
+                      ? "已超时关闭（模拟）"
+                      : "已关闭（模拟）"}
               </span>
             </div>
             <dl className={styles.fields}>
@@ -40,6 +46,8 @@ export default function OrderPayments({
               <dd>本地模拟</dd>
               <dt>金额</dt>
               <dd>¥{formatCents(payment.amountCents)}（人民币）</dd>
+              <dt>支付截止时间</dt>
+              <dd>{formatDate(payment.expiresAt)}</dd>
               <dt>创建时间</dt>
               <dd>{formatDate(payment.createdAt)}</dd>
               {payment.closedAt && (
@@ -47,18 +55,39 @@ export default function OrderPayments({
                   <dt>关闭时间</dt>
                   <dd>{formatDate(payment.closedAt)}</dd>
                   <dt>关闭原因</dt>
-                  <dd>关联订单已取消</dd>
+                  <dd>
+                    {payment.closeReason === "expired"
+                      ? "支付已超时"
+                      : "关联订单已取消"}
+                  </dd>
+                </>
+              )}
+              {payment.succeededAt && (
+                <>
+                  <dt>模拟成功时间</dt>
+                  <dd>{formatDate(payment.succeededAt)}</dd>
                 </>
               )}
             </dl>
+            {payment.status === "pending" &&
+              order.status === "awaiting_start" && (
+                <>
+                  <p className={styles.description}>
+                    请在截止时间前完成模拟确认
+                  </p>
+                  <MockPaymentAction payment={payment} />
+                </>
+              )}
           </article>
         ))
       ) : (
         <>
           <p>尚无模拟支付单。</p>
-          <PaymentActions order={order} />
         </>
       )}
+      {!payments.some(
+        (p) => p.status === "pending" || p.status === "succeeded",
+      ) && <PaymentActions order={order} />}
     </section>
   );
 }

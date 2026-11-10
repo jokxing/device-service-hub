@@ -43,11 +43,20 @@ export default function AdminOrderPayments({ orderId }: { orderId: string }) {
                 >
                   {payment.status === "pending"
                     ? "待支付（模拟）"
-                    : "已关闭（模拟）"}
+                    : payment.status === "succeeded"
+                      ? "已成功（模拟）"
+                      : payment.closeReason === "expired"
+                        ? "已超时关闭（模拟）"
+                        : "已关闭（模拟）"}
                 </Tag>
                 <Descriptions
                   column={1}
                   items={[
+                    {
+                      key: "expires",
+                      label: "支付截止时间",
+                      children: formatDateTime(new Date(payment.expiresAt)),
+                    },
                     { key: "channel", label: "渠道", children: "本地模拟" },
                     {
                       key: "amount",
@@ -71,7 +80,10 @@ export default function AdminOrderPayments({ orderId }: { orderId: string }) {
                           {
                             key: "reason",
                             label: "关闭原因",
-                            children: "关联订单已取消",
+                            children:
+                              payment.closeReason === "expired"
+                                ? "支付已超时"
+                                : "关联订单已取消",
                           },
                         ]
                       : []),

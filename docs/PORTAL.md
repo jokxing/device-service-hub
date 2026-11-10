@@ -6,7 +6,7 @@
 
 门户只对报修用户开放。管理员与维修人员继续使用 React 后台；门户已贯通最小文字业务闭环，图片上传、退回和重新打开尚未接入。现有 React 用户入口保留为回归基线。设备仍为虚构样例，接口和数据库会话是真实实现，没有硬件通信。
 
-需报价工单的本人详情支持报价查看、指定版本确认、拒绝原因提交与服务订单快照。维修员发布新版后，门户展示当前版供重新决定，并只读回看历史版及拒绝原因。本人可取消待开工订单，关联工单同时结束，保留原报价、金额快照与取消记录。决定由 NestJS 原子完成，个人数据 no-store，订单不代表付款；门户已只读展示维修中状态、开工人与时间，开工后不能直接取消；已接通本人对报价型维修结果的完成确认，订单与工单同时完成；支付尚未开放，见 [维修报价与订单](QUOTES.md)。拒绝交互与状态回看执行 `verify:quote-rejections` 和 `verify:portal-quote-rejections`；新版展示、旧决定冲突和第 3 版订单验证使用 `verify:quote-revisions-ui`，不增加第二套业务后端。
+需报价工单的本人详情支持报价查看、指定版本确认、拒绝原因提交与服务订单快照。维修员发布新版后，门户展示当前版供重新决定，并只读回看历史版及拒绝原因。本人可取消待开工订单，关联工单同时结束，保留原报价、金额快照与取消记录。决定由 NestJS 原子完成，个人数据 no-store，订单不代表付款；门户已只读展示维修中状态、开工人与时间，开工后不能直接取消；已接通本人对报价型维修结果的完成确认，订单与工单同时完成；真实支付尚未开放，见 [维修报价与订单](QUOTES.md)。拒绝交互与状态回看执行 `verify:quote-rejections` 和 `verify:portal-quote-rejections`；新版展示、旧决定冲突和第 3 版订单验证使用 `verify:quote-revisions-ui`，不增加第二套业务后端。
 
 新增 `features/quotes` 的服务端查询、确认交互与转发，以及 `features/orders` 的订单快照查询/展示和取消表单；`app/api/tickets/[id]/quote/accept/route.ts`、`app/api/orders/[id]/cancel/route.ts` 只组装转发。报修、完成确认、报价决定及订单取消共用 `features/auth/server/commands.ts` 的 `reporterPost`，保留调用方原 UUID 与版本，不跨应用导入后台 Hook 或绕过 NestJS。报价及订单条目展示在门户内部复用 `QuoteItems`。取消窗口由订单 ID/工单版本标识，关闭重读实际状态，同原因重试复用原意图。验证使用 `verify:order-cancellations` 与 `verify:portal-order-cancellations`。
 
@@ -150,3 +150,5 @@ npm run verify:portal-confirmations  # 门户确认、防重、冲突与账号�
 同日文字报修增量：生产构建、门户报修异常与隔离回归、门户原入口回归、既有报修 API/React 报修界面和原演示界面检查通过；已核对桌面和手机截图。见 [手机报修](screenshots/portal-repair-mobile.png)、[本人记录](screenshots/portal-my-tickets.png)、[手机详情](screenshots/portal-ticket-mobile.png)。没有新增依赖、数据库迁移或 NestJS 业务接口。
 
 同日确认增量：Web/API/门户构建、门户确认与报修回归、原确认 API/React 界面及演示界面回归通过。已检查 [手机确认框](screenshots/portal-confirmation-dialog-mobile.png) 和 [完成详情](screenshots/portal-completed-ticket-mobile.png)。这些是本地浏览器与真实 API 验证，不代表移动端真机或生产部署。
+
+模拟支付区域已支持成功确认、刷新查单、截止时间和超时原因展示。过期单在 NestJS 查单时关闭；有效待开工订单无待支付/成功记录时允许重新创建。验证使用 verify:mock-expiry、verify:mock-success，不代表第三方支付接入。

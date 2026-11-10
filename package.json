@@ -124,7 +124,9 @@
     "prebuild:mobile:android": "npm run prebuild:android --workspace apps/mobile",
     "build:mobile:apk": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-mobile-apk.ps1",
     "verify:remote-mobile:public": "node scripts/verify-remote-mobile.mjs --public",
-    "verify:mobile-apk:android": "node scripts/verify-mobile-apk-android.mjs"
+    "verify:mobile-apk:android": "node scripts/verify-mobile-apk-android.mjs",
+    "verify:mock-success": "node scripts/verify-mock-success.mjs",
+    "verify:mock-expiry": "node scripts/verify-mock-expiry.mjs"
   },
   "overrides": {
     "react-native-gesture-handler": "2.32.0",

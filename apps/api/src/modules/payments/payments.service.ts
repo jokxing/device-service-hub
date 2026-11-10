@@ -8,12 +8,16 @@ import type { PublicUser, PaymentRecord } from "@device-service-hub/contracts";
 import { DatabaseService } from "../../database/database.service";
 import { Prisma } from "../../generated/prisma/client";
 import type { CreateMockPaymentDto } from "./dto/create-mock-payment.dto";
+import { PaymentLifecycleService } from "./payment-lifecycle.service";
 import { PAYMENT_SELECT } from "./payments.select";
 import { toPaymentRecord } from "./utils/payment-payload";
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly lifecycle: PaymentLifecycleService,
+  ) {}
 
   async byOrder(actor: PublicUser, orderId: string): Promise<PaymentRecord[]> {
     if (actor.role !== "admin" && actor.role !== "reporter")
@@ -25,19 +29,98 @@ export class PaymentsService {
           ? { ticket: { reporterId: actor.id } }
           : {}),
       },
-      select: { id: true },
+      select: { id: true, ticketId: true },
     });
     if (!order) throw new NotFoundException("订单不存在或无权访问");
-    const rows = await this.database.paymentAttempt.findMany({
-      where: {
-        orderId,
-        order:
-          actor.role === "reporter" ? { ticket: { reporterId: actor.id } } : {},
-      },
-      select: PAYMENT_SELECT,
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    return this.database.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Ticket" WHERE "id"=${order.ticketId} FOR UPDATE`;
+      const allowed = await tx.serviceOrder.findFirst({
+        where: {
+          id: orderId,
+          ...(actor.role === "reporter"
+            ? { ticket: { reporterId: actor.id } }
+            : {}),
+        },
+        select: { id: true },
+      });
+      if (!allowed) throw new NotFoundException("订单不存在或无权访问");
+      await this.lifecycle.closeExpired(tx, orderId);
+      const rows = await tx.paymentAttempt.findMany({
+        where: {
+          orderId,
+          order:
+            actor.role === "reporter"
+              ? { ticket: { reporterId: actor.id } }
+              : {},
+        },
+        select: PAYMENT_SELECT,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      });
+      return rows.map(toPaymentRecord);
     });
-    return rows.map(toPaymentRecord);
+  }
+
+  async confirmMock(
+    actor: PublicUser,
+    orderId: string,
+    paymentId: string,
+  ): Promise<PaymentRecord> {
+    if (actor.role !== "reporter")
+      throw new ForbiddenException("仅报修用户可以确认模拟结果");
+    const source = await this.database.serviceOrder.findFirst({
+      where: { id: orderId, ticket: { reporterId: actor.id } },
+      select: { ticketId: true },
+    });
+    if (!source) throw new NotFoundException("订单不存在或无权访问");
+    const result = await this.database.$transaction(async (tx) => {
+      await tx.$queryRaw(
+        Prisma.sql`SELECT "id" FROM "Ticket" WHERE "id"=${source.ticketId} AND "reporterId"=${actor.id} FOR UPDATE`,
+      );
+      const order = await tx.serviceOrder.findFirst({
+        where: { id: orderId, ticket: { reporterId: actor.id } },
+        select: {
+          status: true,
+          totalCents: true,
+          currency: true,
+          cancellation: { select: { id: true } },
+        },
+      });
+      await this.lifecycle.closeExpired(tx, orderId);
+      const payment = await tx.paymentAttempt.findFirst({
+        where: { id: paymentId, orderId, actorId: actor.id, channel: "mock" },
+        select: PAYMENT_SELECT,
+      });
+      if (!order || !payment)
+        throw new NotFoundException("模拟支付单不存在或无权访问");
+      if (
+        payment.amountCents !== order.totalCents ||
+        payment.currency !== order.currency
+      )
+        throw new ConflictException("支付金额或币种与订单不一致");
+      if (payment.closeReason === "expired") return null;
+      if (payment.status === "succeeded") return toPaymentRecord(payment);
+      if (
+        payment.status !== "pending" ||
+        order.status !== "awaiting_start" ||
+        order.cancellation
+      )
+        throw new ConflictException("模拟支付单或订单已变化，请刷新核对");
+      const changed =
+        await tx.$executeRaw`UPDATE "PaymentAttempt" SET "status"='succeeded', "succeededAt"=clock_timestamp() AT TIME ZONE 'UTC' WHERE "id"=${payment.id} AND "status"='pending' AND "expiresAt" > clock_timestamp() AT TIME ZONE 'UTC'`;
+      if (changed !== 1) {
+        await this.lifecycle.closeExpired(tx, orderId);
+        return null;
+      }
+      return toPaymentRecord(
+        await tx.paymentAttempt.findUniqueOrThrow({
+          where: { id: payment.id },
+          select: PAYMENT_SELECT,
+        }),
+      );
+    });
+    if (!result)
+      throw new ConflictException("模拟支付单已超时关闭，请刷新后重新创建");
+    return result;
   }
 
   async createMock(
@@ -72,6 +155,7 @@ export class PaymentsService {
           },
         });
         if (!order) throw new NotFoundException("订单不存在或无权访问");
+        await this.lifecycle.closeExpired(tx, orderId);
         const previous = await tx.paymentAttempt.findUnique({
           where: {
             actorId_requestId: {
@@ -103,7 +187,7 @@ export class PaymentsService {
         )
           throw new ConflictException("订单金额不满足支付条件，请核对订单");
         const active = await tx.paymentAttempt.findFirst({
-          where: { orderId, status: "pending" },
+          where: { orderId, status: { in: ["pending", "succeeded"] } },
           select: { id: true },
         });
         if (active)

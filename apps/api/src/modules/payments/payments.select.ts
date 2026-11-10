@@ -10,4 +10,6 @@ export const PAYMENT_SELECT = {
   createdAt: true,
   closedAt: true,
   closeReason: true,
+  succeededAt: true,
+  expiresAt: true,
 } as const satisfies Prisma.PaymentAttemptSelect;

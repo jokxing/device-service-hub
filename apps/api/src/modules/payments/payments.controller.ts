@@ -16,6 +16,14 @@ import { CreateMockPaymentDto } from "./dto/create-mock-payment.dto";
 @UseGuards(SessionGuard)
 export class PaymentsController {
   constructor(private readonly payments: PaymentsService) {}
+  @Post(":paymentId/mock-success")
+  confirmMock(
+    @CurrentUser() actor: PublicUser,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Param("paymentId", new ParseUUIDPipe({ version: "4" })) paymentId: string,
+  ): Promise<PaymentRecord> {
+    return this.payments.confirmMock(actor, id, paymentId);
+  }
   @Get()
   async list(
     @CurrentUser() actor: PublicUser,

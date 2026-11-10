@@ -108,10 +108,12 @@ export interface PaymentRecord {
   channel: "mock";
   currency: "CNY";
   amountCents: number;
-  status: "pending" | "closed";
+  status: "pending" | "closed" | "succeeded";
+  expiresAt: string;
+  succeededAt: string | null;
   createdAt: string;
   closedAt: string | null;
-  closeReason: "order_cancelled" | null;
+  closeReason: "order_cancelled" | "expired" | null;
 }
 export interface ServiceOrderSummary extends Pick<
   ServiceOrderRecord,

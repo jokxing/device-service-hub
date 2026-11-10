@@ -14,3 +14,15 @@ export function createMockPayment(
     signal,
   );
 }
+
+export function confirmMockPayment(
+  orderId: string,
+  paymentId: string,
+  signal: AbortSignal,
+) {
+  return clientPost<PaymentRecord>(
+    `/api/orders/${encodeURIComponent(orderId)}/payments/${encodeURIComponent(paymentId)}/mock-success`,
+    {},
+    signal,
+  );
+}
