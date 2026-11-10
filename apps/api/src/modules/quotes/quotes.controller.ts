@@ -12,6 +12,7 @@ import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { SessionGuard } from "../auth/guards/session.guard";
 import { QuotesService } from "./quotes.service";
 import { SubmitQuoteDto } from "./dto/submit-quote.dto";
+import { ReviseQuoteDto } from "./dto/revise-quote.dto";
 import { RejectQuoteDto } from "./dto/reject-quote.dto";
 import { QuoteRejectionsService } from "./quote-rejections.service";
 
@@ -38,6 +39,23 @@ export class QuotesController {
     @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
   ): Promise<{ quote: QuoteRecord | null }> {
     return { quote: await this.quotes.detail(actor, id) };
+  }
+
+  @Get("history")
+  async history(
+    @CurrentUser() actor: PublicUser,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+  ): Promise<{ quotes: QuoteRecord[] }> {
+    return { quotes: await this.quotes.history(actor, id) };
+  }
+
+  @Post("revisions")
+  revise(
+    @CurrentUser() actor: PublicUser,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Body() body: ReviseQuoteDto,
+  ): Promise<QuoteRecord> {
+    return this.quotes.revise(actor, id, body);
   }
 
   @Post()

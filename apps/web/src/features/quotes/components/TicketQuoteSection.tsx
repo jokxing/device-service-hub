@@ -5,9 +5,10 @@ import { useSession } from "../../auth/sessionContext";
 import { useApiResource } from "../../../shared/hooks/useApiResource";
 import ContentCard from "../../../shared/components/ContentCard";
 import { quotesApi } from "../api";
-import { canSubmitQuote } from "../quoteRules";
+import { canSubmitQuote, canReviseQuote } from "../quoteRules";
 import QuoteSummary from "./QuoteSummary";
 import SubmitQuoteModal from "./SubmitQuoteModal";
+import QuoteHistory from "./QuoteHistory";
 import styles from "../quotes.module.css";
 
 export default function TicketQuoteSection({
@@ -21,11 +22,12 @@ export default function TicketQuoteSection({
 }) {
   const { clearSession } = useSession();
   const load = useCallback(
-    (signal: AbortSignal) => quotesApi.detail(ticketId, signal),
+    (signal: AbortSignal) => quotesApi.history(ticketId, signal),
     [ticketId, task?.version],
   );
   const { data, error, loading, refresh } = useApiResource(load, clearSession);
   const [editing, setEditing] = useState(false);
+  const quote = data?.[0];
   function closeAndRefresh() {
     setEditing(false);
     refresh();
@@ -36,7 +38,7 @@ export default function TicketQuoteSection({
       <ContentCard
         title="维修报价"
         extra={
-          <Button loading={loading} onClick={refresh}>
+          <Button loading={loading} onClick={closeAndRefresh}>
             刷新报价
           </Button>
         }
@@ -46,8 +48,16 @@ export default function TicketQuoteSection({
             <Alert type="error" showIcon title={error} />
           ) : loading ? (
             <Spin />
-          ) : data ? (
-            <QuoteSummary quote={data} />
+          ) : quote ? (
+            <>
+              <QuoteSummary quote={quote} />
+              {task && canReviseQuote(task, quote) && (
+                <Button type="primary" onClick={() => setEditing(true)}>
+                  重新报价
+                </Button>
+              )}
+              <QuoteHistory quotes={data?.slice(1) ?? []} />
+            </>
           ) : (
             <>
               <Empty
@@ -65,7 +75,9 @@ export default function TicketQuoteSection({
       </ContentCard>
       {editing && task && (
         <SubmitQuoteModal
+          key={`${task.id}:${task.version}:${quote?.id ?? "first"}`}
           task={task}
+          baseQuote={quote}
           onClose={closeAndRefresh}
           onSubmitted={closeAndRefresh}
         />

@@ -3,6 +3,7 @@ import { Alert, Form } from "antd";
 import type {
   SubmitQuoteInput,
   TaskTicketRecord,
+  QuoteRecord,
 } from "@device-service-hub/contracts";
 import {
   calculateQuote,
@@ -13,17 +14,23 @@ import { useApiMutation } from "../../../shared/hooks/useApiMutation";
 import MutationModal from "../../../shared/components/MutationModal";
 import TicketActionSummary from "../../tickets/components/TicketActionSummary";
 import { quotesApi } from "../api";
-import { createEmptyQuoteItem, toQuoteItems } from "../formValues";
+import {
+  createEmptyQuoteItem,
+  toQuoteItems,
+  toQuoteFormItems,
+} from "../formValues";
 import QuoteItemsFields from "./QuoteItemsFields";
 import type { QuoteFormItem } from "../types";
 import styles from "../quotes.module.css";
 
 export default function SubmitQuoteModal({
   task,
+  baseQuote,
   onClose,
   onSubmitted,
 }: {
   task: TaskTicketRecord;
+  baseQuote?: QuoteRecord;
   onClose: () => void;
   onSubmitted: () => void;
 }) {
@@ -56,12 +63,22 @@ export default function SubmitQuoteModal({
             items: normalized,
           },
         };
-      return quotesApi.submit(task.id, intent.current.input, signal);
+      return baseQuote
+        ? quotesApi.revise(
+            task.id,
+            {
+              ...intent.current.input,
+              baseQuoteId: baseQuote.id,
+              baseQuoteRevision: baseQuote.revision,
+            },
+            signal,
+          )
+        : quotesApi.submit(task.id, intent.current.input, signal);
     }, onSubmitted);
   }
   return (
     <MutationModal
-      title="提交维修报价"
+      title={baseQuote ? "重新报价" : "提交维修报价"}
       scrollBody
       okText="提交报价"
       submitting={submitting}
@@ -70,13 +87,22 @@ export default function SubmitQuoteModal({
       onSubmit={() => form.submit()}
     >
       <TicketActionSummary ticket={task} />
+      {baseQuote && (
+        <p>
+          基于第 {baseQuote.revision} 版修订 · 
+          将生成第 {baseQuote.revision + 1} 版 · 拒绝原因：
+          {baseQuote.rejection?.reason}
+        </p>
+      )}
       <Form
         form={form}
         layout="vertical"
         disabled={submitting}
         onFinish={submit}
         initialValues={{
-          items: [createEmptyQuoteItem()],
+          items: baseQuote
+            ? toQuoteFormItems(baseQuote.items)
+            : [createEmptyQuoteItem()],
         }}
       >
         <QuoteItemsFields disabled={submitting} />
@@ -86,7 +112,11 @@ export default function SubmitQuoteModal({
         type="info"
         showIcon
         title="以服务端计算金额为准"
-        description="提交后保留首版报价。本步尚未开放修改、用户确认及订单；需报价任务暂不能提交维修结果。"
+        description={
+          baseQuote
+            ? "提交会生成新版本，原报价与拒绝记录保留。用户需重新确认新版；报价确认不代表已付款。"
+            : "提交后由用户确认或拒绝。待确认及已确认报价不能直接修改；需报价任务暂不能提交维修结果。"
+        }
       />
     </MutationModal>
   );

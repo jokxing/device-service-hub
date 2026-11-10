@@ -44,6 +44,8 @@
     "verify:quotes-ui": "node scripts/verify-quotes-ui.mjs",
     "verify:orders": "node scripts/verify-orders.mjs",
     "verify:quote-rejections": "node scripts/verify-quote-rejections.mjs",
+    "verify:quote-revisions": "node scripts/verify-quote-revisions.mjs",
+    "verify:quote-revisions-ui": "node scripts/verify-quote-revisions-ui.mjs",
     "verify:portal-quote-rejections": "node scripts/verify-portal-quote-rejections.mjs",
     "verify:portal-quotes": "node scripts/verify-portal-quotes.mjs",
     "verify:ui": "node scripts/verify-ui.mjs",

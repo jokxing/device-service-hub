@@ -47,6 +47,10 @@ export interface QuoteItemInput {
 export interface SubmitQuoteInput extends TicketCommandInput {
   items: QuoteItemInput[];
 }
+export interface ReviseQuoteInput extends SubmitQuoteInput {
+  baseQuoteId: string;
+  baseQuoteRevision: number;
+}
 export interface QuoteRecord {
   id: string;
   ticketId: string;

@@ -100,7 +100,7 @@ NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常�
 
 当前 Service 直接使用 Prisma，规模足够清晰，不要求每个模块机械增加 Repository。
 
-`modules/quotes` 承担报价读取与首版提交，独立组织 Controller、Service、DTO 和查询投影。工单条件更新、报价及条目在同一事务写入；金额由服务端计算，已发布内容不可覆盖。TaskResultsService 限制报价型任务提交结果，Web/原生适配共用约束。规则及增量迁移见 [QUOTES.md](QUOTES.md)。
+`modules/quotes` 承担报价读取、首版提交和被拒绝后的修订，独立组织 Controller、Service、DTO 和查询投影。首次与修订复用发布用例；工单条件更新、报价及条目在同一事务写入，新版追加而不覆盖。来源版次、当前分派及工单版本决定是否可修订；发布重放返回原 UUID 的具体版次。历史读取复用现有数据范围，金额由服务端计算。TaskResultsService 限制报价型任务提交结果，Web/原生适配共用约束。规则及增量迁移见 [QUOTES.md](QUOTES.md)。
 
 `modules/orders` 承担本人报价确认和订单快照读取，DTO、查询投影、序列化分开组织；一次事务更新报价状态、工单版本并创建唯一订单及条目。报价与订单读取复用工单模块内的 `ticketReadScope`，不把管理员范围用于本人入口。当前不开放支付、取消或开工，已有结果提交限制保持有效。
 

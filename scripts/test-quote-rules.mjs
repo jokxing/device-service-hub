@@ -5,7 +5,10 @@ import {
   formatCents,
   parsePriceCents,
 } from "@device-service-hub/contracts/quote-rules";
-import { canSubmitQuote } from "../apps/web/src/features/quotes/quoteRules.ts";
+import {
+  canSubmitQuote,
+  canReviseQuote,
+} from "../apps/web/src/features/quotes/quoteRules.ts";
 import { canSubmitTaskResult } from "../apps/web/src/features/tickets/taskRules.ts";
 import { canAcceptQuote } from "../apps/portal/src/features/quotes/rules.ts";
 
@@ -14,6 +17,34 @@ const item = (quantity, unitPriceCents) => ({
   quantity,
   unitPriceCents,
   note: "",
+});
+
+test("仅处理中需报价任务的已拒绝且有审计版本可重新报价", () => {
+  const task = { status: "processing", serviceMode: "quoted" };
+  assert.equal(
+    canReviseQuote(task, { status: "rejected", rejection: {} }),
+    true,
+  );
+  for (const status of ["pending", "accepted"])
+    assert.equal(canReviseQuote(task, { status, rejection: null }), false);
+  assert.equal(
+    canReviseQuote(task, { status: "rejected", rejection: null }),
+    false,
+  );
+  assert.equal(
+    canReviseQuote(
+      { ...task, status: "assigned" },
+      { status: "rejected", rejection: {} },
+    ),
+    false,
+  );
+  assert.equal(
+    canReviseQuote(
+      { ...task, serviceMode: "direct" },
+      { status: "rejected", rejection: {} },
+    ),
+    false,
+  );
 });
 
 test("门户仅对待确认报价且尚无订单的本人处理中工单显示确认入口", () => {

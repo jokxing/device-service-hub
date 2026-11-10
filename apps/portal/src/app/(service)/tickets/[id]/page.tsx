@@ -2,7 +2,8 @@ import PageHeader from "../../../../shared/components/PageHeader";
 import { getMyTicket } from "../../../../features/tickets/server/queries";
 import TicketDetails from "../../../../features/tickets/components/TicketDetails";
 import TicketActions from "../../../../features/tickets/components/TicketActions";
-import { getMyQuote } from "../../../../features/quotes/server/queries";
+import { getMyQuotes } from "../../../../features/quotes/server/queries";
+import QuoteHistory from "../../../../features/quotes/components/QuoteHistory";
 import { getMyOrder } from "../../../../features/orders/server/queries";
 import QuoteDetails from "../../../../features/quotes/components/QuoteDetails";
 import QuoteActions from "../../../../features/quotes/components/QuoteActions";
@@ -16,10 +17,11 @@ export default async function MyTicketPage({
 }) {
   const { id } = await params;
   const ticket = await getMyTicket(id);
-  const [quote, order] =
+  const [quotes, order] =
     ticket.serviceMode === "quoted"
-      ? await Promise.all([getMyQuote(id), getMyOrder(id)])
-      : [null, null];
+      ? await Promise.all([getMyQuotes(id), getMyOrder(id)])
+      : [[], null];
+  const quote = quotes[0];
   return (
     <>
       <PageHeader
@@ -40,6 +42,7 @@ export default async function MyTicketPage({
         </>
       )}
       {order && <OrderSnapshot order={order} />}
+      <QuoteHistory quotes={quotes.slice(1)} />
       <TicketActions
         key={`${ticket.id}:${ticket.version}`}
         ticket={{

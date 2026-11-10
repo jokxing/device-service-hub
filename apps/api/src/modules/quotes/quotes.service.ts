@@ -11,6 +11,7 @@ import { calculateQuote } from "@device-service-hub/contracts/quote-rules";
 import { DatabaseService } from "../../database/database.service";
 import { Prisma } from "../../generated/prisma/client";
 import type { SubmitQuoteDto } from "./dto/submit-quote.dto";
+import type { ReviseQuoteDto } from "./dto/revise-quote.dto";
 import { QUOTE_SELECT } from "./quotes.select";
 import { ticketReadScope } from "../tickets/utils/ticket-read-scope";
 import { toQuoteRecord } from "./utils/quote-payload";
@@ -47,6 +48,16 @@ export class QuotesService {
     return quote ? toQuoteRecord(quote) : null;
   }
 
+  async history(actor: PublicUser, ticketId: string): Promise<QuoteRecord[]> {
+    await this.accessibleTicket(actor, ticketId);
+    const quotes = await this.database.ticketQuote.findMany({
+      where: { ticketId, ticket: ticketReadScope(actor) },
+      orderBy: { revision: "desc" },
+      select: QUOTE_SELECT,
+    });
+    return quotes.map(toQuoteRecord);
+  }
+
   private async replay(
     actor: PublicUser,
     ticketId: string,
@@ -57,7 +68,12 @@ export class QuotesService {
       where: {
         actorId_requestId: { actorId: actor.id, requestId: input.requestId },
       },
-      select: { ticketId: true, expectedVersion: true, requestHash: true },
+      select: {
+        id: true,
+        ticketId: true,
+        expectedVersion: true,
+        requestHash: true,
+      },
     });
     if (!previous) return null;
     if (
@@ -66,7 +82,12 @@ export class QuotesService {
       previous.requestHash !== hash
     )
       throw new ConflictException("提交编号已用于不同报价，请刷新后核对");
-    return this.detail(actor, ticketId);
+    const quote = await this.database.ticketQuote.findFirst({
+      where: { id: previous.id, ticketId, ticket: ticketReadScope(actor) },
+      select: QUOTE_SELECT,
+    });
+    if (!quote) throw new NotFoundException("工单不存在或无权访问");
+    return toQuoteRecord(quote);
   }
 
   async submit(
@@ -74,18 +95,43 @@ export class QuotesService {
     ticketId: string,
     input: SubmitQuoteDto,
   ): Promise<QuoteRecord> {
+    return this.publish(actor, ticketId, input, null);
+  }
+
+  async revise(
+    actor: PublicUser,
+    ticketId: string,
+    input: ReviseQuoteDto,
+  ): Promise<QuoteRecord> {
+    return this.publish(actor, ticketId, input, input);
+  }
+
+  private async publish(
+    actor: PublicUser,
+    ticketId: string,
+    input: SubmitQuoteDto,
+    base: Pick<ReviseQuoteDto, "baseQuoteId" | "baseQuoteRevision"> | null,
+  ): Promise<QuoteRecord> {
     if (actor.role !== "technician")
       throw new ForbiddenException("仅当前维修人员可以提交报价");
     await this.accessibleTicket(actor, ticketId);
+    const normalized = input.items.map((item) => [
+      item.name,
+      item.quantity,
+      item.unitPriceCents,
+      item.note,
+    ]);
+    // Preserve first-version intent hashes; revisions also bind their exact source.
     const hash = createHash("sha256")
       .update(
         JSON.stringify(
-          input.items.map((item) => [
-            item.name,
-            item.quantity,
-            item.unitPriceCents,
-            item.note,
-          ]),
+          base
+            ? {
+                baseQuoteId: base.baseQuoteId,
+                baseQuoteRevision: base.baseQuoteRevision,
+                items: normalized,
+              }
+            : normalized,
         ),
       )
       .digest("hex");
@@ -110,7 +156,18 @@ export class QuotesService {
             serviceMode: "quoted",
             version: input.expectedVersion,
             result: { is: null },
-            quotes: { none: {} },
+            order: { is: null },
+            quotes: base
+              ? {
+                  some: {
+                    id: base.baseQuoteId,
+                    revision: base.baseQuoteRevision,
+                    status: "rejected",
+                    rejection: { isNot: null },
+                  },
+                  none: { revision: { gt: base.baseQuoteRevision } },
+                }
+              : { none: {} },
           },
           data: { version: { increment: 1 } },
         });
@@ -122,7 +179,7 @@ export class QuotesService {
           data: {
             ticketId,
             actorId: actor.id,
-            revision: 1,
+            revision: base ? base.baseQuoteRevision + 1 : 1,
             totalCents: amount.totalCents,
             requestId: input.requestId,
             expectedVersion: input.expectedVersion,
