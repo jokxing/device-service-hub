@@ -1,0 +1,11 @@
+.filter {
+  margin-bottom: 24px;
+}
+.filter > :global(.ant-select) {
+  min-width: 180px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

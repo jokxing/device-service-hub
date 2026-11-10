@@ -7,6 +7,8 @@ import {
 import type {
   PublicUser,
   ServiceOrderRecord,
+  ServiceOrderPage,
+  ServiceOrderDetail,
 } from "@device-service-hub/contracts";
 import { calculateQuote } from "@device-service-hub/contracts/quote-rules";
 import { DatabaseService } from "../../database/database.service";
@@ -14,12 +16,59 @@ import { Prisma } from "../../generated/prisma/client";
 import { ticketReadScope } from "../tickets/utils/ticket-read-scope";
 import { QUOTE_SELECT } from "../quotes/quotes.select";
 import type { AcceptQuoteDto } from "./dto/accept-quote.dto";
-import { ORDER_SELECT } from "./orders.select";
-import { toOrderRecord } from "./utils/order-payload";
+import {
+  ORDER_SELECT,
+  ORDER_LIST_SELECT,
+  ORDER_DETAIL_SELECT,
+} from "./orders.select";
+import {
+  toOrderRecord,
+  toOrderSummary,
+  toOrderDetail,
+} from "./utils/order-payload";
+import type { OrdersQueryDto } from "./dto/orders-query.dto";
 
 @Injectable()
 export class OrdersService {
   constructor(private readonly database: DatabaseService) {}
+
+  async list(
+    actor: PublicUser,
+    query: OrdersQueryDto,
+  ): Promise<ServiceOrderPage> {
+    const where: Prisma.ServiceOrderWhereInput = {
+      ticket: ticketReadScope(actor),
+      ...(query.status ? { status: query.status } : {}),
+    };
+    const [rows, total] = await this.database.$transaction(
+      [
+        this.database.serviceOrder.findMany({
+          where,
+          select: ORDER_LIST_SELECT,
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          skip: (query.page - 1) * query.pageSize,
+          take: query.pageSize,
+        }),
+        this.database.serviceOrder.count({ where }),
+      ],
+      { isolationLevel: "RepeatableRead" },
+    );
+    return {
+      items: rows.map(toOrderSummary),
+      page: query.page,
+      pageSize: query.pageSize,
+      total,
+    };
+  }
+
+  async detail(actor: PublicUser, id: string): Promise<ServiceOrderDetail> {
+    const row = await this.database.serviceOrder.findFirst({
+      where: { id, ticket: ticketReadScope(actor) },
+      select: ORDER_DETAIL_SELECT,
+    });
+    if (!row) throw new NotFoundException("订单不存在或无权访问");
+    return toOrderDetail(row);
+  }
 
   private async accessibleTicket(actor: PublicUser, ticketId: string) {
     const ticket = await this.database.ticket.findFirst({

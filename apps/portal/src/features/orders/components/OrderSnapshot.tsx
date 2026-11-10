@@ -35,6 +35,14 @@ export default function OrderSnapshot({
         <dd>{formatDate(order.createdAt)}</dd>
         <dt>支付状态</dt>
         <dd>未接入支付</dd>
+        {order.start && (
+          <>
+            <dt>开工人</dt>
+            <dd>{order.start.actor.name}</dd>
+            <dt>开工时间</dt>
+            <dd>{formatDate(order.start.createdAt)}</dd>
+          </>
+        )}
       </dl>
       <QuoteItems items={order.items} />
       <p className={styles.total}>
@@ -43,7 +51,13 @@ export default function OrderSnapshot({
       <p className={styles.meta}>
         {order.status === "cancelled"
           ? "订单已取消，关联工单已结束。以上保留原确认时的订单快照。"
-          : "以上为确认时的订单快照。报价确认不代表付款，维修尚未开始。"}
+          : order.status === "completed"
+            ? "本次维修已由报修用户确认完成。以上保留原订单金额快照，维修完成不代表已付款。"
+            : order.status === "awaiting_confirmation"
+              ? "维修结果已提交，请核对上方处理记录并确认完成。订单金额快照保持不变。"
+              : order.status === "in_progress"
+                ? "订单已开工，以上保留原确认时的金额快照。开工不代表已付款。"
+                : "以上为确认时的订单快照。报价确认不代表付款，维修尚未开始。"}
       </p>
       {order.cancellation && (
         <div aria-label="订单取消记录">

@@ -8,6 +8,7 @@ import styles from "./PortalPage.module.css";
 const items = [
   { href: "/devices", label: "我的设备" },
   { href: "/tickets", label: "我的报修" },
+  { href: "/orders", label: "我的订单" },
 ];
 
 export default function PortalNavigation() {

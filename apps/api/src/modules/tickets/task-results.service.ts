@@ -9,12 +9,14 @@ import { TaskTicketsService } from "./task-tickets.service";
 import type { SubmitTicketResultDto } from "./dto/submit-ticket-result.dto";
 import { TASK_TICKET_SELECT } from "./tickets.select";
 import { toTaskTicketRecord } from "./utils/ticket-payload";
+import { OrderFulfillmentService } from "../orders/order-fulfillment.service";
 
 @Injectable()
 export class TaskResultsService {
   constructor(
     private readonly database: DatabaseService,
     private readonly tasks: TaskTicketsService,
+    private readonly fulfillment: OrderFulfillmentService,
   ) {}
 
   private async replay(
@@ -49,10 +51,6 @@ export class TaskResultsService {
     const current = await this.tasks.detail(actor, id);
     const previous = await this.replay(actor, id, input);
     if (previous) return previous;
-    if (current.serviceMode === "quoted")
-      throw new ConflictException(
-        "需报价任务须完成报价确认及订单开工，当前不能提交处理结果",
-      );
     if (
       current.status !== "processing" ||
       current.version !== input.expectedVersion
@@ -65,13 +63,27 @@ export class TaskResultsService {
             id,
             assigneeId: actor.id,
             status: "processing",
-            serviceMode: "direct",
+            serviceMode: current.serviceMode,
             version: input.expectedVersion,
+            result: { is: null },
+            confirmation: { is: null },
+            OR: [
+              { serviceMode: "direct" },
+              {
+                serviceMode: "quoted",
+                acceptance: { isNot: null },
+              },
+            ],
           },
           data: { status: "confirming", version: { increment: 1 } },
         });
         if (updated.count !== 1)
-          throw new ConflictException("任务已变化或结果已提交，请刷新后查看");
+          throw new ConflictException(
+            "任务已变化、结果已提交或订单尚未开工，请刷新后查看",
+          );
+        if (current.serviceMode === "quoted") {
+          await this.fulfillment.recordResult(tx, id);
+        }
         await tx.ticketResult.create({
           data: {
             ticketId: id,

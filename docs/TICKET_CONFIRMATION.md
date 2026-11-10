@@ -38,6 +38,8 @@ TicketConfirmation 保存工单、确认人、时间、提交编号和原版本�
 
 确认不改写维修说明、原提交人或提交时间。已完成工单的新分派、接单、结果提交和重复确认意图均被拒绝；原成功意图的重放只返回原结果，不再更新状态或时间。
 
+报价型工单完成确认还要求关联订单为 awaiting_confirmation、具有开工记录且未取消。TicketConfirmationsService 在同一事务内调用订单模块的 OrderFulfillmentService，同步更新订单 completed；复用 TicketConfirmation，不新建重复审计。未满足订单条件时整体回滚工单版本与状态。规则见 [QUOTES.md](QUOTES.md)。
+
 ## 前端与工程边界
 
 - ConfirmTicketModal 展示处理结果摘要及验收含义，取消不改变状态；提交期间禁用关闭与重复操作，离页取消请求，超时后允许重试。

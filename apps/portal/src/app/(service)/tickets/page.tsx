@@ -4,7 +4,7 @@ import { getMyTickets } from "../../../features/tickets/server/queries";
 import TicketCard from "../../../features/tickets/components/TicketCard";
 import { readPage } from "../../../shared/utils/pagination";
 import styles from "../../../shared/components/PortalPage.module.css";
-import ticketStyles from "../../../features/tickets/tickets.module.css";
+import RecordPagination from "../../../shared/components/RecordPagination";
 
 export const metadata = { title: "我的报修" };
 export default async function MyTicketsPage({
@@ -40,24 +40,14 @@ export default async function MyTicketsPage({
           发起报修。
         </section>
       )}
-      <nav aria-label="报修分页" className={ticketStyles.pager}>
-        {page > 1 && (
-          <Link
-            href={page === 2 ? "/tickets" : `/tickets?page=${page - 1}`}
-            prefetch={false}
-          >
-            上一页
-          </Link>
-        )}
-        <span>
-          第 {page} / {pages} 页
-        </span>
-        {page < pages && (
-          <Link href={`/tickets?page=${page + 1}`} prefetch={false}>
-            下一页
-          </Link>
-        )}
-      </nav>
+      <RecordPagination
+        page={page}
+        pages={pages}
+        label="报修分页"
+        hrefForPage={(next) =>
+          next > 1 ? `/tickets?page=${next}` : "/tickets"
+        }
+      />
     </>
   );
 }

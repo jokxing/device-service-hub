@@ -4,6 +4,7 @@ export const ROUTES = {
   serviceTickets: "/service/tickets",
   serviceAdminTickets: "/service/admin/tickets",
   serviceTasks: "/service/tasks",
+  serviceOrders: "/service/orders",
   tickets: "/tickets",
   devices: "/devices",
   records: "/records",

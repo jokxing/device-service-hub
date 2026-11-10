@@ -14,9 +14,10 @@ import { NativeTaskTicketsController } from "./native-task-tickets.controller";
 import { NativeTicketPhotosController } from "./attachments/native-ticket-photos.controller";
 import { TicketPhotosService } from "./attachments/ticket-photos.service";
 import { PhotoStore } from "./attachments/photo-store.service";
+import { OrdersModule } from "../orders/orders.module";
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [DatabaseModule, AuthModule, OrdersModule],
   controllers: [
     NativeTicketPhotosController,
     NativeTicketsController,

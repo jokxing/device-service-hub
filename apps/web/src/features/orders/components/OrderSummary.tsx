@@ -1,8 +1,8 @@
-import { Descriptions, Tag } from "antd";
+import { Descriptions } from "antd";
 import type { ServiceOrderRecord } from "@device-service-hub/contracts";
 import { formatCents } from "@device-service-hub/contracts/quote-rules";
 import { formatDateTime } from "../../../shared/utils/date";
-import { ORDER_STATUS_META } from "../constants";
+import OrderStatusTag from "./OrderStatusTag";
 import styles from "../orders.module.css";
 
 export default function OrderSummary({ order }: { order: ServiceOrderRecord }) {
@@ -10,9 +10,7 @@ export default function OrderSummary({ order }: { order: ServiceOrderRecord }) {
     <div aria-label="服务订单">
       <div className={styles.row}>
         <strong>{order.code}</strong>
-        <Tag color={ORDER_STATUS_META[order.status].color}>
-          {ORDER_STATUS_META[order.status].label}
-        </Tag>
+        <OrderStatusTag status={order.status} />
       </div>
       <Descriptions
         column={1}
@@ -35,6 +33,14 @@ export default function OrderSummary({ order }: { order: ServiceOrderRecord }) {
           { key: "payment", label: "支付状态", children: "未接入支付" },
         ]}
       />
+      {order.start && (
+        <div aria-label="订单开工记录">
+          <p className="muted">开工人：{order.start.actor.name}</p>
+          <p className="muted">
+            开工时间：{formatDateTime(new Date(order.start.createdAt))}
+          </p>
+        </div>
+      )}
       {order.cancellation && (
         <div aria-label="订单取消记录">
           <p className="muted">

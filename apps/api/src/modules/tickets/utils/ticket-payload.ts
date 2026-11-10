@@ -27,6 +27,10 @@ export function ticketPayloadHash(input: CreateTicketInput): string {
     .digest("hex");
 }
 
+export function toTicketCode(number: number): string {
+  return `WO-${String(number).padStart(6, "0")}`;
+}
+
 export function toTicketRecord(row: TicketRow): TicketRecord {
   const {
     number,
@@ -39,7 +43,7 @@ export function toTicketRecord(row: TicketRow): TicketRecord {
   } = row;
   return {
     ...record,
-    code: `WO-${String(number).padStart(6, "0")}`,
+    code: toTicketCode(number),
     createdAt: createdAt.toISOString(),
     assignedAt: assignedAt?.toISOString() ?? null,
     acceptance: acceptance

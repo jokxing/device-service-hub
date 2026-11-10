@@ -13,6 +13,12 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.link {
+  color: #2563eb;
+}
+.link:hover {
+  text-decoration: underline;
+}
 @media (max-width: 575px) {
   .content {
     padding: 16px;

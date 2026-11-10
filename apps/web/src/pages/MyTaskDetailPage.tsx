@@ -83,7 +83,12 @@ function MyTaskDetailContent() {
             task={data}
             onSubmitted={refresh}
           />
-          <TicketOrderSection ticketId={data.id} version={data.version} />
+          <TicketOrderSection
+            ticketId={data.id}
+            version={data.version}
+            task={data}
+            onChanged={refresh}
+          />
         </div>
       )}
       {taskToAccept && (

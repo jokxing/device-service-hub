@@ -14,6 +14,8 @@ import MyTicketDetailPage from "./pages/MyTicketDetailPage";
 import AdminTicketsPage from "./pages/AdminTicketsPage";
 import MyTasksPage from "./pages/MyTasksPage";
 import MyTaskDetailPage from "./pages/MyTaskDetailPage";
+import ServiceOrdersPage from "./pages/ServiceOrdersPage";
+import ServiceOrderDetailPage from "./pages/ServiceOrderDetailPage";
 
 export default function App({ basename }: { basename?: string }) {
   return (
@@ -23,6 +25,14 @@ export default function App({ basename }: { basename?: string }) {
           <Route element={<SessionBoundary />}>
             <Route path={ROUTES.login} element={<LoginPage />} />
             <Route element={<ServiceLayout />}>
+              <Route
+                path={ROUTES.serviceOrders}
+                element={<ServiceOrdersPage />}
+              />
+              <Route
+                path={ROUTES.serviceOrders + "/:id"}
+                element={<ServiceOrderDetailPage />}
+              />
               <Route path={ROUTES.serviceTasks} element={<MyTasksPage />} />
               <Route
                 path={ROUTES.serviceTasks + "/:id"}

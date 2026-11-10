@@ -74,6 +74,14 @@ export default function ServiceLayout() {
             我的任务
           </NavLink>
         )}
+        {user.role !== "reporter" && (
+          <NavLink
+            to={ROUTES.serviceOrders}
+            className={({ isActive }) => (isActive ? styles.active : undefined)}
+          >
+            服务订单
+          </NavLink>
+        )}
       </nav>
       <main className={styles.content}>
         <Outlet key={user.id} />

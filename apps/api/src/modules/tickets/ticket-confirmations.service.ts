@@ -9,12 +9,14 @@ import { TicketsService } from "./tickets.service";
 import type { ConfirmTicketDto } from "./dto/confirm-ticket.dto";
 import { REPORTER_TICKET_SELECT } from "./tickets.select";
 import { toReporterTicketRecord } from "./utils/ticket-payload";
+import { OrderFulfillmentService } from "../orders/order-fulfillment.service";
 
 @Injectable()
 export class TicketConfirmationsService {
   constructor(
     private readonly database: DatabaseService,
     private readonly tickets: TicketsService,
+    private readonly fulfillment: OrderFulfillmentService,
   ) {}
 
   private async replay(
@@ -62,6 +64,7 @@ export class TicketConfirmationsService {
             id,
             reporterId: actor.id,
             status: "confirming",
+            serviceMode: current.serviceMode,
             version: input.expectedVersion,
             result: { isNot: null },
             confirmation: { is: null },
@@ -72,6 +75,9 @@ export class TicketConfirmationsService {
           throw new ConflictException(
             "工单已变化或不满足确认条件，请刷新后查看",
           );
+        if (current.serviceMode === "quoted") {
+          await this.fulfillment.confirmCompletion(tx, id);
+        }
         await tx.ticketConfirmation.create({
           data: {
             ticketId: id,

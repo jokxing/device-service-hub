@@ -76,11 +76,17 @@ export interface ServiceOrderRecord {
   ticketId: string;
   quoteId: string;
   quoteRevision: number;
-  status: "awaiting_start" | "cancelled";
+  status:
+    | "awaiting_start"
+    | "cancelled"
+    | "in_progress"
+    | "awaiting_confirmation"
+    | "completed";
   currency: "CNY";
   totalCents: number;
   createdAt: string;
   confirmedBy: TicketPerson;
+  start: { actor: TicketPerson; createdAt: string } | null;
   cancellation: {
     reason: string;
     actor: TicketPerson;
@@ -90,6 +96,28 @@ export interface ServiceOrderRecord {
 }
 export interface CancelOrderInput extends TicketCommandInput {
   reason: string;
+}
+export type StartOrderInput = TicketCommandInput;
+export interface ServiceOrderSummary extends Pick<
+  ServiceOrderRecord,
+  | "id"
+  | "code"
+  | "ticketId"
+  | "status"
+  | "currency"
+  | "totalCents"
+  | "createdAt"
+> {
+  ticket: Pick<TicketRecord, "code" | "title" | "device">;
+}
+export interface ServiceOrderPage {
+  items: ServiceOrderSummary[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+export interface ServiceOrderDetail extends ServiceOrderRecord {
+  ticket: TicketRecord;
 }
 export type TicketStatus =
   | "pending"

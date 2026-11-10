@@ -69,6 +69,7 @@ export default function SubmitTaskResultModal({
         >
           <Input.TextArea
             aria-label="处理说明"
+            allowClear
             rows={6}
             showCount
             maxLength={TICKET_LIMITS.result}
