@@ -17,6 +17,10 @@
     "./device-tags": {
       "types": "./src/device-tags.ts",
       "default": "./src/device-tags.ts"
+    },
+    "./payment-rules": {
+      "types": "./src/payment-rules.ts",
+      "default": "./src/payment-rules.ts"
     }
   }
 }

@@ -1,3 +1,4 @@
+import { NativePaymentsController } from "./native-payments.controller";
 import { RefundCompletionsService } from "./refund-completions.service";
 import { RefundRequestsService } from "./refund-requests.service";
 import { Module } from "@nestjs/common";
@@ -8,7 +9,7 @@ import { PaymentsService } from "./payments.service";
 import { PaymentLifecycleService } from "./payment-lifecycle.service";
 @Module({
   imports: [DatabaseModule, AuthModule],
-  controllers: [PaymentsController],
+  controllers: [PaymentsController, NativePaymentsController],
   providers: [
     PaymentsService,
     PaymentLifecycleService,

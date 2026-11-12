@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
 import { StyleSheet, Text, TextInput } from "react-native";
 import { randomUUID } from "expo-crypto";
-import type { TaskTicketRecord } from "@device-service-hub/contracts";
+import type {
+  ServiceOrderRecord,
+  TaskTicketRecord,
+} from "@device-service-hub/contracts";
 import ActionButton from "../../shared/components/ActionButton";
 import MutationModal from "../../shared/components/MutationModal";
 import { useApiMutation } from "../../shared/hooks/useApiMutation";
@@ -10,6 +13,7 @@ import { colors, fontSizes, spacing, radii } from "../../shared/theme";
 import { useNativeSession } from "../auth/sessionContext";
 import { submitTaskResult } from "./api";
 import { TASK_RESULT_LIMIT } from "./constants";
+import { canSubmitOrderResult } from "@device-service-hub/contracts/order-rules";
 import { canSubmitTaskResult } from "./rules";
 
 function ResultForm({
@@ -85,13 +89,16 @@ function ResultForm({
 }
 export default function SubmitTaskResultAction({
   task,
+  order,
   reload,
 }: {
   task: TaskTicketRecord;
+  order?: ServiceOrderRecord;
   reload: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  if (!canSubmitTaskResult(task)) return null;
+  if (!(order ? canSubmitOrderResult(task, order) : canSubmitTaskResult(task)))
+    return null;
   return (
     <>
       <ActionButton title="提交处理结果" onPress={() => setOpen(true)} />

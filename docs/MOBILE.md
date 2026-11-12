@@ -6,6 +6,8 @@
 
 已接通真实登录、会话恢复、退出、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。已接入设备二维码相机入口及手动编号查询，已接入报修详情拍照/相册补充照片及维修任务只读查看；管理员分派继续使用 Web 后台。设备与工单来自同一 NestJS/PostgreSQL，范围由服务端决定；现有 Web 与门户继续保留。
 
+当前已支持维修员首版报价/修订、本人确认/拒绝、本人订单列表与独立详情；维修员可在任务详情开工和提交结果，由本人确认完成。原生端已支持本地模拟支付创建/确认/查单与超时展示；本人可取消符合条件的待开工订单，原生端支持本人全额模拟退款申请与结果查询，真实支付和原生管理员处理未开放。
+
 ## 技术与目录
 
 - Expo SDK 57、React Native 0.86.3、React 19.2.3、TypeScript 和 Expo Router；遵循 SDK 推荐版本组合。当前 Expo Go 设备兼容策略见 [Expo 创建项目说明](https://docs.expo.dev/get-started/create-a-project/) 与 [SDK 版本对应表](https://docs.expo.dev/versions/v57.0.0/)。
@@ -215,3 +217,111 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 ## 后续验收边界
 
 现场照片规则、原生入口及验证边界见 [TICKET_PHOTOS.md](TICKET_PHOTOS.md)。Web 管理员已支持现场照片查看，门户附件后置。微前端已集成 React 工单后台、Vue 设备台账及最小导航通信，见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)。RN 保持独立，独立 APK 已在 MuMu Android 15 通过 HTTPS 文字闭环验收；实体手机安装、摄像头扫码/拍照与 iOS 原生仍待验证。
+
+
+## 维修员首版报价
+
+任务详情的需报价分支已增加 features/quotes：api.ts 集中原生路径与契约，useTaskQuote 通过会话 Provider 的 request 读取，TaskQuoteSection 组合摘要与入口，SubmitQuoteAction 管理原生弹窗和动态条目，quoteForm 负责规范化与纯输入规则。未接单只读；处理中、没有报价和结果时可提交首版。已存在报价只读展示当前版与状态，拒绝后的修订继续在 Web 后台完成。
+
+支持条目名称、整数数量、最多两位小数的元单价和备注，限制及整数分计算复用 contracts/quote-rules；预估合计不随请求提交，服务端重新计算。窗口固定原工单版本，同一规范化条目重试保留 Expo Crypto UUID，关闭/成功后重读任务与报价。会话账号、路由和刷新变化时取消读取并清理旧数据；非登录输入关闭 autofill。
+
+GET/POST /api/mobile/tasks/:id/quote 使用 NativeSessionGuard 与 NativeClient，限定维修角色，复用 QuotesService 和 SubmitQuoteDto，当前分派范围、事务、版本、防重和重放归属校验与 Web 一致。维修员适配不开放报价决定或修订；报修用户的独立确认与订单快照适配见后文，支付未接入，不更改 Web Cookie/Origin 边界，也未扩大异地内测网关白名单。
+
+verify:mobile-quotes 覆盖 Bearer/浏览器边界、角色/当前分派、DTO、金额、版本、同/异意图并发及归属变化后重放；test:mobile-quotes 覆盖原生表单规范化、价格精度和边界。构建导出与原生界面验收必须分别记录；本步没有数据库迁移，不把 Android bundle 当作模拟器或真机验收。
+
+首轮无在线设备时的检查：全仓构建、check:mobile、build:mobile、verify:mobile-quotes、test:mobile-quotes、原报价规则/API、原移动鉴权/任务/结果、API/后台入口/原页面与基础 RN Web 导航回归通过。Expo 依赖校验在离线状态使用本地映射。ADB devices 未发现在线设备，因此未执行新增报价的 Android 界面验收、真机或 APK 验收；RN Web 的首页/须知回归不代表报价原生表单已验证。
+
+### 首版报价 Android 验收（2026-11-11）
+
+MuMu Android + Expo Go 运行 verify:mobile-quotes-android 通过：空名称、金额小数精度校验；取消重开清空；两条目合计 24101 分；本地网关仅注入一次提交成功后的错误响应，原内容重试保持 UUID/版本、数据库仅一条报价；重启应用后按当前任务回看待确认报价。已查看 mobile-quote-form-android.png 和 mobile-quote-saved-android.png。使用随机临时账号/工单，测试结束按 ID 清理并恢复原 API 端口映射。此次为模拟器 Expo Go，不是新 APK、实体真机或 iOS 结果。首轮脚本滑动落入文本框，已改为弹窗留白滚动。截图复核发现报价型任务误显示直接处理入口，已限制 canSubmitTaskResult 仅 direct 分支，并提示报价后到 Web 完成订单开工；新增 verify:mobile-quote-gate-android 确认 quoted 隐藏、direct 保留。修正后全仓与移动端构建、纯规则及独立原生入口检查通过。
+
+## 报修用户报价确认与订单快照
+
+本人报修详情的 quoted 分支已组合 MyQuoteSection，useMyQuote 使用会话 Provider 的 request 并行读取当前报价和该工单订单，账号/路由/刷新变化会取消旧请求。QuoteSummary 在维修员和报修用户入口复用；AcceptQuoteAction 使用原生 MutationModal/useApiMutation 与 Expo Crypto UUID，窗口固定原工单版本、报价 ID 与版次。同一窗口重试保留原意图；关闭或成功后重读报修、报价及订单，不将取消请求解释为事务回滚。
+
+GET /api/mobile/tickets/:id/quote 与 GET /api/mobile/orders/by-ticket/:id 仅供本人读取；POST /api/mobile/tickets/:id/quote/accept 复用 OrdersService.acceptQuote 和 AcceptQuoteDto，不复制金额计算、事务或唯一订单规则。NativeClient/NativeSessionGuard 保留无浏览器来源 Cookie、仅 Bearer 的边界；管理员/维修员不能调用报修用户适配，跨用户返回 404。确认入口纯规则 canAcceptQuote 位于 contracts/quote-rules，门户与 RN 共用，不共享 UI 或存储。
+
+订单快照通过 features/orders 的原生组件显示订单号、状态、报价版次、条目和金额。确认不代表付款或开工；本步没有 RN 报价拒绝/修订、独立订单列表、支付、取消或开工功能，也未扩展异地内测网关。无数据库迁移，无新框架或依赖。
+
+verify:mobile-quote-confirmations 覆盖角色/本人范围、原生/浏览器边界、版次/版本校验、服务端快照、同意图并发唯一订单与归属变化后重放。原生交互验收使用 verify:mobile-quote-confirmations-android，构建和运行结果分别记录，不将 JS bundle 或 Web 首页回归记为原生确认验收。
+
+### 本人确认 Android 验收（2026-11-11）
+
+MuMu Android + Expo Go 的 verify:mobile-quote-confirmations-android 通过：确认弹窗展示固定版次与金额、取消不建单、成功响应丢失后同 UUID/版本/报价版次重试、数据库唯一订单、重启后回看订单快照并隐藏确认入口。已查看 mobile-quote-accept-dialog-android.png 与 mobile-quote-order-android.png。临时记录定向清理，API 端口映射已恢复。不是新 APK、真机或 iOS 验收，异地网关仍未扩展。
+
+本人确认增量最终回归：全仓构建、RN 类型/依赖检查与 Android/Web bundle 导出、原生本人报价确认 API/Android 交互、原维修员报价 API、共享报价/原生表单规则、原订单事务、门户报价确认与鉴权、原生鉴权/完成确认、API/后台入口、原页面与基础 RN Web 导航、业务规则均通过。无数据库迁移，未新建外部资源或调用真实支付。
+
+## 报价协商与本人订单查询（2026-11-11）
+
+报修用户可以对待确认报价填写拒绝原因。维修员仅可从最新已拒绝且有审计记录的报价预填修订，表单共用 SubmitQuoteAction，发布生成新版、保留旧版，不覆盖用户曾决定的内容。拒绝和修订弹窗复用 MutationModal/useApiMutation，规范化内容和来源版次参与提交意图，同内容结果不明时保留 UUID，关闭重读。
+
+原生 POST mobile/tickets/:id/quote/reject 与 POST mobile/tasks/:id/quote/revisions 分别复用 QuoteRejectionsService/RejectQuoteDto 和 QuotesService/ReviseQuoteDto，服务端维持当前归属、工单锁、版本条件更新与原事务边界。
+
+报修用户在“我的设备”进入“我的订单”，状态和页码由路由参数管理；列表、总数与独立详情复用 OrdersService、OrdersQueryDto 和现有传输契约。features/orders 保存 API、读取 Hook、页面和状态常量；src/app 只导出路由。订单快照与关联工单处理记录只读，详情返回已有列表，不新增相同列表栈。读请求在账号/路由变化时取消并清理数据。管理员与维修员不能调用报修用户的订单适配。
+
+本增量不含 RN 订单开工、取消、支付、异地网关扩展或新 APK；无数据库迁移。构建、接口和模拟器验证分别记录，既有真机安装包成果不覆盖本增量。
+
+本增量验证：verify:mobile-quote-rejections 与 verify:mobile-negotiation 通过，覆盖角色和本人/当前分派范围、Origin 拒绝、原因规范化、版次与版本冲突、同意图防重、新旧报价保留、服务端金额和订单分页/详情隔离。两组对应 -android 套件通过，验证原因必填和提交回看、修订预填/第 2 版发布、订单入口/详情/返回和状态筛选；已核对 mobile-quote-reject-dialog-android.png、mobile-quote-rejected-android.png、mobile-quote-revision-dialog-android.png、mobile-quote-revised-android.png、mobile-orders-list-android.png、mobile-order-detail-android.png 和 mobile-orders-filtered-android.png。以上为 MuMu + Expo Go，不是独立 APK 或真机验证。
+
+全仓构建、check:mobile、build:mobile 的 Android/Web bundle、报价及业务纯规则、原生首版/确认接口、原报价拒绝/修订/订单事务、鉴权及已连接 Web 页面、原页面与基础 RN Web 导航回归通过。Expo 依赖校验使用离线本地映射；没有执行新的安装包、iOS 或真实渠道验证。
+
+基础 verify:mobile-android 同样通过，原生首页、触摸进入须知与 Android 返回正常。
+
+## 报价型订单开工与履约
+
+当前维修员在任务详情读取关联服务订单，待开工时通过 StartOrderAction 确认开工；已开工后复用 SubmitTaskResultAction 提交文字结果，报修用户仍用 ConfirmTicketAction 确认完成。新 TaskOrderSection 只负责读取与组合，订单与工单状态同步仍在既有 NestJS 事务中完成。直接处理任务保留原入口，未开工报价型任务不显示结果动作。Web/RN 开工与结果入口共用 contracts/order-rules 的纯规则，不共享界面或凭据。
+
+GET mobile/tasks/:id/order 复用 OrdersService，POST mobile/orders/:id/start 复用 OrderStartsService/StartOrderDto；仅当前维修员，保留 NativeClient/NativeSessionGuard 的浏览器/原生边界。开工弹窗固定 UUID 和原工单版本，关闭重读，不自动重试写请求。取消/开工竞争、待处理退款门槛、审计和幂等沿用原服务。新增界面不引入数据库迁移或支付能力，也未扩展异地网关。
+
+订单列表创建时间与快照中的确认/开工/取消时间共用 shared/utils/date，按设备本地时区显示 YYYY-MM-DD HH:mm:ss；ISO 中的 Z 仍表示 UTC，不能仅替换字符冒充本地时间。
+
+本轮新增 verify:mobile-order-fulfillment 和对应 -android 套件通过：未开工结果门槛、当前维修员/本人范围、原生浏览器边界、DTO/版本、开工防重与取消竞争、订单/工单完成同步；模拟器覆盖开工关闭不写入、成功响应丢失后同 UUID/版本重试、文字结果提交、切换报修用户确认完成，以及创建时间格式。已核对 mobile-order-start-dialog-android.png、mobile-order-completed-android.png 与 mobile-order-created-time-android.png。证据为 MuMu + Expo Go；不包含新 APK、真机、iOS、真实支付或异地网关验证。
+
+本轮全仓构建、check:mobile、Android/Web bundle 导出、test:mobile-dates、test:orders、test:mobile-quotes、test:business，以及既有 Web 开工/履约 API 与页面、原生结果/确认 API、鉴权与已连接入口、原页面和 RN Web 基础导航回归均通过。Expo 依赖校验使用离线本地映射。
+
+既有 verify:mobile-results-android 与 verify:mobile-confirmations-android 均通过，覆盖直接处理结果表单清理、结果不明原意图重试、旧窗口冲突、重启回看和用户确认。已核对对应原生结果表单与完成记录截图。
+基础 verify:mobile-android 通过：原生首页、触摸导航和 Android 返回正常。
+
+## 本人订单取消
+
+报修详情与独立订单详情共用 features/orders/CancelOrderAction，取消原因去首尾空白后 1～500 字符，复用 ORDER_LIMITS、MutationModal/useApiMutation 与 Expo Crypto UUID。同一规范化原因在结果不明时保持原意图，原因变化才生成新 UUID；关闭、成功或账号/对象变化时清理输入并重读。订单详情通过本人报修接口读取当前工单版本，不将只读订单摘要当成提交版本。
+
+POST mobile/orders/:id/cancel 仅报修用户，复用 OrderCancellationsService 和 CancelOrderDto。服务端仍按本人归属、待开工状态、工单版本及支付状态校验；状态、取消审计和 pending 模拟支付关闭共用既有事务。开工后不能取消，已模拟成功时拒绝并整体回滚。RN 不读取金融记录，取消入口先按订单/工单状态判断，最终以服务端为准；页面说明已模拟成功应在门户查看退款。
+
+canCancelOrder 从门户移到 contracts/order-rules，门户与 RN 使用相同的纯入口规则，不共享 UI 或会话。订单/工单取消记录只读回看，原报价与金额快照保持。无数据库迁移、异地网关扩展、RN 支付或新 APK。
+
+本轮 verify:mobile-order-cancellations 与对应 -android 套件通过：原因校验/规范化、当前归属和原生浏览器边界、版本冲突、六路相同意图只写一条审计、pending 模拟单关闭、模拟成功后的取消回滚、开工竞争；Android 覆盖关闭不写入/重开清空、响应丢失原意图重试、重启回看，以及已开工旧窗口冲突、关闭重读隐藏入口。已核对 mobile-order-cancel-dialog-android.png、mobile-order-cancelled-android.png、mobile-order-cancel-conflict-android.png 与 mobile-order-cancel-after-start-android.png。类型/依赖、业务/订单纯规则和 Android/Web bundle 检查通过；证据为 MuMu + Expo Go，不代表新 APK、真机、iOS 或真实交易验收。
+
+全仓构建、原取消 API/门户界面、报价确认/订单、开工、模拟成功及取消互斥、门户与 API 鉴权、已连接入口、原页面、RN Web 基础导航和基础 Android 导航回归均通过。临时记录定向清理，模拟器 API 映射恢复；本增量未生成新安装包。
+
+## 本地模拟支付
+
+报修用户在独立订单详情读取本人模拟支付记录，创建待支付单、确认本地模拟成功、刷新查单并查看超时关闭。创建与成功确认分别组织 Action 和弹窗，共用 MutationModal/useApiMutation；创建 UUID 在窗口内固定，金额不随请求提交。成功确认绑定原订单/支付单 ID，以服务端终态幂等，不能把客户端跳转或按钮反馈作为结果。关闭、成功后重读订单、工单与支付记录；结果不明不自动重试写请求。
+
+原生 NativePaymentsController 仅提供本人 GET/POST mobile/orders/:id/payments 与 POST mobile/orders/:id/payments/:paymentId/mock-success，复用 PaymentsService 和 CreateMockPaymentDto。金额/币种来自服务端快照，取消/确认共用原工单锁，超时关闭使用数据库时钟。支付记录与维修状态分别显示，页面不依赖手机时钟决定成功或超时，不新增定时任务。创建新单必须使用新 UUID，原创建意图重放保持原记录。
+
+features/payments 集中请求、账号绑定读取 Hook、入口规则、记录展示与动作；订单详情负责组合。读取失败仍可显示订单摘要，但不开放取消/创建/确认；报修详情同样读取本人支付状态后决定取消入口。账号/订单切换取消旧读取，不在本模块保存凭据，不向维修员开放金融接口。当前退款能力见后续“模拟退款申请与查询”章节；管理员处理仍在 Web，不开放原生处理入口。
+
+本增量是本地模拟，不是微信/支付宝沙箱或真实交易；不集成真实支付 SDK，不调用外部支付服务。无数据库迁移、异地网关扩展、新 APK、真机或 iOS 新增验收。
+
+verify:mobile-payments 与 verify:mobile-payments-android 已通过。原生接口覆盖本人/角色/浏览器边界、创建 DTO、金额/币种快照、同意图并发唯一记录、成功终态幂等、取消竞争、数据库时钟超时及新意图重新创建。Android 覆盖两个弹窗关闭不写入、创建 UUID 与成功支付单 ID 的响应丢失重试、冷启动回看、两处取消入口隐藏、刷新超时关闭与重新创建。超时场景仅调整本轮临时支付记录的截止时间，正常新单仍验证为 15 分钟有效期。
+
+已核对 mobile-payment-create-dialog-android.png、mobile-payment-pending-android.png、mobile-payment-confirm-dialog-android.png、mobile-payment-succeeded-android.png、mobile-payment-ticket-gate-android.png 和 mobile-payment-expired-android.png。以上为 MuMu + Expo Go，不属于独立安装包、真机、沙箱或真实支付验证。类型/依赖检查、业务规则和 Android/Web 导出通过。
+
+本轮全仓构建、原模拟支付 API/界面、模拟成功、模拟超时、订单取消/查询、门户与 API 鉴权、原生取消/报价确认 API、已连接入口及原页面回归通过。原生取消交互和基础 Android 导航同样通过；临时记录定向清理，模拟器 API 映射恢复。真实渠道、原生退款命令及新安装包未纳入本轮交付。
+
+## 模拟退款申请与查询
+
+报修用户在独立订单详情的已模拟成功支付单中申请全额模拟退款。RequestMockRefundAction 管理原因与提交意图，RefundSummary 展示待处理或模拟成功、金额、原因、申请时间及处理人/时间。申请不会立即结束订单或变更原支付事实；只有管理员通过现有 Web 操作记录模拟退款成功，订单与工单才按原事务一起结束。申请待处理期间服务端阻止开工。
+
+POST mobile/orders/:id/payments/:paymentId/refund 复用 RefundRequestsService 和 RequestMockRefundDto；原生适配只允许本人申请，不提供管理员处理路由。GET 本人支付记录复用原查询返回退款及处理记录。金额不随请求提交，取自原支付单；规范化原因与 Expo UUID 绑定，同原因结果不明时原意图重试，原因变化才生成新 UUID。关闭、成功和账号/对象变化会清理窗口并重读实际状态，取消请求不等于回滚。
+
+contracts/payment-rules 提供 REFUND_LIMITS.reason 与 canRequestMockRefund，供 API DTO、门户和 RN 按实际职责共用，根入口仍只有类型。仅当前订单待开工、支付已模拟成功且没有退款申请时展示入口；服务端独立校验当前归属、状态、金额和并发。确认模拟成功弹窗已增加支付单编号与金额核对提示。非登录原因输入禁用 autofill，纵向间距沿用紧凑布局和主题 Token。
+
+本增量不修改数据库结构，不接真实退款渠道，不开放原生管理员处理，不扩展异地网关或生成新 APK。待处理与成功分别显示，不把本地模拟记录表述为真实资金退回。
+
+2026-11-12 新增 verify:mobile-refunds 与 verify:mobile-refunds-android 通过：本人/角色/Origin/Cookie/DTO 边界、规范化原因、相同意图六路仅一条申请、全额取自服务端、版本更新和开工竞争、申请期间暂停开工，以及现有 Web 管理员处理后原生回看。Android 覆盖金额核对提示、原因必填、关闭不写入/重开清空、响应丢失后同 UUID/原因重试、待处理回看、管理员完成后刷新与冷启动状态同步。
+
+已核对 mobile-payment-confirm-check-android.png、mobile-refund-request-dialog-android.png、mobile-refund-requested-android.png、mobile-refund-completion-record-android.png 与 mobile-refund-order-cancelled-android.png。以上为 MuMu + Expo Go；不代表真机、独立 APK、沙箱或真实退款。test:payment-rules、test:business、check:mobile 与 Android/Web bundle 导出通过。
+
+本轮全仓构建、原模拟退款申请/管理员处理、模拟支付创建/成功/超时、开工、原生支付、门户/API 鉴权、已连接入口、原页面和 RN Web 基础导航回归通过。共享退款原因限制与入口规则保持原行为，测试临时记录按本轮编号清理，未扩大原生角色权限或异地网关范围。

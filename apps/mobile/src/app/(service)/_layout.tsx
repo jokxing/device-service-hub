@@ -9,6 +9,11 @@ export default function ServiceLayout() {
   if (!user) return <Redirect href="/login" />;
   return (
     <Stack key={user.id}>
+      <Stack.Screen name="orders/index" options={{ title: "我的订单" }} />
+      <Stack.Screen
+        name="orders/[id]"
+        options={{ title: "订单详情", headerBackTitle: "返回" }}
+      />
       <Stack.Screen name="devices/index" options={{ title: "我的设备" }} />
       <Stack.Screen
         name="devices/scan"

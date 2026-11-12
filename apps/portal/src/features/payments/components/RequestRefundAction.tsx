@@ -1,4 +1,5 @@
 "use client";
+import { REFUND_LIMITS } from "@device-service-hub/contracts/payment-rules";
 import { useRef, useState } from "react";
 import { Button, Form, Input } from "antd";
 import type { PaymentRecord } from "@device-service-hub/contracts";
@@ -32,7 +33,7 @@ function RefundModal({
         {payment.code} · 全额 ¥{formatCents(payment.amountCents)}
       </p>
       <p>
-        仅创建待处理申请，不代表退款成功，不发生真实资金退回。提交后暂停开工，后续处理尚未开放。
+        仅创建待处理申请，不代表退款成功，不发生真实资金退回。提交后暂停开工，由管理员在后台记录模拟处理结果。
       </p>
       <Form
         autoComplete="off"
@@ -56,14 +57,14 @@ function RefundModal({
           label="退款原因"
           rules={[
             { required: true, whitespace: true, message: "请填写退款原因" },
-            { max: 500 },
+            { max: REFUND_LIMITS.reason },
           ]}
         >
           <Input.TextArea
             autoComplete="off"
             aria-label="退款原因"
             rows={3}
-            maxLength={500}
+            maxLength={REFUND_LIMITS.reason}
             showCount
             allowClear
           />

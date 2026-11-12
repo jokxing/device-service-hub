@@ -1,3 +1,4 @@
+import MyQuoteSection from "../quotes/MyQuoteSection";
 import TicketRecordDetails from "./components/TicketRecordDetails";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Screen from "../../shared/components/Screen";
@@ -22,6 +23,13 @@ function Details() {
             ticketId={ticket.id}
             canUpload={ticket.status === "pending"}
           />
+          {ticket.serviceMode === "quoted" && (
+            <MyQuoteSection
+              key={`quote:${ticket.id}:${ticket.version}`}
+              ticket={ticket}
+              reload={reload}
+            />
+          )}
           <ConfirmTicketAction
             key={`${ticket.id}:${ticket.version}`}
             ticket={ticket}

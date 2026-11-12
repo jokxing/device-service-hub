@@ -1,6 +1,6 @@
 import { ROLE_LABELS } from "../../shared/constants/roles";
 import { useCallback, useRef, useState } from "react";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TicketStatus } from "@device-service-hub/contracts";
 import Screen from "../../shared/components/Screen";
@@ -30,9 +30,17 @@ function Tasks() {
   );
   return (
     <Screen>
-      <Text style={styles.text}>
-        {user?.name} · {ROLE_LABELS.technician}
-      </Text>
+      <View style={layout.accountRow}>
+        <Text style={[styles.text, layout.accountName]}>
+          {user?.name} · {ROLE_LABELS.technician}
+        </Text>
+        <ActionButton
+          title="刷新任务"
+          secondary
+          disabled={loading}
+          onPress={reload}
+        />
+      </View>
       <Text style={styles.muted}>
         当前筛选：{query.status ? STATUS_LABELS[query.status] : "全部任务"}
       </Text>
@@ -74,12 +82,6 @@ function Tasks() {
         />
       ))}
       <ActionButton
-        title="刷新任务"
-        secondary
-        disabled={loading}
-        onPress={reload}
-      />
-      <ActionButton
         title="上一页"
         secondary
         disabled={loading || query.page <= 1}
@@ -106,6 +108,13 @@ export default function TasksScreen() {
   );
 }
 const layout = StyleSheet.create({
+  accountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+  },
+  accountName: { flex: 1 },
   filterViewport: { flexGrow: 0 },
   filters: { gap: spacing.xs },
 });

@@ -31,6 +31,13 @@ export default function DevicesScreen() {
           onPress={() => router.push("/tickets")}
         />
       )}
+      {user?.role === "reporter" && (
+        <ActionButton
+          title="我的订单"
+          secondary
+          onPress={() => router.push("/orders")}
+        />
+      )}
       {user?.role === "technician" && (
         <ActionButton
           title="我的任务"

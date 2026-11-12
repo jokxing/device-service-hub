@@ -1,3 +1,5 @@
+import TaskOrderSection from "../orders/TaskOrderSection";
+import TaskQuoteSection from "../quotes/TaskQuoteSection";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Screen from "../../shared/components/Screen";
 import ActionButton from "../../shared/components/ActionButton";
@@ -19,6 +21,20 @@ function Detail() {
         <>
           <TicketRecordDetails ticket={task} />
           <PhotoGallery ticketId={task.id} />
+          {task.serviceMode === "quoted" && (
+            <TaskQuoteSection
+              key={`quote:${task.id}:${task.version}`}
+              task={task}
+              reload={reload}
+            />
+          )}
+          {task.serviceMode === "quoted" && (
+            <TaskOrderSection
+              key={`order:${task.id}:${task.version}`}
+              task={task}
+              reload={reload}
+            />
+          )}
           <AcceptTaskAction
             key={`${task.id}:${task.version}`}
             task={task}

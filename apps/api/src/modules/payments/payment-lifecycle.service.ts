@@ -19,7 +19,7 @@ export class PaymentLifecycleService {
       })
     )
       throw new ConflictException(
-        "订单已有模拟成功记录，不能直接取消；退款流程尚未开放",
+        "订单已有模拟成功记录，不能直接取消；请在门户查看退款流程",
       );
     return tx.paymentAttempt.updateMany({
       where: { orderId, status: "pending" },

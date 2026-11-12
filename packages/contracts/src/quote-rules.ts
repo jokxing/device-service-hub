@@ -68,3 +68,22 @@ export function formatCents(cents: number): string {
     throw new Error("金额必须为非负整数分");
   return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, "0")}`;
 }
+
+/** Display only; server rechecks ownership, versions and current order in a transaction. */
+export function canAcceptQuote(
+  ticket: {
+    serviceMode: TicketServiceMode;
+    status: TicketStatus;
+    result: unknown;
+  },
+  quote: { status: "pending" | "accepted" | "rejected" },
+  hasOrder: boolean,
+): boolean {
+  return (
+    ticket.serviceMode === "quoted" &&
+    ticket.status === "processing" &&
+    !ticket.result &&
+    quote.status === "pending" &&
+    !hasOrder
+  );
+}

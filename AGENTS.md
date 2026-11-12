@@ -103,7 +103,7 @@
 - 报价拒绝变更执行 `run verify:quote-rejections`、`run verify:portal-quote-rejections`，并回归原确认与订单链路。原因去首尾空白后 1～500 字符，限制共用 QUOTE_LIMITS；保留具体版次、原 UUID 和版本，原因变化才生成新意图。确认/拒绝竞争同一工单行，拒绝审计与状态、版本原子写入，重放重新校验当前归属；拒绝不取消工单，不自动生成订单或重新报价。
 - 报价修订变更执行 `run verify:quote-revisions`、`run verify:quote-revisions-ui`，并回归首版、拒绝、确认与订单链路。修订来源必须为当前工单最新已拒绝且有审计的报价，来源 ID/版次参与摘要；工单版本条件更新和新增报价/条目同事务，服务端递增版次，不覆盖旧数据。发布重放返回该 UUID 的具体版次，不能返回最新报价冒充原结果；历史读取维持当前数据范围，历史面板只读。Web 首版/修订复用表单与条目组件，不扩展 RN 或支付。
 - 订单取消变更执行 `run test:orders`、`run verify:order-cancellations`、`run verify:portal-order-cancellations`，并回归报价确认与订单链路。仅本人待开工订单可取消，原因去空白后 1～500 字符，限制复用 ORDER_LIMITS；工单版本条件更新、订单/工单 cancelled 与审计同事务。相同意图精确重放，重新校验当前归属；保留已接受报价和快照，不恢复、重建订单或顺带开放支付。取消记录只读；当前维修员通过独立开工命令操作待开工订单。
-- 订单开工变更执行 `run test:orders`、`run verify:order-starts`、`run verify:order-starts-ui`，并回归订单取消/确认链路。仅当前维修员可开工，原工单版本、订单状态和开工审计同事务；开工/取消竞争同一工单行，重放校验当前分派，开工不代表付款。RN 开工入口仍后置，报价型结果与完成确认由独立履约增量提供。
+- 订单开工变更执行 `run test:orders`、`run verify:order-starts`、`run verify:order-starts-ui`，并回归订单取消/确认链路。仅当前维修员可开工，原工单版本、订单状态和开工审计同事务；开工/取消竞争同一工单行，重放校验当前分派，开工不代表付款。RN 原生开工沿用同一用例与 DTO，报价型结果与完成确认复用既有履约事务。
 - 报价型履约变更执行 `run verify:order-fulfillment`、`run verify:order-fulfillment-ui` 及原结果/完成确认 API 与界面回归。复用原 DTO、表单与审计；TicketsModule 通过 OrdersModule 导出的 OrderFulfillmentService，在同一事务内同步订单待确认/完成，不另开事务。未开工不得提交，完成不代表付款，不顺带扩展 RN UI 或支付。
 - 订单查询变更执行 `run verify:order-queries`、`run verify:order-queries-ui` 及订单/门户回归。React 后台仅管理员/维修员入口，用户新入口在门户；API 列表/总数/详情复用 ticketReadScope，最小摘要投影与独立详情投影分开。按确认时间/ID 排序，同一 RepeatableRead 读取列表与总数；筛选和分页进 URL，普通翻页与越界替换用不同方法。订单快照与维修记录只读，原维修动作回工单入口；模拟支付按独立支付模块规则推进，不扩大 RN 或微前端应用范围。
 - 模拟支付变更执行 `run verify:mock-payments`、`run verify:mock-payments-ui` 及订单取消/查询和门户回归。仅本人待开工订单创建，金额来自服务端快照，渠道固定 mock，DTO 只接受 UUID；管理员/本人可读，维修员不开放支付记录。创建先锁同一工单行，支付关闭与订单取消使用同一事务，pending 条件唯一索引及操作者/UUID 唯一约束兜底。无回调、成功/退款或真实渠道时不得扩大交付表述。
@@ -118,3 +118,19 @@
 - 模拟退款申请变更执行 `run verify:mock-refunds`，仅本人已模拟成功且待开工订单可申请，全额由服务端读取，申请与版本原子写入，开工检查无退款申请。不得将 requested 描述为退款成功。
 
 - 模拟退款成功执行 `run verify:refund-completions`。仅管理员处理待处理全额申请，独立处理记录、订单/工单取消与取消审计同事务；原支付事实保留，不代表真实资金退回。
+
+- RN 首版报价位于 features/quotes，原生 GET/POST mobile/tasks/:id/quote 复用 QuotesService/SubmitQuoteDto；仅当前维修员，原生/浏览器鉴权边界不放宽。执行 `run verify:mobile-quotes`、`run test:mobile-quotes` 和 mobile 构建检查；在线模拟器另执行 `run verify:mobile-quotes-android`。真实支付和异地网关扩展另行确认；没有原生界面证据不得记为 Android 已验收。
+
+- RN 直接处理结果入口使用 canSubmitTaskResult；报价型订单开工与结果入口共用 contracts/order-rules 的 canStartOrder/canSubmitOrderResult，未开工保持结果门槛。
+
+- RN 本人报价查看/确认与订单快照使用 features/quotes 和 features/orders，原生适配复用 QuotesService、OrdersService 与 AcceptQuoteDto。执行 `run verify:mobile-quote-confirmations`，在线模拟器执行 `run verify:mobile-quote-confirmations-android`；窗口保持原 UUID、工单版本和报价版次，成功/关闭重读实际结果。RN 真实支付仍需另行确认。
+
+- RN 已扩展本人报价拒绝、维修员从最新已拒绝报价修订，以及本人独立订单列表/详情。原生适配复用既有报价拒绝/修订与订单服务；执行 verify:mobile-quote-rejections、verify:mobile-negotiation，在线模拟器执行对应 -android 套件。本人订单列表和快照保持只读，详情支持本人取消；维修员在任务详情开工和提交结果，不扩展真实支付或异地网关。
+
+- RN 开工/履约适配复用 OrderStartsService/StartOrderDto 和原处理结果/用户确认服务，使用同一事务同步订单与工单。执行 verify:mobile-order-fulfillment 和对应 -android，回归原开工、履约、移动结果/确认；时间显示复用 shared/utils/date 的设备本地时间格式，不直接截断 UTC 字符串。
+
+- RN 本人订单取消通过 CancelOrderAction 共用于报修详情和订单详情；复用 OrderCancellationsService/CancelOrderDto，canCancelOrder 位于 contracts/order-rules。执行 verify:mobile-order-cancellations 与对应 -android，回归原取消、开工、报价确认及模拟支付联动。已模拟成功不能直接取消，可在 RN 或门户申请模拟退款，管理员仍在 Web 处理；金融读取和模拟支付由独立 payments 模块提供。
+
+- RN 模拟支付位于 features/payments，原生 GET/POST mobile/orders/:id/payments 和 POST :paymentId/mock-success 复用 PaymentsService/CreateMockPaymentDto，仅本人访问。创建保留 Expo UUID，成功确认以支付单 ID 幂等；关闭重读、查单访问时超时关闭，时间以服务端为准。执行 verify:mobile-payments 及对应 -android，回归原模拟创建/成功/超时和订单取消。两个本人详情在已模拟成功时隐藏取消，未知支付读取状态不开放取消。RN 退款仅提供本人申请和查询，不开放管理员处理、真实渠道或异地网关扩展。
+
+- RN 模拟退款申请 POST mobile/orders/:id/payments/:paymentId/refund 复用 RefundRequestsService/RequestMockRefundDto；原因规范化后 1～500 字符，金额仅从服务端原单读取。同原因保持 Expo UUID，关闭重读，申请不代表成功且暂停开工。使用既有 GET 支付单查询请求/处理结果；不提供原生管理员处理路由。执行 test:payment-rules、verify:mobile-refunds 及对应 -android，回归 verify:mock-refunds、verify:refund-completions 和模拟支付/开工。REFUND_LIMITS 与 canRequestMockRefund 在 contracts/payment-rules，DTO、门户和 RN 共用。

@@ -1,3 +1,4 @@
+import { canRequestMockRefund } from "@device-service-hub/contracts/payment-rules";
 import RequestRefundAction from "./RequestRefundAction";
 import MockPaymentAction, { RefreshPayments } from "./MockPaymentAction";
 import type {
@@ -94,11 +95,9 @@ export default function OrderPayments({
                 </>
               )}
             </dl>
-            {payment.status === "succeeded" &&
-              !payment.refund &&
-              order.status === "awaiting_start" && (
-                <RequestRefundAction payment={payment} />
-              )}
+            {canRequestMockRefund(order, payment) && (
+              <RequestRefundAction payment={payment} />
+            )}
             {payment.status === "pending" &&
               order.status === "awaiting_start" && (
                 <>

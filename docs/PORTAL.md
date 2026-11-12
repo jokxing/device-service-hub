@@ -8,7 +8,7 @@
 
 需报价工单的本人详情支持报价查看、指定版本确认、拒绝原因提交与服务订单快照。维修员发布新版后，门户展示当前版供重新决定，并只读回看历史版及拒绝原因。本人可取消待开工订单，关联工单同时结束，保留原报价、金额快照与取消记录。决定由 NestJS 原子完成，个人数据 no-store，订单不代表付款；门户已只读展示维修中状态、开工人与时间，开工后不能直接取消；已接通本人对报价型维修结果的完成确认，订单与工单同时完成；真实支付尚未开放，见 [维修报价与订单](QUOTES.md)。拒绝交互与状态回看执行 `verify:quote-rejections` 和 `verify:portal-quote-rejections`；新版展示、旧决定冲突和第 3 版订单验证使用 `verify:quote-revisions-ui`，不增加第二套业务后端。
 
-新增 `features/quotes` 的服务端查询、确认交互与转发，以及 `features/orders` 的订单快照查询/展示和取消表单；`app/api/tickets/[id]/quote/accept/route.ts`、`app/api/orders/[id]/cancel/route.ts` 只组装转发。报修、完成确认、报价决定及订单取消共用 `features/auth/server/commands.ts` 的 `reporterPost`，保留调用方原 UUID 与版本，不跨应用导入后台 Hook 或绕过 NestJS。报价及订单条目展示在门户内部复用 `QuoteItems`。取消窗口由订单 ID/工单版本标识，关闭重读实际状态，同原因重试复用原意图。验证使用 `verify:order-cancellations` 与 `verify:portal-order-cancellations`。
+新增 `features/quotes` 的服务端查询、确认交互与转发，以及 `features/orders` 的订单快照查询/展示和取消表单；`app/api/tickets/[id]/quote/accept/route.ts`、`app/api/orders/[id]/cancel/route.ts` 只组装转发。报修、完成确认、报价决定及订单取消共用 `features/auth/server/commands.ts` 的 `reporterPost`，保留调用方原 UUID 与版本，不跨应用导入后台 Hook 或绕过 NestJS。报价及订单条目展示在门户内部复用 `QuoteItems`。取消入口纯规则 canCancelOrder 与 RN 共用 contracts/order-rules；取消窗口由订单 ID/工单版本标识，关闭重读实际状态，同原因重试复用原意图。验证使用 `verify:order-cancellations` 与 `verify:portal-order-cancellations`。
 
 报价型结果及完成确认复用原确认交互和转发，订单按服务端实际状态展示，不将维修完成表述为付款。履约增量执行 `verify:order-fulfillment`、`verify:order-fulfillment-ui` 和原确认回归。
 
@@ -156,3 +156,5 @@ npm run verify:portal-confirmations  # 门户确认、防重、冲突与账号�
 已支持本人待开工模拟成功单的全额退款申请，原因表单复用本应用 MutationModal/useApiMutation。原支付查询返回待处理申请并回看金额、原因、时间；管理员处理结果由同一查询回看，见 [QUOTES.md](QUOTES.md)。
 
 门户退款查询已展示管理员处理结果、处理人与时间；全额模拟退款成功后订单/工单结束，用户无处理权限，不发生真实退款。
+
+模拟退款原因长度与入口纯规则通过 contracts/payment-rules 和 RN 共用；门户表单与服务器转发仍独立实现，REFUND_LIMITS 与后端 DTO 使用相同边界，不复制退款事务或权限规则。

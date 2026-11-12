@@ -1,3 +1,5 @@
+import { NativeTaskOrdersController } from "./native-task-orders.controller";
+import { NativeReporterOrdersController } from "./native-reporter-orders.controller";
 import { Module } from "@nestjs/common";
 import { DatabaseModule } from "../../database/database.module";
 import { AuthModule } from "../auth/auth.module";
@@ -10,7 +12,11 @@ import { PaymentsModule } from "../payments/payments.module";
 
 @Module({
   imports: [DatabaseModule, AuthModule, PaymentsModule],
-  controllers: [OrdersController],
+  controllers: [
+    OrdersController,
+    NativeReporterOrdersController,
+    NativeTaskOrdersController,
+  ],
   providers: [
     OrdersService,
     OrderCancellationsService,
