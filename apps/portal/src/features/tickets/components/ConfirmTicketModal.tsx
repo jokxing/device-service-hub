@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import MutationModal from "../../../shared/components/MutationModal";
-import { useApiMutation } from "../../../shared/hooks/useApiMutation";
+import { useAuthenticatedMutation } from "../../auth/useAuthenticatedMutation";
 import { confirmTicket } from "../api";
 import type { ConfirmationTicket } from "../types";
 import styles from "../tickets.module.css";
@@ -15,9 +15,8 @@ export default function ConfirmTicketModal({
   onClose: () => void;
 }) {
   const [requestId] = useState(() => crypto.randomUUID());
-  const { submitting, error, run } = useApiMutation(
+  const { submitting, error, run } = useAuthenticatedMutation(
     "尚未确认操作结果，可重试，或关闭后刷新报修记录核对。",
-    () => window.location.replace("/login"),
   );
   function confirm() {
     return run(

@@ -8,15 +8,14 @@ import type {
   DeviceSummary,
 } from "@device-service-hub/contracts";
 import { createTicket } from "../api";
-import { useApiMutation } from "../../../shared/hooks/useApiMutation";
+import { useAuthenticatedMutation } from "../../auth/useAuthenticatedMutation";
 import { PRIORITY_LABELS, TICKET_LIMITS } from "../constants";
 import styles from "../tickets.module.css";
 
 type Values = Pick<CreateTicketInput, "title" | "description" | "priority">;
 export default function RepairForm({ device }: { device: DeviceSummary }) {
-  const { submitting, error, run } = useApiMutation(
+  const { submitting, error, run } = useAuthenticatedMutation(
     "尚未确认提交结果，请重试相同内容或查看我的报修",
-    () => window.location.replace("/login"),
   );
   const intent = useRef<{ fingerprint: string; requestId: string } | null>(
     null,

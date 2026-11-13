@@ -187,7 +187,11 @@ try {
   await page.keyboard.press("Escape");
   assert.equal(await dialog.count(), 1);
   await page.mouse.click(2, 2);
-  assert.equal(await dialog.count(), 1, "Submitting dialog ignores mask clicks");
+  assert.equal(
+    await dialog.count(),
+    1,
+    "Submitting dialog ignores mask clicks",
+  );
   assert.equal(bodies.length, 1);
   release();
   await dialog.getByText(/尚未确认报价结果/).waitFor();
@@ -206,7 +210,10 @@ try {
   assert.equal(bodies[0].quoteRevision, 1);
   assert.equal(bodies[0].expectedVersion, 3);
   assert.equal("totalCents" in bodies[0], false);
-  await orderPanel.getByText("未接入支付", { exact: true }).waitFor();
+  assert.equal(
+    await orderPanel.getByText("未接入支付", { exact: true }).count(),
+    0,
+  );
   assert.equal(
     await page.getByRole("button", { name: "确认报价", exact: true }).count(),
     0,

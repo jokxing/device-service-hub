@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { formatCents } from "@device-service-hub/contracts/quote-rules";
 import MutationModal from "../../../shared/components/MutationModal";
-import { useApiMutation } from "../../../shared/hooks/useApiMutation";
+import { useAuthenticatedMutation } from "../../auth/useAuthenticatedMutation";
 import { acceptQuote } from "../api";
 import type { QuoteActionTicket, ConfirmationQuote } from "../types";
 
@@ -23,9 +23,8 @@ export default function AcceptQuoteModal({
     quoteId: quote.id,
     quoteRevision: quote.revision,
   }));
-  const { submitting, error, run } = useApiMutation(
+  const { submitting, error, run } = useAuthenticatedMutation(
     "尚未确认报价结果，可重试相同操作，或关闭后刷新核对订单。",
-    () => window.location.replace("/login"),
   );
   function confirm() {
     return run(

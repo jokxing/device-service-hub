@@ -10,7 +10,7 @@ import { formatCents } from "@device-service-hub/contracts/quote-rules";
 import { ApiError } from "../../../shared/api/http";
 import styles from "../payments.module.css";
 import MutationModal from "../../../shared/components/MutationModal";
-import { useApiMutation } from "../../../shared/hooks/useApiMutation";
+import { useAuthenticatedMutation } from "../../auth/useAuthenticatedMutation";
 import {
   createSandboxPayment,
   reopenSandboxPayment,
@@ -59,10 +59,8 @@ export default function AlipaySandboxActions({
     return () => window.removeEventListener("pageshow", onShow);
   }, [refresh]);
   const requestId = useRef<string | null>(null);
-  const { submitting, error, run } = useApiMutation(
-    "结果尚未确定，请刷新支付记录核对",
-    () => window.location.replace("/login"),
-  );
+  const { submitting, error, run } =
+    useAuthenticatedMutation("结果尚未确定，请刷新支付记录核对");
   useEffect(() => {
     if (payment && payment.status !== "pending") setCloseNotice("");
   }, [payment?.status]);

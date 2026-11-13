@@ -7,7 +7,7 @@ import {
   formatCents,
 } from "@device-service-hub/contracts/quote-rules";
 import MutationModal from "../../../shared/components/MutationModal";
-import { useApiMutation } from "../../../shared/hooks/useApiMutation";
+import { useAuthenticatedMutation } from "../../auth/useAuthenticatedMutation";
 import { rejectQuote } from "../api";
 import type { QuoteActionTicket, ConfirmationQuote } from "../types";
 
@@ -22,9 +22,8 @@ export default function RejectQuoteModal({
 }) {
   const [form] = Form.useForm<{ reason: string }>();
   const intent = useRef<{ reason: string; requestId: string } | null>(null);
-  const { submitting, error, run } = useApiMutation(
+  const { submitting, error, run } = useAuthenticatedMutation(
     "尚未确认拒绝结果，可重试相同原因，或关闭后刷新核对报价。",
-    () => window.location.replace("/login"),
   );
   async function submit() {
     let values: { reason: string };

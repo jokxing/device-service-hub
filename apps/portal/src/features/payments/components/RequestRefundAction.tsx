@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button, Form, Input } from "antd";
 import type { AlipaySandboxPaymentRecord } from "@device-service-hub/contracts";
 import { formatCents } from "@device-service-hub/contracts/quote-rules";
-import { useApiMutation } from "../../../shared/hooks/useApiMutation";
+import { useAuthenticatedMutation } from "../../auth/useAuthenticatedMutation";
 import MutationModal from "../../../shared/components/MutationModal";
 import { requestSandboxRefund } from "../api";
 type RefundPayment = Pick<
@@ -23,9 +23,8 @@ function RefundModal({
 }) {
   const [form] = Form.useForm<{ reason: string }>();
   const intent = useRef<{ requestId: string; reason: string } | null>(null);
-  const { submitting, error, run } = useApiMutation(
+  const { submitting, error, run } = useAuthenticatedMutation(
     "申请结果不明，可用相同原因重试，或关闭后刷新核对。",
-    () => window.location.replace("/login"),
   );
   return (
     <MutationModal

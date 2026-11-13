@@ -167,3 +167,5 @@ npm run verify:portal-confirmations  # 门户确认、防重、冲突与账号�
 
 支付数据刷新使用 Next.js router.refresh 合并服务端组件结果；支付查询、退款查询、关单成功与退款弹窗关闭不再重载浏览器文档，刷新期间禁用当前操作。关单成功先收起弹窗，再同步订单及支付数据；无收银台地址的幂等返回同样读取实际记录。仅外部收银台使用完整导航，401 仍转登录。verify:alipay-closures-ui 检查查询触发 RSC 响应、文档标记保留与历史记录展开状态，不能将数据刷新理解为仅修改前端金额或支付状态。
 本轮已通过全仓库 build、verify:alipay-closures-ui、verify:alipay-refunds-ui、verify:alipay-sandbox-ui、verify:portal 与 verify:ui，并检查手机截图；未执行实际渠道交易。Windows 下运行中的门户曾造成构建目录 EPERM，停止本项目门户后构建通过并恢复服务。
+
+受保护写操作通过 features/auth/useAuthenticatedMutation 复用通用 useApiMutation，并统一在 401 时完整替换到登录页。业务文案、提交意图、版本和成功回调仍由业务组件负责；登录表单继续使用通用 Hook，退出成功复用同一登录导航函数。shared 不反向依赖 auth，不把权限策略塞入 HTTP 传输层。

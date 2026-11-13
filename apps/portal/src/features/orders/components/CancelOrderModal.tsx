@@ -6,7 +6,7 @@ import type { ServiceOrderRecord } from "@device-service-hub/contracts";
 import { ORDER_LIMITS } from "@device-service-hub/contracts/order-rules";
 import { formatCents } from "@device-service-hub/contracts/quote-rules";
 import MutationModal from "../../../shared/components/MutationModal";
-import { useApiMutation } from "../../../shared/hooks/useApiMutation";
+import { useAuthenticatedMutation } from "../../auth/useAuthenticatedMutation";
 import { cancelOrder } from "../api";
 import type { CancellationTicket } from "../types";
 
@@ -21,9 +21,8 @@ export default function CancelOrderModal({
 }) {
   const [form] = Form.useForm<{ reason: string }>();
   const intent = useRef<{ reason: string; requestId: string } | null>(null);
-  const { submitting, error, run } = useApiMutation(
+  const { submitting, error, run } = useAuthenticatedMutation(
     "尚未确认取消结果，可重试相同原因，或关闭后刷新核对订单。",
-    () => window.location.replace("/login"),
   );
   async function submit() {
     let values: { reason: string };
