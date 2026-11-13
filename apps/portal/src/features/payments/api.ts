@@ -1,42 +1,74 @@
-import type {
-  CreateMockPaymentInput,
-  PaymentRecord,
-  RequestMockRefundInput,
-} from "@device-service-hub/contracts";
 import { clientPost } from "../../shared/api/http";
-export function createMockPayment(
+import type {
+  AlipaySandboxCheckout,
+  AlipaySandboxPaymentRecord,
+  CreateAlipaySandboxInput,
+  RequestAlipaySandboxRefundInput,
+} from "@device-service-hub/contracts";
+export function requestSandboxRefund(
   orderId: string,
-  input: CreateMockPaymentInput,
+  paymentId: string,
+  input: RequestAlipaySandboxRefundInput,
   signal: AbortSignal,
 ) {
-  return clientPost<PaymentRecord>(
-    `/api/orders/${encodeURIComponent(orderId)}/payments`,
+  return clientPost<AlipaySandboxPaymentRecord>(
+    `/api/orders/${encodeURIComponent(orderId)}/alipay-sandbox/${encodeURIComponent(paymentId)}/refund`,
     input,
     signal,
   );
 }
-
-export function confirmMockPayment(
+export function querySandboxRefund(
   orderId: string,
   paymentId: string,
   signal: AbortSignal,
 ) {
-  return clientPost<PaymentRecord>(
-    `/api/orders/${encodeURIComponent(orderId)}/payments/${encodeURIComponent(paymentId)}/mock-success`,
+  return clientPost<AlipaySandboxPaymentRecord>(
+    `/api/orders/${encodeURIComponent(orderId)}/alipay-sandbox/${encodeURIComponent(paymentId)}/refund/query`,
     {},
     signal,
   );
 }
-
-export function requestMockRefund(
+export function createSandboxPayment(
   orderId: string,
-  paymentId: string,
-  input: RequestMockRefundInput,
+  input: CreateAlipaySandboxInput,
   signal: AbortSignal,
 ) {
-  return clientPost<PaymentRecord>(
-    `/api/orders/${encodeURIComponent(orderId)}/payments/${encodeURIComponent(paymentId)}/refund`,
+  return clientPost<AlipaySandboxCheckout>(
+    `/api/orders/${encodeURIComponent(orderId)}/alipay-sandbox`,
     input,
+    signal,
+  );
+}
+export function reopenSandboxPayment(
+  orderId: string,
+  paymentId: string,
+  signal: AbortSignal,
+) {
+  return clientPost<AlipaySandboxCheckout>(
+    `/api/orders/${encodeURIComponent(orderId)}/alipay-sandbox/${encodeURIComponent(paymentId)}/checkout`,
+    {},
+    signal,
+  );
+}
+export function querySandboxPayment(
+  orderId: string,
+  paymentId: string,
+  signal: AbortSignal,
+) {
+  return clientPost<AlipaySandboxPaymentRecord>(
+    `/api/orders/${encodeURIComponent(orderId)}/alipay-sandbox/${encodeURIComponent(paymentId)}/query`,
+    {},
+    signal,
+  );
+}
+export function closeSandboxPayment(
+  orderId: string,
+  paymentId: string,
+  signal: AbortSignal,
+) {
+  return clientPost<AlipaySandboxPaymentRecord>(
+    `/api/orders/${encodeURIComponent(orderId)}/alipay-sandbox/${encodeURIComponent(paymentId)}/close`,
+    {},
     signal,
   );
 }

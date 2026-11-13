@@ -11,7 +11,9 @@ import PageHeader from "../../../../shared/components/PageHeader";
 import { readPage } from "../../../../shared/utils/pagination";
 import styles from "../../../../features/orders/orders.module.css";
 import { getMyPayments } from "../../../../features/payments/server/queries";
-import OrderPayments from "../../../../features/payments/components/OrderPayments";
+import { getSandboxPayments } from "../../../../features/payments/server/alipay-sandbox";
+import AlipaySandboxPayments from "../../../../features/payments/components/AlipaySandboxPayments";
+import AlipaySandboxReturnStatus from "../../../../features/payments/components/AlipaySandboxReturnStatus";
 
 export const metadata = { title: "订单详情" };
 export default async function MyOrderDetailPage({
@@ -22,6 +24,7 @@ export default async function MyOrderDetailPage({
   searchParams: Promise<{
     page?: string | string[];
     status?: string | string[];
+    paymentReturn?: string | string[];
   }>;
 }) {
   const { id } = await params;
@@ -36,9 +39,10 @@ export default async function MyOrderDetailPage({
       readPage(query.page),
       readOrderStatus(query.status),
     );
-  const [order, payments] = await Promise.all([
+  const [order, payments, sandbox] = await Promise.all([
     getMyOrderDetail(id),
     getMyPayments(id),
+    getSandboxPayments(id),
   ]);
   return (
     <>
@@ -51,8 +55,16 @@ export default async function MyOrderDetailPage({
         }}
       />
       <div className={styles.stack}>
+        {query.paymentReturn === "alipay" && (
+          <AlipaySandboxReturnStatus key={id} payments={sandbox.payments} />
+        )}
         <OrderSnapshot order={order} />
-        <OrderPayments order={order} payments={payments} />
+        <AlipaySandboxPayments
+          order={order}
+          payments={sandbox.payments}
+          enabled={sandbox.enabled}
+          mockPayments={payments}
+        />
         <TicketDetails ticket={order.ticket} />
         <Link href={`/tickets/${order.ticketId}`} prefetch={false}>
           前往关联报修，查看或处理当前进度 →

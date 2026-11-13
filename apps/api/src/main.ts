@@ -6,11 +6,13 @@ import { json } from "express";
 import { AppModule } from "./app.module";
 import { getConfig } from "./config/env.config";
 import { responseHeaders } from "./common/middleware/response-headers.middleware";
+import { sandboxNotificationParser } from "./modules/payments/alipay/sandbox-notification-parser";
 
 async function bootstrap() {
   const config = getConfig();
   const app = await NestFactory.create(AppModule, { bodyParser: false });
   app.setGlobalPrefix("api");
+  app.use("/api/payments/alipay-sandbox/notify", sandboxNotificationParser);
   app.use(json({ limit: "32kb" }));
   app.use(cookieParser());
   app.use(responseHeaders);

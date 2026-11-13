@@ -108,7 +108,7 @@ NestJS 的 Interceptor 用于调用前后处理，Exception Filter 用于异常�
 
 订单列表使用独立 OrdersQueryDto 与最小摘要投影，详情复用工单公开字段投影；行与总数使用相同 ticketReadScope，在 RepeatableRead 中按确认时间/ID 稳定排序。响应不输出内部 UUID 意图、原版本或 ORM 字段。
 
-modules/payments 负责模拟支付单 DTO、最小查询投影、当前报修归属和订单金额快照；事务中先锁定工单再核对订单/意图。PaymentsModule 仅导出 PaymentLifecycleService，供取消用例传入原事务关闭待支付记录，不另开事务。管理员/本人可读，维修员不开放；没有支付 SDK、回调或外部渠道适配。
+modules/payments 负责模拟支付单 DTO、最小查询投影、当前报修归属和订单金额快照；事务中先锁定工单再核对订单/意图。PaymentsModule 仅导出 PaymentLifecycleService，供取消用例传入原事务关闭待支付记录，不另开事务。管理员/本人可读，维修员不开放；模拟用例不包含支付 SDK；独立支付宝沙箱适配见后文。
 
 出现重复复杂查询、可独立维护的数据访问职责时，可增加模块内部 Repository。业务流程和授权决策仍属于 Service；Repository 不接受 HTTP 对象，不反向调用 Controller。
 
@@ -155,6 +155,8 @@ Web 管理员照片只读路由位于 AdminTicketsController，沿用 SessionGua
 
 
 ## 模拟支付与退款边界
+
+支付模块内 `alipay/` 单独组织沙箱 Controller、Service、Gateway 与纯签名/金额协议工具。Service 负责本人归属、订单锁、金额快照及幂等，Gateway 只负责固定官方沙箱的签名收银台 URL 和验签查单；配置读取位于 config/alipay-sandbox.config.ts，不将密钥引入共享包或控制器响应。独立 AlipaySandboxPayment 表与原模拟表隔离，未改写 mock 记录、维修状态或原退款事实。网络查单在事务外，验签与金额核对通过后再持工单锁更新 pending，防止迟到响应回退终态。异步通知使用独立 Controller 和限定路径的表单原文解析器，经专用来源边界及支付宝公钥验签后，与主动查单复用同一锁内状态更新。仅事务完成后确认接收，重复成功不产生新的状态写入；实际沙箱通知证据见 QUOTES.md。独立 AlipaySandboxRefundsService 管理本人退款申请、管理员执行与结果核验；申请先暂停开工，渠道调用在事务外，固定退款 ID 做渠道幂等，成功结果与订单/工单结束及审计原子写入。原支付成功事实保留；管理读取为独立授权入口，不放宽本人范围。验证及当前能力边界见 QUOTES.md。
 
 modules/payments 按用例拆分 PaymentsService、PaymentLifecycleService、RefundRequestsService 和 RefundCompletionsService。创建/查单/确认负责支付意图与终态，Lifecycle 在调用方事务中处理取消联动与超时关闭；退款申请与处理使用独立记录，不覆盖原支付事实。DTO、查询白名单和序列化各自维护，内部意图与数据库实体不直接暴露。
 

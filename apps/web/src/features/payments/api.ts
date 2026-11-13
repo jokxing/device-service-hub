@@ -1,19 +1,19 @@
-import type { PaymentRecord } from "@device-service-hub/contracts";
 import { apiRequest } from "../../shared/api/http";
-export const paymentsApi = {
-  completeRefund: (
-    orderId: string,
-    paymentId: string,
-    requestId: string,
-    signal: AbortSignal,
-  ) =>
-    apiRequest<PaymentRecord>(
-      `/orders/${encodeURIComponent(orderId)}/payments/${encodeURIComponent(paymentId)}/refund/mock-success`,
-      { method: "POST", body: JSON.stringify({ requestId }), signal },
-    ),
-  byOrder: (orderId: string, signal: AbortSignal) =>
-    apiRequest<{ payments: PaymentRecord[] }>(
-      `/orders/${encodeURIComponent(orderId)}/payments`,
+import type { AlipaySandboxPaymentRecord } from "@device-service-hub/contracts";
+export const sandboxPaymentsApi = {
+  list: (orderId: string, signal: AbortSignal) =>
+    apiRequest<{ payments: AlipaySandboxPaymentRecord[] }>(
+      `/admin/orders/${encodeURIComponent(orderId)}/alipay-sandbox`,
       { signal },
     ).then((r) => r.payments),
+  refund: (
+    orderId: string,
+    paymentId: string,
+    action: "submit" | "query",
+    signal: AbortSignal,
+  ) =>
+    apiRequest<AlipaySandboxPaymentRecord>(
+      `/orders/${encodeURIComponent(orderId)}/alipay-sandbox/${encodeURIComponent(paymentId)}/refund/${action}`,
+      { method: "POST", body: JSON.stringify({}), signal },
+    ),
 };

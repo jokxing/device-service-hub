@@ -249,3 +249,10 @@ export interface TicketPhoto {
   bytes: number;
   createdAt: string;
 }
+export type {
+  AlipaySandboxPaymentRecord,
+  CreateAlipaySandboxInput,
+  AlipaySandboxCheckout,
+  AlipaySandboxRefundRecord,
+  RequestAlipaySandboxRefundInput,
+} from "./alipay-sandbox";

@@ -149,7 +149,17 @@
     "verify:mobile-payments-android": "node scripts/verify-mobile-payments-android.mjs",
     "verify:mobile-refunds": "node scripts/verify-mobile-refunds.mjs",
     "test:payment-rules": "node --test scripts/test-payment-rules.mjs",
-    "verify:mobile-refunds-android": "node scripts/verify-mobile-refunds-android.mjs"
+    "verify:mobile-refunds-android": "node scripts/verify-mobile-refunds-android.mjs",
+    "test:alipay-sandbox": "node --test scripts/test-alipay-sandbox.mjs",
+    "test:alipay-notification-gateway": "node --test scripts/test-alipay-notification-gateway.mjs",
+    "start:alipay-notification-gateway": "node scripts/start-alipay-notification-gateway.mjs",
+    "verify:alipay-notifications": "node scripts/verify-alipay-notifications.mjs",
+    "verify:alipay-closures": "node scripts/verify-alipay-closures.mjs",
+    "verify:alipay-closures-ui": "node scripts/verify-alipay-closures-ui.mjs",
+    "verify:alipay-refunds": "node scripts/verify-alipay-refunds.mjs",
+    "verify:alipay-refunds-ui": "node scripts/verify-alipay-refunds-ui.mjs",
+    "verify:alipay-sandbox": "node scripts/verify-alipay-sandbox.mjs",
+    "verify:alipay-sandbox-ui": "node scripts/verify-alipay-sandbox-ui.mjs"
   },
   "overrides": {
     "react-native-gesture-handler": "2.32.0",

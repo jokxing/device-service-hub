@@ -1,14 +1,11 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import path from "node:path";
 import { openLocalApi } from "./lib/local-api.mjs";
 import { quoteFixtures } from "./lib/quote-fixtures.mjs";
-import { openLocalBrowser } from "./lib/browser.mjs";
 const local = openLocalApi(),
   db = await local.connectDatabase(),
   f = quoteFixtures(local, db, "refund.complete");
-let browser,
-  constrained = false;
+let   constrained = false;
 const constraint = "refund_finish_" + randomUUID().replaceAll("-", "");
 const ck = (r, n) => {
   assert.equal(r.response.status, n, JSON.stringify(r.value));
@@ -101,85 +98,14 @@ try {
   );
   constrained = false;
   ck(await finish(rollback, admin, retry), 201);
-  const ui = await setup();
-  browser = await openLocalBrowser("refund-completion-profile");
-  const { context, page, screenshots, errors } = browser;
-  await context.clearCookies();
-  await context.addCookies([
-    {
-      name: "dsh_session",
-      value: admin.split(";")[0].slice("dsh_session=".length),
-      domain: "127.0.0.1",
-      path: "/api",
-      httpOnly: true,
-      sameSite: "Strict",
-    },
-  ]);
-  await page.goto(`http://127.0.0.1:5173/service/orders/${ui.order.id}`, {
-    waitUntil: "networkidle",
-  });
-  await page
-    .getByRole("button", { name: "记录模拟退款成功", exact: true })
-    .click();
-  const dialog = page.getByRole("dialog", {
-    name: "记录模拟退款成功",
-    exact: true,
-  });
-  await dialog.waitFor();
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.evaluate(async () => {
-    await new Promise((r) =>
-      requestAnimationFrame(() => requestAnimationFrame(r)),
-    );
-    await Promise.all(
-      document
-        .getAnimations()
-        .filter((a) => Number.isFinite(a.effect?.getComputedTiming().endTime))
-        .map((a) => a.finished.catch(() => {})),
-    );
-  });
-  await page.screenshot({
-    path: path.join(screenshots, "refund-completion-dialog-mobile.png"),
-    animations: "disabled",
-  });
-  await dialog
-    .getByRole("button", { name: "确认模拟退款成功", exact: true })
-    .click();
-  await page.getByText("退款成功（模拟）", { exact: true }).waitFor();
-  assert.equal(
-    await page
-      .getByRole("button", { name: "记录模拟退款成功", exact: true })
-      .count(),
-    0,
-  );
-  await context.clearCookies();
-  await page.goto("http://127.0.0.1:3000/login", { waitUntil: "networkidle" });
-  await page.getByLabel("账号", { exact: true }).fill("reporter.a");
-  await page
-    .getByLabel("密码", { exact: true })
-    .fill(process.env.SEED_ACCOUNT_PASSWORD);
-  await page.getByRole("button", { name: /^登\s*录$/ }).click();
-  await page.waitForURL("**/devices");
-  await page.goto(`http://127.0.0.1:3000/orders/${ui.order.id}`, {
-    waitUntil: "networkidle",
-  });
-  await page.getByText("退款成功（模拟）", { exact: true }).waitFor();
-  await page.getByText("处理时间", { exact: true }).waitFor();
-  await page.screenshot({
-    path: path.join(screenshots, "refund-completion-portal-mobile.png"),
-    fullPage: true,
-    animations: "disabled",
-  });
-  assert.deepEqual(errors, []);
   console.log(
-    "Refund completion: admin-only, DTO, same/distinct intent races, atomic ticket/order/audit, cancellation-audit rollback/retry, admin action and portal result passed. No real refund.",
+    "Legacy mock API business checks passed; mock Web/portal actions are retired. No real payment.",
   );
 } finally {
   if (constrained)
     await db.query(
       `ALTER TABLE "ServiceOrderCancellation" DROP CONSTRAINT "${constraint}"`,
     );
-  if (browser) await browser.context.close();
   await f.cleanup();
   await db.end();
 }

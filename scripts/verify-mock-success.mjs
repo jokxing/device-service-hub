@@ -1,9 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import path from "node:path";
 import { openLocalApi } from "./lib/local-api.mjs";
 import { quoteFixtures } from "./lib/quote-fixtures.mjs";
-import { openLocalBrowser } from "./lib/browser.mjs";
 const local = openLocalApi(),
   db = await local.connectDatabase(),
   f = quoteFixtures(local, db, "mock.success");
@@ -11,7 +9,6 @@ const check = (r, s) => {
   assert.equal(r.response.status, s, JSON.stringify(r.value));
   return r.value;
 };
-let browser;
 try {
   await local.waitForApi();
   const { admin, reporter } = await f.identities(),
@@ -84,64 +81,10 @@ try {
     [bad.id],
   );
   check(await confirm(reporter, mismatch, bad), 409);
-  const ui = await f.orderedTask(tech),
-    uip = await create(ui);
-  browser = await openLocalBrowser("mock-success-profile");
-  const { context, page, screenshots, errors } = browser;
-  await context.clearCookies();
-  await page.goto("http://127.0.0.1:3000/login", { waitUntil: "networkidle" });
-  await page.getByLabel("账号", { exact: true }).fill("reporter.a");
-  await page
-    .getByLabel("密码", { exact: true })
-    .fill(process.env.SEED_ACCOUNT_PASSWORD);
-  await page.getByRole("button", { name: /^登\s*录$/ }).click();
-  await page.waitForURL("**/devices");
-  await page.goto(`http://127.0.0.1:3000/orders/${ui.order.id}`, {
-    waitUntil: "networkidle",
-  });
-  await page.getByRole("button", { name: "模拟支付成功", exact: true }).click();
-  const dialog = page.getByRole("dialog", {
-    name: "确认模拟成功",
-    exact: true,
-  });
-  await dialog.waitFor();
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.evaluate(async()=>{ await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); await Promise.all(document.getAnimations().filter(a=>Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a=>a.finished.catch(()=>{}))); });
-  await page.screenshot({
-    path: path.join(screenshots, "mock-success-dialog-mobile.png"),
-    animations: "disabled",
-  });
-  const confirmed = page.waitForResponse(r=>r.url().includes("/mock-success") && r.request().method()==="POST");
-  await dialog
-    .getByRole("button", { name: "确认模拟成功", exact: true })
-    .click();
-  const confirmationResponse = await confirmed; assert.equal(confirmationResponse.status(),201);
-  await page.getByText("已成功（模拟）", { exact: true }).waitFor();
-  assert.equal(
-    await page
-      .getByRole("button", { name: "模拟支付成功", exact: true })
-      .count(),
-    0,
-  );
-  await page.reload({ waitUntil: "networkidle" });
-  await page.getByText("已成功（模拟）", { exact: true }).waitFor();
-  assert.ok(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-  );
-  await page.screenshot({
-    path: path.join(screenshots, "mock-success-result-mobile.png"),
-    fullPage: true,
-    animations: "disabled",
-  });
-  assert.deepEqual(errors, []);
   console.log(
-    "Mock success: ownership, roles, idempotent confirmation, amount verification, cancellation races, portal confirmation and server reread passed. No real payment.",
+    "Legacy mock API business checks passed; mock Web/portal actions are retired. No real payment.",
   );
 } finally {
-  if (browser) await browser.context.close();
   await f.cleanup();
   await db.end();
 }
-

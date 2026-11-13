@@ -1,17 +1,24 @@
 "use client";
 import { REFUND_LIMITS } from "@device-service-hub/contracts/payment-rules";
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button, Form, Input } from "antd";
-import type { PaymentRecord } from "@device-service-hub/contracts";
+import type { AlipaySandboxPaymentRecord } from "@device-service-hub/contracts";
 import { formatCents } from "@device-service-hub/contracts/quote-rules";
 import { useApiMutation } from "../../../shared/hooks/useApiMutation";
 import MutationModal from "../../../shared/components/MutationModal";
-import { requestMockRefund } from "../api";
+import { requestSandboxRefund } from "../api";
+type RefundPayment = Pick<
+  AlipaySandboxPaymentRecord,
+  "id" | "orderId" | "amountCents"
+> & {
+  code?: string;
+};
 function RefundModal({
   payment,
   onClose,
 }: {
-  payment: PaymentRecord;
+  payment: RefundPayment;
   onClose: () => void;
 }) {
   const [form] = Form.useForm<{ reason: string }>();
@@ -22,19 +29,17 @@ function RefundModal({
   );
   return (
     <MutationModal
-      title="申请模拟退款"
-      okText="提交模拟退款申请"
+      title="申请退款"
+      okText="提交退款申请"
       submitting={submitting}
       error={error}
       onClose={onClose}
       onSubmit={() => form.submit()}
     >
       <p>
-        {payment.code} · 全额 ¥{formatCents(payment.amountCents)}
+        {payment.code ?? payment.id} · 全额 ¥{formatCents(payment.amountCents)}
       </p>
-      <p>
-        仅创建待处理申请，不代表退款成功，不发生真实资金退回。提交后暂停开工，由管理员在后台记录模拟处理结果。
-      </p>
+      <p>提交全额退款申请后暂停开工，由管理员处理，结果以服务端核验为准。</p>
       <Form
         autoComplete="off"
         form={form}
@@ -45,9 +50,9 @@ function RefundModal({
           if (intent.current?.reason !== reason)
             intent.current = { requestId: crypto.randomUUID(), reason };
           const input = intent.current;
-          return run(
+          return run<AlipaySandboxPaymentRecord>(
             (signal) =>
-              requestMockRefund(payment.orderId, payment.id, input, signal),
+              requestSandboxRefund(payment.orderId, payment.id, input, signal),
             onClose,
           );
         }}
@@ -76,16 +81,23 @@ function RefundModal({
 export default function RequestRefundAction({
   payment,
 }: {
-  payment: PaymentRecord;
+  payment: RefundPayment;
 }) {
+  const router = useRouter();
+  const [refreshing, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button onClick={() => setOpen(true)}>申请模拟退款</Button>
+      <Button disabled={refreshing} onClick={() => setOpen(true)}>
+        申请退款
+      </Button>
       {open && (
         <RefundModal
           payment={payment}
-          onClose={() => window.location.reload()}
+          onClose={() => {
+            setOpen(false);
+            startTransition(() => router.refresh());
+          }}
         />
       )}
     </>

@@ -37,6 +37,9 @@ model User {
   orderCancellations ServiceOrderCancellation[]
   orderStarts ServiceOrderStart[]
   paymentAttempts PaymentAttempt[]
+  sandboxPayments AlipaySandboxPayment[]
+  sandboxRefundRequests AlipaySandboxRefund[] @relation("SandboxRefundRequester")
+  sandboxRefundsHandled AlipaySandboxRefund[] @relation("SandboxRefundHandler")
   serviceModeChanges TicketServiceModeChange[]
   refundRequests MockRefundRequest[]
   refundsCompleted MockRefundCompletion[]
@@ -277,6 +280,7 @@ model ServiceOrder {
   cancellation    ServiceOrderCancellation?
   start           ServiceOrderStart?
   payments        PaymentAttempt[]
+  sandboxPayments AlipaySandboxPayment[]
   items           ServiceOrderItem[]
 
   @@unique([actorId, requestId])
@@ -284,6 +288,51 @@ model ServiceOrder {
 
 enum PaymentChannel {
   mock
+}
+
+model AlipaySandboxPayment {
+  id String @id @default(uuid())
+  orderId String
+  actorId String
+  requestId String @db.Uuid
+  amountCents Int
+  status PaymentStatus @default(pending)
+  appId String
+  sellerId String
+  tradeNo String? @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  checkedAt DateTime?
+  order ServiceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  refund AlipaySandboxRefund?
+  @@unique([actorId, requestId])
+  @@index([orderId, createdAt])
+}
+
+enum AlipaySandboxRefundStatus {
+  requested
+  processing
+  succeeded
+}
+
+model AlipaySandboxRefund {
+  id String @id @default(uuid())
+  paymentId String @unique
+  actorId String
+  requestId String @db.Uuid
+  reason String @db.VarChar(500)
+  amountCents Int
+  status AlipaySandboxRefundStatus @default(requested)
+  handledById String?
+  createdAt DateTime @default(dbgenerated("(clock_timestamp() AT TIME ZONE 'UTC')"))
+  submittedAt DateTime?
+  checkedAt DateTime?
+  succeededAt DateTime?
+  payment AlipaySandboxPayment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  actor User @relation("SandboxRefundRequester", fields: [actorId], references: [id], onDelete: Restrict)
+  handledBy User? @relation("SandboxRefundHandler", fields: [handledById], references: [id], onDelete: Restrict)
+  @@unique([actorId, requestId])
 }
 
 enum PaymentStatus {

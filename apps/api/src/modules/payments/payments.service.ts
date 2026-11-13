@@ -190,6 +190,15 @@ export class PaymentsService {
           where: { orderId, status: { in: ["pending", "succeeded"] } },
           select: { id: true },
         });
+        if (
+          await tx.alipaySandboxPayment.findFirst({
+            where: { orderId, status: { in: ["pending", "succeeded"] } },
+            select: { id: true },
+          })
+        )
+          throw new ConflictException(
+            "订单已有支付宝沙箱记录，不能混用模拟支付，请先核对沙箱结果",
+          );
         if (active)
           throw new ConflictException(
             "已有待支付的模拟支付单，请刷新查看，不能重复创建",

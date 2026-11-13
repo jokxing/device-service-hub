@@ -13,6 +13,15 @@ export class PaymentLifecycleService {
     orderId: string,
   ) {
     if (
+      await tx.alipaySandboxPayment.findFirst({
+        where: { orderId, status: { in: ["pending", "succeeded"] } },
+        select: { id: true },
+      })
+    )
+      throw new ConflictException(
+        "订单存在待核实或已成功的支付宝沙箱记录，不能直接取消；请先查单，已成功记录的沙箱退款尚未接入",
+      );
+    if (
       await tx.paymentAttempt.findFirst({
         where: { orderId, status: "succeeded" },
         select: { id: true },

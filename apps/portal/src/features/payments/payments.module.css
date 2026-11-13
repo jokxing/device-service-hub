@@ -4,3 +4,39 @@
   margin-top: 16px;
   overflow-wrap: anywhere;
 }
+
+.primary {
+  margin: 20px 0;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.notice {
+  margin-top: 16px;
+}
+.history {
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  padding-top: 20px;
+}
+.history > summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 8px 0;
+  font-weight: 600;
+}
+.history .record {
+  padding-bottom: 8px;
+}
+@media (max-width: 600px) {
+  .actions .payButton {
+    flex-basis: 100%;
+  }
+  .actions {
+    gap: 10px;
+  }
+}

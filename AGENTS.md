@@ -1,5 +1,7 @@
 # AI 协作与工程规范
 
+支付宝沙箱增量：门户独立订单详情已提供电脑网站支付收银台签名跳转与主动验签查单，独立 AlipaySandboxPayment 表保存金额快照和渠道状态。固定沙箱网关，服务端按需读取忽略的 .local/payments/alipay-sandbox.env，不打印密钥。待核实沙箱记录阻止开工/取消/跨渠道 mock 创建；成功记录不允许直接取消，已接入本地异步通知验签与幂等状态更新，已完成一笔实际支付宝沙箱公网通知验收（5分），证据见 QUOTES.md；已接入沙箱未付款关单与截止后查单触发关单、关单后原订单取消保护；实际渠道关单及取消联动已用专用待付款测试交易验收，未建交易的电脑网站链接保持待核实。已接入未开工全额沙箱退款申请、管理员执行与结果核验，已完成一笔5分实际沙箱退款执行及平台回看验收，独立渠道退款查询与专用待付款交易关单也已验收，细分证据见 QUOTES.md；真实支付和 RN SDK 尚未接入。相关修改运行 test:alipay-sandbox、verify:alipay-notifications、verify:alipay-closures、verify:alipay-closures-ui、verify:alipay-refunds、verify:alipay-refunds-ui、verify:alipay-sandbox、verify:alipay-sandbox-ui，并回归原订单开工/取消及 mock 流程。实际买家付款与渠道成功查单须单独记录，不以注入响应或被拦截的跳转冒充，规则见 docs/QUOTES.md。
+
 适用于本仓库。修改前阅读本文、[结构与维护约定](docs/ARCHITECTURE.md)和目标模块。当前用户明确指令优先；已授权步骤内正常推进，不反复请求确认。
 
 后端任务同时阅读 [后端结构与维护约定](docs/BACKEND_ARCHITECTURE.md)，运行环境见 [API_SETUP.md](docs/API_SETUP.md)。
@@ -134,3 +136,5 @@
 - RN 模拟支付位于 features/payments，原生 GET/POST mobile/orders/:id/payments 和 POST :paymentId/mock-success 复用 PaymentsService/CreateMockPaymentDto，仅本人访问。创建保留 Expo UUID，成功确认以支付单 ID 幂等；关闭重读、查单访问时超时关闭，时间以服务端为准。执行 verify:mobile-payments 及对应 -android，回归原模拟创建/成功/超时和订单取消。两个本人详情在已模拟成功时隐藏取消，未知支付读取状态不开放取消。RN 退款仅提供本人申请和查询，不开放管理员处理、真实渠道或异地网关扩展。
 
 - RN 模拟退款申请 POST mobile/orders/:id/payments/:paymentId/refund 复用 RefundRequestsService/RequestMockRefundDto；原因规范化后 1～500 字符，金额仅从服务端原单读取。同原因保持 Expo UUID，关闭重读，申请不代表成功且暂停开工。使用既有 GET 支付单查询请求/处理结果；不提供原生管理员处理路由。执行 test:payment-rules、verify:mobile-refunds 及对应 -android，回归 verify:mock-refunds、verify:refund-completions 和模拟支付/开工。REFUND_LIMITS 与 canRequestMockRefund 在 contracts/payment-rules，DTO、门户和 RN 共用。
+
+- Web/门户正常页面统一展示支付/退款并保留测试环境标记，已移除模拟支付 UI；原模拟 API、RN 与历史记录保留。退役 UI 的 verify:mock-success、verify:mock-refunds、verify:refund-completions 现仅校验 API，verify:mock-payments-ui 检查入口隐藏及环境标记，不能继续声称它们覆盖模拟弹窗。实际沙箱证据统一维护在 docs/QUOTES.md。

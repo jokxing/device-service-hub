@@ -59,6 +59,7 @@ export class OrderStartsService {
     if (previous) return previous;
     try {
       return await this.database.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "Ticket" WHERE "id"=${source.ticketId} FOR UPDATE`;
         // Cancellation and start compete on the same ticket version and row lock.
         const changed = await tx.ticket.updateMany({
           where: {
@@ -78,6 +79,11 @@ export class OrderStartsService {
                 start: { is: null },
                 quote: { status: "accepted" },
                 payments: { none: { refund: { isNot: null } } },
+                sandboxPayments: {
+                  none: {
+                    OR: [{ status: "pending" }, { refund: { isNot: null } }],
+                  },
+                },
               },
             },
           },
