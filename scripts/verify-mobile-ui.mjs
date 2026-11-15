@@ -4,7 +4,7 @@ import { openLocalBrowser } from "./lib/browser.mjs";
 const { context, page, screenshots, errors } = await openLocalBrowser(
   "mobile-web-browser-profile",
 );
-const origin = "http://127.0.0.1:8081";
+const origin = "http://127.0.0.1:8082";
 try {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(origin, { waitUntil: "networkidle", timeout: 60000 });

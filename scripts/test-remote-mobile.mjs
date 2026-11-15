@@ -191,6 +191,61 @@ test("Remote gateway limits routes, browser headers, accounts, sessions, bodies 
     assert.equal(devices.data.url, "/api/mobile/devices/resolve?code=RT-TEST");
     assert.equal(devices.response.headers.get("set-cookie"), null);
     assert.equal(devices.response.headers.get("cache-control"), "no-store");
+    const reads = [
+      "/api/mobile/orders?page=2&status=completed",
+      "/api/mobile/orders/by-ticket/ticket-id",
+      "/api/mobile/orders/order-id",
+      "/api/mobile/orders/order-id/payments",
+      "/api/mobile/tasks/ticket-id/order",
+      "/api/mobile/tasks/ticket-id/quote",
+      "/api/mobile/tickets/ticket-id/quote",
+    ];
+    for (const route of reads) {
+      const result = await request(base, route, { headers });
+      assert.equal(result.response.status, 200);
+      assert.equal(result.data.url, route);
+    }
+    const intent = JSON.stringify({
+      requestId: "original-intent",
+      expectedVersion: 4,
+      quoteRevision: 2,
+    });
+    for (const route of [
+      "/api/mobile/tasks/ticket-id/quote",
+      "/api/mobile/tasks/ticket-id/quote/revisions",
+      "/api/mobile/tickets/ticket-id/quote/accept",
+      "/api/mobile/tickets/ticket-id/quote/reject",
+      "/api/mobile/orders/order-id/start",
+      "/api/mobile/orders/order-id/cancel",
+    ]) {
+      const result = await request(base, route, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: intent,
+      });
+      assert.equal(result.response.status, 200);
+      assert.equal(
+        result.data.body,
+        intent,
+        "Gateway must not rebuild mutation intent",
+      );
+    }
+    for (const [method, route] of [
+      ["POST", "/api/mobile/orders/order-id/payments"],
+      ["POST", "/api/mobile/orders/order-id/payments/pay-id/mock-success"],
+      ["POST", "/api/mobile/orders/order-id/payments/pay-id/refund"],
+      ["GET", "/api/mobile/orders/order-id/alipay-sandbox"],
+      ["POST", "/api/mobile/tasks/ticket-id/order"],
+      ["GET", "/api/mobile/tasks/ticket-id/quote/history"],
+      ["GET", "/api/mobile/orders/order-id/payments/extra"],
+      ["DELETE", "/api/mobile/orders/order-id"],
+      ["GET", "/api/mobile/orders/%2e%2e"],
+    ]) {
+      assert.equal(
+        (await request(base, route, { method, headers })).response.status,
+        404,
+      );
+    }
     const multipart =
       '--unit-boundary\r\nContent-Disposition: form-data; name="file"; filename="x.png"\r\n\r\nunit-image\r\n--unit-boundary--\r\n';
     const photo = await request(

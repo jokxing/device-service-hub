@@ -89,5 +89,10 @@ export function openLocalAndroid() {
       throw new Error("Incomplete Android UI dump");
     return xml;
   }
-  return { run, capture, hierarchy };
+  function connect() {
+    if (/^[A-Za-z0-9.-]+:\d+$/.test(serial)) run(["connect", serial]);
+    if (run(["get-state"]).trim() !== "device")
+      throw new Error("请先打开模拟器并等待 Android 桌面，再重新运行命令。");
+  }
+  return { run, capture, hierarchy, connect };
 }

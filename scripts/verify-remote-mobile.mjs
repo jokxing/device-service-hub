@@ -3,7 +3,8 @@ import { nativeHttp } from "./lib/native-http.mjs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { once } from "node:events";
-import { randomUUID } from "node:crypto";
+import { createRequire } from "node:module";
+import { randomUUID, randomBytes } from "node:crypto";
 import { openLocalApi } from "./lib/local-api.mjs";
 import { createRemoteMobileGateway } from "./lib/remote-mobile-gateway.mjs";
 
@@ -135,6 +136,52 @@ try {
         },
       });
       assert.equal(record.response.status, 201);
+      if (process.argv.includes("--photos")) {
+        const sharp = createRequire(import.meta.url)("sharp");
+        const image = await sharp(randomBytes(1600 * 1200 * 3), {
+          raw: { width: 1600, height: 1200, channels: 3 },
+        })
+          .jpeg({ quality: 85 })
+          .toBuffer();
+        const photoId = randomUUID(),
+          boundary = "dsh-" + randomUUID();
+        const body = Buffer.concat([
+          Buffer.from(
+            "--" +
+              boundary +
+              '\r\nContent-Disposition: form-data; name="file"; filename="camera.jpg"\r\nContent-Type: image/jpeg\r\n\r\n',
+          ),
+          image,
+          Buffer.from("\r\n--" + boundary + "--\r\n"),
+        ]);
+        const started = Date.now();
+        const uploaded = await nativeHttp(
+          base +
+            "/api/mobile/tickets/" +
+            record.value.id +
+            "/photos/" +
+            photoId,
+          {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + token,
+              "Content-Type": "multipart/form-data; boundary=" + boundary,
+              "Content-Length": body.length,
+            },
+            body,
+            timeoutMs: 60000,
+          },
+        );
+        console.log(
+          JSON.stringify({
+            photoBytes: image.length,
+            uploadStatus: uploaded.status,
+            elapsedMs: Date.now() - started,
+          }),
+        );
+        assert.equal(uploaded.status, 201);
+      }
+
       assert.equal(
         (await call(`/api/mobile/tickets/${record.value.id}`, { token }))
           .response.status,
@@ -185,10 +232,18 @@ try {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     }).catch(() => {});
+  const uploadedFiles = await db.query(
+    'SELECT p."storageKey" FROM "TicketPhoto" p JOIN "Ticket" t ON t.id=p."ticketId" WHERE t."requestId"=$1 AND t."reporterId"=$2',
+    [requestId, config.accounts[0].id],
+  );
   await db.query(
     'DELETE FROM "Ticket" WHERE "requestId"=$1 AND "reporterId"=$2',
     [requestId, config.accounts[0].id],
   );
+  for (const row of uploadedFiles.rows)
+    await fs.unlink(
+      path.join(local.root, ".local/uploads/ticket-photos", row.storageKey),
+    );
   await db.end();
   server.close();
   server.closeAllConnections();

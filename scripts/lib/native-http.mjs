@@ -4,7 +4,7 @@ import https from "node:https";
 /** Raw transport: Node fetch adds browser-style Sec-Fetch headers. */
 export function nativeHttp(
   url,
-  { method = "GET", headers = {}, body, signal } = {},
+  { method = "GET", headers = {}, body, signal, timeoutMs = 20000 } = {},
 ) {
   return new Promise((resolve, reject) => {
     const transport = new URL(url).protocol === "https:" ? https : http;
@@ -33,7 +33,7 @@ export function nativeHttp(
         });
       },
     );
-    request.setTimeout(20000, () =>
+    request.setTimeout(timeoutMs, () =>
       request.destroy(new Error("Native upstream timeout")),
     );
     request.on("error", reject);

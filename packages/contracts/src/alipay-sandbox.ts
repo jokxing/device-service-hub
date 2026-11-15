@@ -6,6 +6,7 @@ export interface AlipaySandboxPaymentRecord {
   createdAt: string;
   expiresAt: string;
   checkedAt: string | null;
+  checkoutKind?: "page" | "app";
   refund?: AlipaySandboxRefundRecord | null;
 }
 export interface AlipaySandboxRefundRecord {
@@ -27,4 +28,8 @@ export interface CreateAlipaySandboxInput {
 export interface AlipaySandboxCheckout {
   payment: AlipaySandboxPaymentRecord;
   checkoutUrl: string | null;
+}
+export interface AlipaySandboxAppCheckout {
+  payment: AlipaySandboxPaymentRecord;
+  orderString: string | null;
 }

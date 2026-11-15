@@ -253,6 +253,7 @@ export type {
   AlipaySandboxPaymentRecord,
   CreateAlipaySandboxInput,
   AlipaySandboxCheckout,
+  AlipaySandboxAppCheckout,
   AlipaySandboxRefundRecord,
   RequestAlipaySandboxRefundInput,
 } from "./alipay-sandbox";

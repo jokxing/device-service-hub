@@ -1,12 +1,19 @@
+param([switch]$LocalApi)
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\android-build-env.ps1"
 Set-Location -LiteralPath $androidProjectRoot
+if ($LocalApi) {
+  $endpointConfig = @{ apiUrl = 'http://127.0.0.1:3001/api' }
+  $env:DSH_ANDROID_LOOPBACK_API = '1'
+} else {
+Remove-Item Env:DSH_ANDROID_LOOPBACK_API -ErrorAction SilentlyContinue
 $endpointFile = Join-Path $androidLocalRoot 'remote-mobile/endpoint.json'
 $endpointConfig = Get-Content -LiteralPath $endpointFile | ConvertFrom-Json
 $remoteAccountConfig = Get-Content -LiteralPath (Join-Path $androidLocalRoot 'remote-mobile/accounts.json') | ConvertFrom-Json
 if ([DateTimeOffset]::Parse($remoteAccountConfig.expiresAt) -le [DateTimeOffset]::UtcNow) { throw 'Remote test window expired; refusing to build an unusable APK.' }
 $endpointUri = [Uri]$endpointConfig.apiUrl
 if ($endpointUri.Scheme -ne 'https' -or $endpointUri.Host -notmatch '^[a-z0-9-]+\.trycloudflare\.com$' -or $endpointUri.AbsolutePath -ne '/api' -or $endpointUri.UserInfo -or $endpointUri.Query -or $endpointUri.Fragment) { throw 'Expected the verified temporary HTTPS mobile API endpoint.' }
+}
 $env:EXPO_PUBLIC_API_URL = $endpointConfig.apiUrl
 $env:DSH_ANDROID_LOCAL_APK = '1'
 $env:NODE_ENV = 'production'
@@ -59,11 +66,13 @@ try {
   $artifact = Join-Path $androidDirectory 'app/build/outputs/apk/release/app-release.apk'
   $outputDirectory = Join-Path $androidLocalRoot 'artifacts/android'
   New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
-  $output = Join-Path $outputDirectory 'device-service-hub-0.1.0-test.apk'
+  $artifactName = if ($LocalApi) { 'device-service-hub-local-sdk.apk' } else { 'device-service-hub-0.1.0-test.apk' }
+  $output = Join-Path $outputDirectory $artifactName
   Copy-Item -LiteralPath $artifact -Destination $output
   $apkStream = [IO.File]::OpenRead($output)
   try { $checksum = -join ([Security.Cryptography.SHA256]::Create().ComputeHash($apkStream) | ForEach-Object { $_.ToString('x2') }) } finally { $apkStream.Dispose() }
-  @{ apk = $output; sha256 = $checksum; apiUrl = $endpointConfig.apiUrl; builtAt = [DateTime]::UtcNow.ToString('o'); architectures = @('arm64-v8a', 'x86_64'); signing = 'local-test'; metroRequired = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputDirectory 'build-info.json')
+  $infoName = if ($LocalApi) { 'build-info-local.json' } else { 'build-info.json' }
+  @{ apk = $output; sha256 = $checksum; apiUrl = $endpointConfig.apiUrl; builtAt = [DateTime]::UtcNow.ToString('o'); architectures = @('arm64-v8a', 'x86_64'); signing = 'local-test'; metroRequired = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputDirectory $infoName)
   Write-Output "APK ready: $output"
   Write-Output "SHA256: $checksum"
 } finally { Remove-Item Env:DSH_APK_KEY_PASSWORD -ErrorAction SilentlyContinue }

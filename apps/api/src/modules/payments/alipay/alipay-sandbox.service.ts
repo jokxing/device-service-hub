@@ -11,6 +11,7 @@ import type {
   AlipaySandboxPaymentRecord,
   AlipaySandboxCheckout,
   CreateAlipaySandboxInput,
+  AlipaySandboxAppCheckout,
 } from "@device-service-hub/contracts";
 import { DatabaseService } from "../../../database/database.service";
 import { Prisma } from "../../../generated/prisma/client";
@@ -54,6 +55,7 @@ export class AlipaySandboxService {
     actor: PublicUser,
     orderId: string,
     input: CreateAlipaySandboxInput,
+    checkoutKind: "page" | "app" = "page",
   ): Promise<AlipaySandboxCheckout> {
     const source = await this.own(actor, orderId);
     const config = getAlipaySandboxConfig();
@@ -82,6 +84,10 @@ export class AlipaySandboxService {
         });
         if (previous && previous.orderId !== orderId)
           throw new ConflictException("提交编号已用于其他订单");
+        if (previous && previous.checkoutKind !== checkoutKind)
+          throw new ConflictException(
+            "支付单收银台类型不匹配，请使用原入口或先关闭原支付单",
+          );
         if (previous && previous.status !== "pending")
           return { payment: record(previous), checkoutUrl: null };
         if (
@@ -130,6 +136,7 @@ export class AlipaySandboxService {
               amountCents: order.totalCents,
               appId: config.appId,
               sellerId: config.sellerId,
+              checkoutKind,
               createdAt: now,
               expiresAt: new Date(
                 Math.floor(now.getTime() / 1000) * 1000 + 900000,
@@ -149,12 +156,18 @@ export class AlipaySandboxService {
           checkoutUrl:
             row.expiresAt <= now
               ? null
-              : this.gateway.checkout(
-                  row.id,
-                  row.amountCents,
-                  row.expiresAt,
-                  orderId,
-                ),
+              : checkoutKind === "app"
+                ? this.gateway.appCheckout(
+                    row.id,
+                    row.amountCents,
+                    row.expiresAt,
+                  )
+                : this.gateway.checkout(
+                    row.id,
+                    row.amountCents,
+                    row.expiresAt,
+                    orderId,
+                  ),
         };
       });
     } catch (error) {
@@ -177,6 +190,26 @@ export class AlipaySandboxService {
     });
     if (!row) throw new NotFoundException("沙箱支付单不存在");
     return this.create(actor, orderId, { requestId: row.requestId });
+  }
+  async createApp(
+    actor: PublicUser,
+    orderId: string,
+    input: CreateAlipaySandboxInput,
+  ): Promise<AlipaySandboxAppCheckout> {
+    const result = await this.create(actor, orderId, input, "app");
+    return { payment: result.payment, orderString: result.checkoutUrl };
+  }
+  async checkoutApp(
+    actor: PublicUser,
+    orderId: string,
+    id: string,
+  ): Promise<AlipaySandboxAppCheckout> {
+    await this.own(actor, orderId);
+    const row = await this.db.alipaySandboxPayment.findFirst({
+      where: { id, orderId, actorId: actor.id },
+    });
+    if (!row) throw new NotFoundException("支付单不存在或无权访问");
+    return this.createApp(actor, orderId, { requestId: row.requestId });
   }
   async query(
     actor: PublicUser,

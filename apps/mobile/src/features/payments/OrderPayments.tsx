@@ -8,8 +8,6 @@ import ActionButton from "../../shared/components/ActionButton";
 import LoadFeedback from "../../shared/components/LoadFeedback";
 import { typography } from "../../shared/styles/typography";
 import { spacing } from "../../shared/theme";
-import { canCreateMockPayment } from "./rules";
-import CreateMockPaymentAction from "./CreateMockPaymentAction";
 import PaymentRecordCard from "./PaymentRecordCard";
 export default function OrderPayments({
   order,
@@ -25,9 +23,9 @@ export default function OrderPayments({
   reload: () => void;
 }) {
   return (
-    <ContentCard title="模拟支付单">
+    <ContentCard title="历史本地测试支付">
       <Text style={typography.muted}>
-        本地模拟流程，不发生真实扣款。真实支付未接入，维修完成不代表付款。
+        历史本地测试记录与支付宝支付分别保存，不代表渠道付款。
       </Text>
       <ActionButton
         title="刷新查单（模拟）"
@@ -49,13 +47,6 @@ export default function OrderPayments({
               reload={reload}
             />
           ))}
-          {canCreateMockPayment(order, payments) && (
-            <CreateMockPaymentAction
-              key={order.id}
-              order={order}
-              reload={reload}
-            />
-          )}
         </View>
       )}
     </ContentCard>

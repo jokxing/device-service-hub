@@ -69,3 +69,6 @@ Windows 命令继续通过项目 `scripts/npm-local.ps1` 执行。API 验证覆�
 Web 验证：`verify:web-photos` 通过真实原生上传生成的纯色样例，核对管理员 Cookie 读取、匿名/非管理员/Bearer 拒绝、错误工单与图片关联、WebP/no-store/字段白名单，以及放大预览、无图、列表/单图失败重试、关闭释放 Blob URL、401 清理和 390px 布局。脚本仅精确清理本轮随机工单及其图片；不修改人工工单及其图片。截图：[管理员照片区](screenshots/service-admin-photos.png)、[放大预览](screenshots/service-admin-photo-preview.png)、[窄屏照片区](screenshots/service-admin-photos-mobile.png)。
 
 同期 Web/API/门户构建、`verify:api`、`verify:connected-ui` 和 `verify:ui` 通过；已检查三张横竖样例图的桌面、窄屏与放大预览截图。本步未修改 RN 源码、数据库结构或已有迁移；不将 Web 浏览器验证记为真机拍摄验证。
+
+2026-11-13 异地真机反馈上传超时：客户端此前统一 12 秒预算，约 1.37MB 样例照片经实际内测隧道上传耗时 19.8 秒，返回 201。现将 Multipart 文件上传单独设为 60 秒，普通请求仍为 12 秒；受限入口仅照片 POST 的总预算为 50 秒，接收请求上限 60 秒，本机上游仍保留默认 20 秒超时。保留 5MB/6MB 限额、当前归属、UUID 防重与无自动重试，结果不明仍应刷新列表核对。此测量为电脑经公网隧道上传，不代表修复后真机验收。使用 verify-remote-mobile.mjs --public --photos 可定向验证约 1.37MB 图片，清理只按本轮随机工单及关联文件执行。
+修复后电脑经实际 HTTPS 入口上传约 1.37MB 样例耗时 26.5 秒并返回 201；照片 API、受限入口单元检查、全仓 build、RN 导出与 APK release 构建及签名校验通过。check:mobile 使用离线依赖映射检查通过，不能据此认定在线 SDK 版本校验完成；当前无在线模拟器，修复后实体手机复测待用户确认。

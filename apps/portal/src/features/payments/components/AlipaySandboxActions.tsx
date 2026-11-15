@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import RequestRefundAction from "./RequestRefundAction";
 import { useRouter } from "next/navigation";
 import { Alert, Button } from "antd";
 import type {
@@ -37,10 +38,12 @@ export default function AlipaySandboxActions({
   orderId,
   amountCents,
   payment,
+  allowRefund = false,
 }: {
   orderId: string;
   amountCents: number;
   payment?: AlipaySandboxPaymentRecord;
+  allowRefund?: boolean;
 }) {
   const router = useRouter();
   const [refreshing, startTransition] = useTransition();
@@ -67,6 +70,9 @@ export default function AlipaySandboxActions({
   return (
     <>
       <div className={styles.actions}>
+        {allowRefund && payment?.status === "succeeded" && !payment.refund && (
+          <RequestRefundAction payment={payment} />
+        )}
         {payment?.refund && (
           <Button
             loading={submitting || refreshing}

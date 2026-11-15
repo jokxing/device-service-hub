@@ -1,5 +1,7 @@
 import { useMyPayments } from "../payments/useMyPayments";
 import OrderPayments from "../payments/OrderPayments";
+import AlipayPayments from "../payments/alipay/AlipayPayments";
+import { useCallback, useState } from "react";
 import CancelOrderAction from "./CancelOrderAction";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Screen from "../../shared/components/Screen";
@@ -14,32 +16,56 @@ function Detail() {
     router = useRouter();
   const { data, loading, error, reload } = useOrder(id);
   const payments = useMyPayments(id);
-  const refresh = () => {
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const paymentChanged = useCallback(
+    (orderChanged = false) => {
+      payments.reload();
+      if (orderChanged) reload();
+    },
+    [payments.reload, reload],
+  );
+  const refresh = useCallback(() => {
     reload();
     payments.reload();
-  };
+  }, [reload, payments.reload]);
   return (
     <Screen>
       <LoadFeedback loading={loading} error={error} />
       {data && (
         <>
           <OrderSnapshot order={data} />
-          {payments.data && (
+          {payments.data && !checkingPayment && (
             <CancelOrderAction
               key={`${data.id}:${data.ticket.version}`}
               ticket={data.ticket}
               order={data}
-              payments={payments.data}
+              payments={payments.data.payments}
+              blockCancellation={
+                payments.loading ||
+                !!payments.error ||
+                payments.data.blockCancellation
+              }
               reload={refresh}
             />
           )}
-          <OrderPayments
+          <AlipayPayments
             order={data}
-            payments={payments.data}
-            loading={payments.loading}
-            error={payments.error}
-            reload={refresh}
+            blockedByMock={
+              !payments.data ||
+              payments.data.payments.some((p) => p.status !== "closed")
+            }
+            onChanged={paymentChanged}
+            onCheckingChange={setCheckingPayment}
           />
+          {!!payments.data?.payments.length && (
+            <OrderPayments
+              order={data}
+              payments={payments.data.payments}
+              loading={payments.loading}
+              error={payments.error}
+              reload={refresh}
+            />
+          )}
           <TicketRecordDetails ticket={data.ticket} />
         </>
       )}

@@ -33,6 +33,8 @@ export async function apiRequest<T>(
     responseType?: "json" | "image";
   } = {},
 ): Promise<T> {
+  const multipart = body instanceof FormData;
+  const timeoutMs = multipart ? 60000 : 12000;
   const controller = new AbortController();
   let timedOut = false;
   const abort = () => controller.abort();
@@ -41,7 +43,7 @@ export async function apiRequest<T>(
   const timeout = setTimeout(() => {
     timedOut = true;
     controller.abort();
-  }, 12000);
+  }, timeoutMs);
   try {
     const response = await fetch(API_BASE_URL + route, {
       method,

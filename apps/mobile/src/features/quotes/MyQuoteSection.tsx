@@ -61,6 +61,7 @@ export default function MyQuoteSection({
             key={`${data.order.id}:${ticket.version}`}
             ticket={ticket}
             payments={data.payments}
+            blockCancellation={loading || !!error || data.blockCancellation}
             order={data.order}
             reload={reload}
           />

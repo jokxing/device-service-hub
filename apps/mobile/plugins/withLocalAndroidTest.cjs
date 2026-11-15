@@ -6,6 +6,8 @@ const {
 module.exports = function withLocalAndroidTest(config) {
   config = withAndroidManifest(config, (mod) => {
     const manifest = mod.modResults.manifest;
+    manifest.application[0].$['android:usesCleartextTraffic'] =
+      process.env.DSH_ANDROID_LOOPBACK_API === '1' ? 'true' : 'false';
     manifest["uses-permission"] = (manifest["uses-permission"] ?? []).filter(
       (permission) =>
         permission.$["android:name"] !==

@@ -12,6 +12,7 @@ export function toSandboxPayment(
     orderId: row.orderId,
     amountCents: row.amountCents,
     status: row.status,
+    checkoutKind: row.checkoutKind,
     createdAt: row.createdAt.toISOString(),
     expiresAt: row.expiresAt.toISOString(),
     checkedAt: row.checkedAt?.toISOString() ?? null,

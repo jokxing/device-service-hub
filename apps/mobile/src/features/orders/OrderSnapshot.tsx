@@ -40,7 +40,7 @@ export default function OrderSnapshot({
         订单金额：¥{formatCents(order.totalCents)}（人民币）
       </Text>
       <Text style={typography.muted}>
-        以上为确认时的订单快照，维修完成不代表付款。本地模拟不发生真实扣款，真实支付未接入。
+        以上为确认时的订单快照，维修完成不代表付款。支付结果请查看订单支付记录。
       </Text>
     </ContentCard>
   );

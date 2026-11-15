@@ -7,8 +7,8 @@ export function useMyPayments(id: string) {
   return useApiResource(
     useCallback(
       async (signal: AbortSignal) => {
-        if (user?.role !== "reporter") throw new Error("仅可读取本人模拟支付");
-        return (await readMyPayments(request, id, signal)).payments;
+        if (user?.role !== "reporter") throw new Error("仅可读取本人支付记录");
+        return readMyPayments(request, id, signal);
       },
       [request, user?.id, user?.role, id],
     ),

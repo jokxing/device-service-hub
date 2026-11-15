@@ -24,7 +24,7 @@ const database = new DatabaseService(),
 try {
   await local.waitForApi();
   const { reporter, admin } = await fixtures.identities(),
-    tech = await fixtures.technician("沙箱退款界面维修员"),
+    tech = await fixtures.technician("李师傅"),
     task = await fixtures.orderedTask(tech);
   const created = await local.request(
     `/orders/${task.order.id}/alipay-sandbox`,
@@ -55,7 +55,7 @@ try {
   await dialog.waitFor();
   await dialog
     .getByLabel("退款原因", { exact: true })
-    .fill("维修计划调整，请退回沙箱款项");
+    .fill("维修计划调整，不再需要本次服务");
   await dialog.screenshot({
     path: path.join(screenshots, "portal-alipay-refund-request-mobile.png"),
     animations: "disabled",

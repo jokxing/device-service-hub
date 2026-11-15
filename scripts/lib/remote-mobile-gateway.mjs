@@ -11,6 +11,14 @@ const routes = [
   ["POST", new RegExp(`^/api/mobile/tickets/${id}/(confirm|photos/${id})$`)],
   ["GET", new RegExp(`^/api/mobile/tasks(/${id})?$`)],
   ["POST", new RegExp(`^/api/mobile/tasks/${id}/(accept|result)$`)],
+  ["GET", new RegExp(`^/api/mobile/tasks/${id}/(quote|order)$`)],
+  ["POST", new RegExp(`^/api/mobile/tasks/${id}/quote(/revisions)?$`)],
+  ["GET", new RegExp(`^/api/mobile/tickets/${id}/quote$`)],
+  ["POST", new RegExp(`^/api/mobile/tickets/${id}/quote/(accept|reject)$`)],
+  ["GET", /^\/api\/mobile\/orders$/],
+  ["GET", new RegExp(`^/api/mobile/orders/by-ticket/${id}$`)],
+  ["GET", new RegExp(`^/api/mobile/orders/${id}(/payments)?$`)],
+  ["POST", new RegExp(`^/api/mobile/orders/${id}/(start|cancel)$`)],
 ];
 
 export function createRemoteMobileGateway(
@@ -87,7 +95,8 @@ export function createRemoteMobileGateway(
       return;
     }
     const abort = new AbortController();
-    const timeout = setTimeout(() => abort.abort(), 20000);
+    const upload = req.method === "POST" && /\/photos\//.test(rawPath);
+    const timeout = setTimeout(() => abort.abort(), upload ? 50000 : 20000);
     res.on("close", () => {
       if (!res.writableEnded) abort.abort();
     });
@@ -209,7 +218,7 @@ export function createRemoteMobileGateway(
       clearTimeout(timeout);
     }
   });
-  server.requestTimeout = 25000;
+  server.requestTimeout = 60000;
   server.headersTimeout = 10000;
   server.maxConnections = 16;
   return server;

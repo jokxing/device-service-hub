@@ -102,16 +102,23 @@ function Cancellation({
 export default function CancelOrderAction({
   ticket,
   payments,
+  blockCancellation,
   order,
   reload,
 }: {
   ticket: ReporterTicketRecord;
   order: ServiceOrderRecord;
   payments: PaymentRecord[];
+  blockCancellation: boolean;
   reload: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  if (!canCancelOrder(ticket, order) || hasMockSuccess(payments)) return null;
+  if (
+    !canCancelOrder(ticket, order) ||
+    hasMockSuccess(payments) ||
+    blockCancellation
+  )
+    return null;
   return (
     <>
       <ActionButton title="取消订单" secondary onPress={() => setOpen(true)} />

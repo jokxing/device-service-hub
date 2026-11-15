@@ -7,7 +7,6 @@ import { formatCents } from "@device-service-hub/contracts/quote-rules";
 import { formatDate } from "../../../shared/utils/date";
 import styles from "../../../shared/components/PortalPage.module.css";
 import AlipaySandboxActions from "./AlipaySandboxActions";
-import RequestRefundAction from "./RequestRefundAction";
 import { Tag } from "antd";
 import paymentStyles from "../payments.module.css";
 export default function AlipaySandboxPayments({
@@ -73,13 +72,11 @@ export default function AlipaySandboxPayments({
             </p>
           </div>
         )}
-        {order.status === "awaiting_start" &&
-          payment.status === "succeeded" &&
-          !payment.refund && <RequestRefundAction payment={payment} />}
         <AlipaySandboxActions
           orderId={order.id}
           amountCents={payment.amountCents}
           payment={payment}
+          allowRefund={order.status === "awaiting_start"}
         />
       </article>
     );

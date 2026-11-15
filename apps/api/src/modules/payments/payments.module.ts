@@ -1,4 +1,5 @@
 import { NativePaymentsController } from "./native-payments.controller";
+import { NativeAlipaySandboxController } from "./alipay/native-alipay-sandbox.controller";
 import { AlipaySandboxController } from "./alipay/alipay-sandbox.controller";
 import { AlipaySandboxService } from "./alipay/alipay-sandbox.service";
 import { AlipaySandboxGateway } from "./alipay/alipay-sandbox.gateway";
@@ -23,6 +24,7 @@ import {
     AdminAlipaySandboxController,
     PaymentsController,
     NativePaymentsController,
+    NativeAlipaySandboxController,
     AlipaySandboxController,
     AlipaySandboxNotificationsController,
   ],

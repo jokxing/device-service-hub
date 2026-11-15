@@ -10,6 +10,7 @@ import {
 } from "@device-service-hub/contracts/order-rules";
 import { formatCents } from "@device-service-hub/contracts/quote-rules";
 import Screen from "../../shared/components/Screen";
+import Pagination from "../../shared/components/Pagination";
 import ContentCard from "../../shared/components/ContentCard";
 import ActionButton from "../../shared/components/ActionButton";
 import LoadFeedback from "../../shared/components/LoadFeedback";
@@ -88,20 +89,14 @@ function List() {
         </ContentCard>
       ))}
       {data && (
-        <>
-          <ActionButton
-            title="上一页"
-            secondary
-            disabled={loading || page <= 1}
-            onPress={() => router.setParams({ page: String(page - 1) })}
-          />
-          <ActionButton
-            title="下一页"
-            secondary
-            disabled={loading || page >= pages}
-            onPress={() => router.setParams({ page: String(page + 1) })}
-          />
-        </>
+        <Pagination
+          page={page}
+          pagination={data}
+          loading={loading}
+          onPageChange={(nextPage) =>
+            router.setParams({ page: String(nextPage) })
+          }
+        />
       )}
     </Screen>
   );

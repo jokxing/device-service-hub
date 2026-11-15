@@ -13,6 +13,28 @@ import { verifyNotification } from "./sandbox-notification";
 
 @Injectable()
 export class AlipaySandboxGateway {
+  appCheckout(id: string, amountCents: number, expiresAt: Date): string {
+    const config = getAlipaySandboxConfig();
+    const params = this.params(
+      "alipay.trade.app.pay",
+      {
+        out_trade_no: id,
+        total_amount: `${Math.floor(amountCents / 100)}.${String(amountCents % 100).padStart(2, "0")}`,
+        subject: "设备维修服务",
+        product_code: "QUICK_MSECURITY_PAY",
+        time_expire: chinaTime(expiresAt),
+        seller_id: config.sellerId,
+      },
+      config.notifyUrl ? { notify_url: config.notifyUrl } : {},
+    );
+    // SDK requires percent encoding (spaces as %20), after signing original values.
+    return Object.entries(params)
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+      )
+      .join("&");
+  }
   checkout(
     id: string,
     amountCents: number,

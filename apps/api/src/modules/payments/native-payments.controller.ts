@@ -16,6 +16,7 @@ import { PaymentsService } from "./payments.service";
 import { CreateMockPaymentDto } from "./dto/create-mock-payment.dto";
 import { RefundRequestsService } from "./refund-requests.service";
 import { RequestMockRefundDto } from "./dto/request-mock-refund.dto";
+import { AlipaySandboxService } from "./alipay/alipay-sandbox.service";
 @Controller("mobile/orders/:id/payments")
 @NativeClient()
 @UseGuards(NativeSessionGuard)
@@ -23,6 +24,7 @@ export class NativePaymentsController {
   constructor(
     private readonly payments: PaymentsService,
     private readonly refunds: RefundRequestsService,
+    private readonly alipay: AlipaySandboxService,
   ) {}
   private reporter(actor: PublicUser) {
     if (actor.role !== "reporter")
@@ -40,9 +42,14 @@ export class NativePaymentsController {
   @Get() async list(
     @CurrentUser() actor: PublicUser,
     @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
-  ): Promise<{ payments: PaymentRecord[] }> {
+  ): Promise<{ payments: PaymentRecord[]; blockCancellation: boolean }> {
     this.reporter(actor);
-    return { payments: await this.payments.byOrder(actor, id) };
+    const payments = await this.payments.byOrder(actor, id);
+    const alipay = await this.alipay.list(actor, id);
+    return {
+      payments,
+      blockCancellation: alipay.payments.some((p) => p.status !== "closed"),
+    };
   }
   @Post() create(
     @CurrentUser() actor: PublicUser,

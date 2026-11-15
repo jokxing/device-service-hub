@@ -149,6 +149,10 @@ try {
     ),
     fullPage: true,
   });
+  await section.screenshot({
+    path: path.join(screenshots, "portal-payment-overview-mobile.png"),
+    animations: "disabled",
+  });
   await context.clearCookies();
   await context.addCookies([
     {

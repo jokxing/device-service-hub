@@ -14,10 +14,15 @@ export function useMyQuote(id: string) {
         readMyQuote(request, id, signal),
         readMyOrderByTicket(request, id, signal),
       ]);
-      const payments = order.order
-        ? (await readMyPayments(request, order.order.id, signal)).payments
-        : [];
-      return { ...quote, ...order, payments };
+      const snapshot = order.order
+        ? await readMyPayments(request, order.order.id, signal)
+        : null;
+      return {
+        ...quote,
+        ...order,
+        payments: snapshot?.payments ?? [],
+        blockCancellation: snapshot?.blockCancellation !== false,
+      };
     },
     [request, user?.id, user?.role, id],
   );

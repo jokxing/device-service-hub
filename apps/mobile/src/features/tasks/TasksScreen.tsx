@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TicketStatus } from "@device-service-hub/contracts";
 import Screen from "../../shared/components/Screen";
+import Pagination from "../../shared/components/Pagination";
 import ActionButton from "../../shared/components/ActionButton";
 import { typography as styles } from "../../shared/styles/typography";
 import { spacing } from "../../shared/theme";
@@ -81,20 +82,12 @@ function Tasks() {
           onView={() => router.push(`/tasks/${task.id}`)}
         />
       ))}
-      <ActionButton
-        title="上一页"
-        secondary
-        disabled={loading || query.page <= 1}
-        onPress={() =>
-          setQuery((value) => ({ ...value, page: value.page - 1 }))
-        }
-      />
-      <ActionButton
-        title="下一页"
-        secondary
-        disabled={loading || !data || query.page * data.pageSize >= data.total}
-        onPress={() =>
-          setQuery((value) => ({ ...value, page: value.page + 1 }))
+      <Pagination
+        page={query.page}
+        pagination={data}
+        loading={loading}
+        onPageChange={(nextPage) =>
+          setQuery((value) => ({ ...value, page: nextPage }))
         }
       />
     </Screen>

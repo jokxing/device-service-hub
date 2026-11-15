@@ -2,13 +2,21 @@
 
 ## 当前交付范围
 
+支付验收补充（2026-11-15）：修复后的独立 Android APK 已完成新订单 1 分沙箱付款、返回后自动显示已支付，以及同一 APP 支付的真实公网通知验签与 HTTP 200 应答；具体证据见文末“新订单支付返回与 APP 公网通知验收”。
+
 `apps/mobile` 是独立 Expo / React Native 工作区，提供服务首页、报修须知、原生 Stack 导航、主题、安全区与滚动布局，已完成浏览器预览和 Android 模拟器验证。
 
 已接通真实登录、会话恢复、退出、授权设备列表/详情、文字报修、本人分页记录/详情、确认完成及维修任务查询/接单、文字处理结果。已接入设备二维码相机入口及手动编号查询，已接入报修详情拍照/相册补充照片及维修任务只读查看；管理员分派继续使用 Web 后台。设备与工单来自同一 NestJS/PostgreSQL，范围由服务端决定；现有 Web 与门户继续保留。
 
-当前已支持维修员首版报价/修订、本人确认/拒绝、本人订单列表与独立详情；维修员可在任务详情开工和提交结果，由本人确认完成。原生端已支持本地模拟支付创建/确认/查单与超时展示；本人可取消符合条件的待开工订单，原生端支持本人全额模拟退款申请与结果查询，真实支付和原生管理员处理未开放。
+当前已支持维修员首版报价/修订、本人确认/拒绝、本人订单列表与独立详情；维修员可在任务详情开工和提交结果，由本人确认完成。原生端已接入 Android 原生 SDK 沙箱支付、服务端验签查单与未付款关单；旧本地模拟 API 和历史记录保留，正常界面不再创建本地模拟支付。本人可取消符合条件的待开工订单，旧本地记录仍支持全额模拟退款申请与结果查询；RN 已支持本人沙箱退款申请与结果查询；真实资金和原生管理员执行未开放。
+
+异地受限入口现支持报价协商、本人订单查询/取消和维修履约；仅开放本人支付状态读取供取消判断，不开放支付/退款写操作或支付宝 SDK。入口边界与检查命令见 [异地移动端内测](REMOTE_MOBILE_TEST.md)。本机原生 API、临时 HTTPS 和实际手机操作分别验收，不能相互替代。
 
 ## 技术与目录
+
+### Android 原生支付
+
+已接入 Android 原生 SDK 沙箱支付；模块、接口、安装包和实际验收证据见本文末尾“Android 原生支付宝支付”。真实资金与 iOS 支付尚未接入。
 
 - Expo SDK 57、React Native 0.86.3、React 19.2.3、TypeScript 和 Expo Router；遵循 SDK 推荐版本组合。当前 Expo Go 设备兼容策略见 [Expo 创建项目说明](https://docs.expo.dev/get-started/create-a-project/) 与 [SDK 版本对应表](https://docs.expo.dev/versions/v57.0.0/)。
 - npm workspaces 与根锁文件管理依赖。Web/门户继续使用各自的 React 版本，不全局替换 React；native 动画、Worklets 和手势依赖固定为 SDK 57 兼容组合，根 overrides 避免 transitive peer 引入其他 SDK 版本。
@@ -68,7 +76,8 @@ apps/mobile/
 
 ```sh
 npm run dev:mobile         # 本地 Metro，8081 端口
-npm run dev:mobile:web     # 同一 Metro 的浏览器预览
+npm run dev:mobile:android # 自动连接已打开的模拟器、启动/复用 Metro 并打开项目
+npm run dev:mobile:web     # RN Web 独立预览，8082 端口
 npm run check:mobile      # TypeScript 与 Expo 依赖版本检查
 npm run build:mobile      # Android JS bundle + Web 静态导出
 npm run verify:mobile-ui  # 已启动 Metro 时检查 Web 预览
@@ -91,7 +100,7 @@ npm run verify:device-scan-android # 原生编号/标签输入和授权详情
 npm run verify:device-camera-android # 相机预览、输入暂停和权限拒绝
 ```
 
-浏览器预览地址为 `http://127.0.0.1:8081`。两个开发命令共用端口，择一启动；同一个 Metro 可以同时服务 Expo Go 与浏览器。脚本禁止自动打开系统浏览器，可手动打开预览链接。
+RN Web 预览地址为 `http://127.0.0.1:8082`，原生调试使用 8081；两个开发命令可同时运行，React 后台仍使用 5173。脚本禁止自动打开系统浏览器，可手动打开预览链接。
 
 `build:mobile` 的静态导出分别位于 `apps/mobile/dist/android` 与 `apps/mobile/dist/web`，Android 导出仅为 JS/Hermes bundle 和资源。另已交付本地签名的独立 Android 内测 APK，产物、密钥、工具链与端点配置均留在 `.local`；使用 `build:mobile:apk` 与 `verify:mobile-apk:android`，边界见 [异地移动端内测](REMOTE_MOBILE_TEST.md)。根 `npm run build` 继续覆盖 Web/API/门户；没有调用云构建或生成 AAB。
 
@@ -105,7 +114,7 @@ ADB 工具绝对路径与设备 serial 放在被忽略的 `.local/android-device
 
 1. 启动已有模拟器，并确保 `adb devices` 可识别目标实例。
 2. 安装 SDK 57 对应的 Expo Go，首次进入时完成并关闭其开发菜单提示。
-3. 启动 `dev:mobile` 或 `dev:mobile:web`，再执行以下命令：
+3. 执行 `npm run dev:mobile:android`，自动连接配置中的模拟器并启动/复用 8081 Metro，然后打开项目。新启动 Metro 时保持窗口运行；复用时保持原 Metro 窗口运行。数据库与 API 仍按 API_SETUP.md 启动。也可在已启动原生 Metro 时单独执行以下命令：
 
 ```sh
 npm run open:mobile:android    # ADB reverse 转发本机 8081/3001，并打开本项目
@@ -325,3 +334,89 @@ contracts/payment-rules 提供 REFUND_LIMITS.reason 与 canRequestMockRefund，�
 已核对 mobile-payment-confirm-check-android.png、mobile-refund-request-dialog-android.png、mobile-refund-requested-android.png、mobile-refund-completion-record-android.png 与 mobile-refund-order-cancelled-android.png。以上为 MuMu + Expo Go；不代表真机、独立 APK、沙箱或真实退款。test:payment-rules、test:business、check:mobile 与 Android/Web bundle 导出通过。
 
 本轮全仓构建、原模拟退款申请/管理员处理、模拟支付创建/成功/超时、开工、原生支付、门户/API 鉴权、已连接入口、原页面和 RN Web 基础导航回归通过。共享退款原因限制与入口规则保持原行为，测试临时记录按本轮编号清理，未扩大原生角色权限或异地网关范围。
+
+## Android 原生支付宝支付
+
+Android 本地模块位于 `apps/mobile/modules/alipay-sandbox`，使用 Expo Modules API 封装官方 `com.alipay.sdk:alipaysdk-android:15.8.42@aar`，Gradle 固定版本从 Maven Central 获取。模块仅在用户确认支付后调用 `PayTask.payV2`，后台线程执行，固定 `EnvUtils.EnvEnum.SANDBOX`，并拦截重复调用；只向 JS 返回状态提示，不记录签名串、SDK 原始结果或密码。Expo Go/Web 不具备该模块，入口禁用并提示使用原生安装包。
+
+原生接口为 `GET/POST /api/mobile/orders/:id/alipay-sandbox`，以及 `POST :paymentId/checkout`、`:paymentId/query`、`:paymentId/close`。复用原支付服务与 DTO、Bearer 鉴权和本人范围；订单金额、商户与 APP ID 均取服务端配置和快照。APP 签名使用 `alipay.trade.app.pay` 与 `QUICK_MSECURITY_PAY`；原门户仍使用电脑网站支付。支付单持久化 `checkoutKind`，已有记录默认为 page，新 APP 为 app，同一 UUID 重放不能切换类型；两个入口继续共用待付款唯一约束、工单锁、通知验签及查单终态保护。
+
+RN 正常订单详情显示“支付”和测试环境说明，不再提供创建本地模拟支付入口；已有历史本地记录保留回看。继续支付复用原支付单；SDK 取消、错误或返回应用后核对服务端结果，不能把 `9000` 当作数据库付款事实。待核实/已支付记录阻止取消入口，服务端仍独立拦截开工/取消冲突。关闭支付只关闭未付款交易，不取消服务订单；渠道尚无交易且原签名仍有效时继续保持待核实。
+
+本地原生安装包执行 `npm run build:mobile:apk:local`，输出 `.local/artifacts/android/device-service-hub-local-sdk.apk`，元数据为 `build-info-local.json`；使用现有本地签名，固定 API `http://127.0.0.1:3001/api`，通过 ADB reverse 转发 3001，需本机数据库/API 运行，不需要 Metro，不适用于异地直接连接。使用 `npm run build:mobile:apk` 的原异地 HTTPS 校验仍保留，当前受限网关不开放支付宝写接口。
+
+验收命令：`verify:mobile-alipay` 覆盖原生鉴权/角色/归属、DTO、金额快照、并发同意图重放、继续支付与跨收银台隔离；`test:alipay-sandbox` 增加 APP 签名原文与百分号编码核对。`verify:mobile-alipay-android` 只回读 `.local/payments/sdk-manual-order.json` 指向的专用人工付款订单，检查安装包哈希、真实验签查单与原生已支付展示，不自动输入支付密码或执行买家付款。
+
+2026-11-15 已通过 MuMu Android + 本地独立 APK 实际 SDK 调起沙箱钱包，买家人工支付 0.01 元后，服务端验签查单为 succeeded，数据库保存交易号，服务订单保持 awaiting_start。此次不是 Expo Go、真机、iOS 或真实资金付款；该支付增量未包含 RN 沙箱退款申请；后续退款交付见文末，异地支付网关未扩展。详细证据见 [QUOTES.md](QUOTES.md)。
+
+依赖来源与许可：[支付宝 SDK POM](https://repo.maven.apache.org/maven2/com/alipay/sdk/alipaysdk-android/15.8.42/alipaysdk-android-15.8.42.pom)、[支付宝 SDK 接入说明](https://opendocs.alipay.com/common/02km9l)、[SDK 使用条款入口](https://opendocs.alipay.com/open/204)、[Expo 本地模块](https://docs.expo.dev/modules/get-started/)。该 SDK 为厂商分发组件，不作为本项目自有源码。缓存 AAR SHA-256：`a6c301708b59a3a7cda843cf02e7b3b0b44afd96819f0a18890322e9868abf28`。
+
+SDK 安装包可在已打开模拟器后执行 `npm run open:mobile:apk:local`：校验本地构建哈希、覆盖安装同签名 APK、连接模拟器并转发 API，一条命令打开项目。此命令不启动 Metro；与 `dev:mobile:android` 的 Expo Go 调试入口分别使用。
+
+原生截图：[SDK 收银台](screenshots/mobile-alipay-sdk-cashier.png)、[原生支付确认](screenshots/mobile-alipay-app-confirm.png)。已支付回看截图由 `verify:mobile-alipay-android` 保存。取消保护摘要通过既有原生只读 `/payments` 响应的 `blockCancellation` 返回，服务端按支付宝记录计算，受限网关无需增加支付路由；未知读取结果不开放取消。
+
+本地 API 监听仅在 127.0.0.1，SDK 安装包经 ADB reverse 连接；沙箱钱包自身仍需能连接支付宝服务。当前没有定时对账任务；返回应用触发查单，读取失败保持待核实并由用户手动查询。新 APP 支付不沿用电脑收银台的 return_url，也不把 SDK 返回参数转为信任通知。首笔 APP 验收未包含公网通知；现已用新 APP 订单补验，见文末独立证据，之前电脑网站通知证据不作为替代。
+
+Metro 保留 Expo 默认 monorepo 解析，仅排除项目 `.local` 工具缓存、生成的 Android 工程与本地模块构建产物，避免原生编译时扫描大量非 JS 文件；没有添加 React 别名或额外 watchFolders。
+
+最终检查：全仓 build、check:mobile、build:mobile、verify:mobile-ui、verify:mobile-android、verify:mobile-alipay、test:alipay-sandbox、verify:api、verify:mobile-api、verify:connected-ui、verify:ui、原支付宝通知/关单/退款 API 与界面、订单开工/取消及原生模拟支付 API 已通过。受限网关 verify:remote-orders 通过，金融写路由仍关闭。Windows Ninja 的既有长路径缓存问题按项目构建脚本清理生成的依赖日志后重建成功；开发 Metro 初次核对超时，排除工具缓存目录并重启后复核通过。测试环境与实际付款证据分别记录，不把浏览器收银台拦截、注入结果或 JS bundle 当作原生付款。
+
+最终本地签名 APK 已安装到 MuMu。`verify:mobile-alipay-android` 对人工付款订单通过：安装包哈希一致、APP 支付验签查询 succeeded/1 分、原生页面已支付回看、取消保护摘要为 true 且不显示取消/再次支付入口。截图：[付款后回看](screenshots/mobile-alipay-app-paid.png)。原生支付成功与服务订单待开工分别保留，未通过删除记录或改状态完成验收。
+
+## 支付返回自动核验修正（2026-11-15）
+
+修复 SDK 返回与 AppState 前台事件竞争：SDK 持有期间，前台事件不再刷新整份订单或卸载支付组件；SDK 结束后按当前服务端列表查询待核实支付，核验完成再更新支付区及取消保护摘要。首次新建支付不再依赖打开钱包前的空列表；重新进入订单页和普通前台恢复也读取最新记录。短暂 pending 最多查三次、间隔 0.8/1.6 秒，不自动重试创建支付或重新调起 SDK。失败保留待核实并提供刷新重试，不能把 SDK 返回当作付款事实。
+
+支付更新不重新加载订单快照，核验期间隐藏取消入口、禁用支付动作。`test:mobile-alipay-return` 覆盖首次新记录、延迟渠道状态、取消未付款、终态、网络失败和离页取消；`verify:mobile-alipay-return-android` 使用专用本地订单，实际打开沙箱 SDK 收银台后退出，不点击付款按钮，检查未手动刷新的自动查单与原生回看。该未付款回归不等同于又完成一笔买家付款。
+
+本轮原生兼容检查覆盖仅提供 `aborted` 的 AbortSignal，不调用浏览器专属 `throwIfAborted`。付款成功仍由服务端判定；取消 SDK 后只读核验，不能将待核实当作已付款。新安装包覆盖安装后，仍使用原 `open:mobile:apk:local` 命令。
+
+最终原生回归通过：修复后的本地签名 APK 已覆盖安装，真实 SDK 收银台未付款退出后，应用自动完成渠道核验并显示最新核验时间，未点击刷新、未注入渠道响应、未执行付款。截图：[退出钱包后自动核验](screenshots/mobile-alipay-return-reconciled.png)。本轮没有改写人工支付事实；全仓构建、移动端检查/导出、返回查单五项测试及 RN Web 基础界面通过。
+
+用户截图对应的已付款订单在新 APK 冷启动后直接显示“已支付 ¥0.01”，没有点击刷新或通过测试脚本先发查单请求，且没有再次支付和取消入口。截图：[已付款自动回看](screenshots/mobile-alipay-return-paid.png)。本轮未额外完成新的买家付款；新付后自动更新的控制流由 SDK 未付款退出实测与返回查单状态测试覆盖，原已付款事实用于回看核对。
+
+
+## 新订单支付返回与 APP 公网通知验收（2026-11-15）
+
+使用修复后的 Android 本地独立 APK，新建订单 SO-001185，确认快照金额 1 分、checkoutKind 为 app。原生 SDK 实际打开沙箱钱包，买家人工付款；用户确认返回订单页后自动显示“已支付”，没有点击刷新按钮。随后只通过原生页面回看与数据库只读查询核对：支付为 succeeded、金额 1 分、保存渠道交易号，订单仍为 awaiting_start；再次支付与直接取消入口均隐藏。
+
+同笔 APP 签名使用本轮通知地址。四小时通知专用入口仅允许固定路径的表单 POST，其他业务路径不转发；公网根路径和登录路径返回 404，通知路径 GET 返回 405，无效签名 POST 返回 400。实际通知到达后，上游 API 完成验签和业务核对，2026-11-15 20:11:26（北京时间）返回 HTTP 200。忽略目录中的验收日志只保存支付编号 SHA-256 摘要、时间和状态，摘要与本笔支付匹配，不保存通知原文、签名、密钥或支付密码。
+
+验收期间观察脚本只读数据库和通知回执，未主动发送支付查单、未写入成功状态、未注入渠道响应，也未重放旧通知。SDK 返回后的应用自身同步与实际渠道通知分别成立；此次已补齐此前“新付成功后自动刷新”和“APP 新一笔公网通知”的待验收项。
+
+证据：[实际收银台](screenshots/mobile-alipay-live-cashier.png)、[付款返回自动同步](screenshots/mobile-alipay-live-paid.png)。完整关联记录位于忽略的 .local/payments/sdk-live-acceptance.json；模拟器已安装 APK 的哈希与验收安装包一致。通知网关边界测试与公网路径探测通过。本轮是既有代码的实际验收和文档更新，没有新增应用代码或数据库迁移，因此未重复执行整套构建。
+
+范围限 Android 模拟器、独立 APK 和支付宝沙箱，未发生真实资金支付，不代表实体真机、iOS 或生产公网部署。该验收后的 RN 沙箱退款申请与结果查询已交付，见下文；门户申请与 Web 管理员执行路径继续保留。
+
+
+## RN 沙箱退款申请与查询（2026-11-15）
+
+RN 本人独立订单详情已支持未开工、已支付且尚无退款申请订单的全额退款申请。原因去首尾空白后 1～500 字符，金额从服务端支付/订单快照读取，不接收客户端金额。相同规范化原因重试保持 Expo UUID；修改原因才生成新意图。原生输入关闭系统 autofill，弹窗复用 MutationModal/useApiMutation，取消/重开清空输入，结果不明保留当前意图重试，取消请求不代表回滚。
+
+原生 POST 路径为 /api/mobile/orders/:id/alipay-sandbox/:paymentId/refund，以及其 /query 子路径。NativeSessionGuard/NativeClient 保持 Bearer 与浏览器边界，只有当前报修本人可访问；复用 RequestAlipayRefundDto 和 AlipaySandboxRefundsService 的归属、金额、工单锁、幂等及事务。没有原生 submit/管理员执行路由，没有数据库迁移或异地网关扩展。canRequestAlipayRefund 与 REFUND_LIMITS 位于 contracts/payment-rules，界面判断不代替服务端检查。
+
+状态区分退款待处理、退款处理中、退款成功。申请暂停开工，管理员仍在现有 Web 后台执行。APP 打开、恢复前台、手动查询和前台每 5 秒的待处理同步均读取服务端记录；processing 使用原退款查询用例核验渠道，requested 不被当作退款成功。离页/账号切换清理请求和定时器，原支付事实始终单独保留。退款核验成功后刷新订单快照和工单记录，终态为 cancelled；支付返回路径仍只刷新支付区，不在 SDK 持有期间卸载组件。
+
+新增 verify:mobile-alipay-refunds 覆盖匿名、角色、本人/他人、Origin/Cookie/Sec-Fetch、DTO、金额、防重、请求重放、查询及开工保护，使用随机临时支付夹具，不作为实际付款证据。test:payment-rules 与 test:mobile-alipay-return 分别覆盖申请入口和支付/退款同步分支。原渠道退款与并发、未知结果、金额/编号校验继续由 verify:alipay-refunds 回归。
+
+实际验收沿用专用 APP 支付订单 SO-001185（1 分）：RN 原生申请，验证空原因、取消清空及提交响应丢失后的同 UUID 重试，数据库仅一条 requested 申请；Web 管理员确认执行实际沙箱退款。浏览器读取提交响应体时出现取证错误，未重复提交退款；随后只读核对数据库，并独立调用渠道退款查询验签，返回 code=10000、refund_status=REFUND_SUCCESS、金额 0.01 元，原支付与退款编号匹配。订单/工单 cancelled、退款 succeeded、原支付仍为 succeeded，处理人为 Web 管理员。
+
+RN 在未点击刷新、未注入退款渠道结果的情况下自动同步了退款完成及订单结束；随后冷启动回看退款成功，重复申请入口隐藏。verify:mobile-alipay-refunds-android 使用专用实际付款记录验证申请交互（只注入一次客户端响应丢失，不注入付款/退款渠道状态）；verify:mobile-alipay-refunds-readback-android 只回看已完成记录，不再次申请或执行退款。实际申请/退款记录保留，不按临时夹具清理。
+
+截图：[原生退款申请](screenshots/mobile-alipay-refund-apply.png)、[申请待处理](screenshots/mobile-alipay-refund-requested.png)、[退款成功回看](screenshots/mobile-alipay-refund-success.png)、[Web 执行确认](screenshots/admin-rn-alipay-refund-confirm.png)。私有关联证据保存在 .local/payments/rn-refund-acceptance.json；新版本地签名 APK 已安装至 MuMu，产物仍为 .local/artifacts/android/device-service-hub-local-sdk.apk。
+
+全仓构建、check:mobile、build:mobile、退款规则/同步规则、原生退款 API、原渠道退款 API/UI、通知/关单、原生支付与旧模拟退款、开工/取消、API/移动鉴权、Web 连接入口及基础页面回归通过。RN Web 与默认 Expo Go 验证分别记录，实际渠道退款证据来自模拟器独立 APK 与固定沙箱网关；不代表实体真机、iOS 或真实资金退款。当前不支持部分退款、已开工退款、原生管理员执行、异地金融入口或退款通知回调。
+
+### 支付组件复用
+
+本人订单详情和报价区读取支付记录时同时保留服务端 `blockCancellation`，取消入口通过 props 使用同一快照，不再自行重复请求。读取失败、加载中或缺少明确许可时保持禁止取消。
+
+`features/payments/RefundRequestForm.tsx` 统一退款原因校验、相同原因的提交编号复用、提交状态与关闭清理；历史模拟退款和支付宝退款入口分别保留资格规则、接口适配和渠道说明。正常界面已退役的模拟支付创建组件及无引用客户端创建方法已删除，服务端历史接口和记录回看保留。
+
+本次复用回归：`check:mobile`、`build:mobile`、根 `build`、`verify:mobile-ui`、`verify:mobile-android`、`verify:mobile-refunds-android`、`verify:mobile-alipay-refunds`、`verify:mobile-order-cancellations` 已通过；支付快照、支付返回与退款入口规则共 12 项测试通过。原生退款表单覆盖关闭清理、空原因、响应丢失后原编号重试和退款申请暂停开工，使用本地模拟记录；本轮没有新增实际渠道交易、重建独立 APK 或真机验收。
+
+### 列表分页复用
+
+本人报修、本人任务和本人订单共用 `shared/components/Pagination.tsx`。分页组件接收当前页、服务端总数/每页数量、加载状态及翻页回调，仅负责上一页/下一页和边界禁用；列表请求、业务摘要、筛选重置、订单 URL 页码及越界纠正继续由业务页面负责。不新增分页状态 Hook；上一页/下一页采用同一行等宽按钮，间距使用共享主题。
+
+分页抽取验证：`check:mobile`、`build:mobile`、根 `build`、`verify:mobile-ui`、`verify:shared-ui`、`verify:mobile-android` 均通过。模拟器额外只读核对本人订单第 1 页→第 2 页→第 1 页、首页上一页禁用、末页下一页禁用及状态筛选回第 1 页，并查看分页截图；本轮未重建 APK 或进行真机验证。

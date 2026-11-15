@@ -1,5 +1,6 @@
 import { openLocalAndroid } from "./lib/android-local.mjs";
 const android = openLocalAndroid();
+android.connect();
 android.run(["reverse", "tcp:8081", "tcp:8081"]);
 android.run(["reverse", "tcp:3001", "tcp:3001"]);
 android.run([

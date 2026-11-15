@@ -4,14 +4,6 @@ import type {
 } from "@device-service-hub/contracts";
 export const hasMockSuccess = (payments: PaymentRecord[]) =>
   payments.some((payment) => payment.status === "succeeded");
-export const canCreateMockPayment = (
-  order: Pick<ServiceOrderRecord, "status">,
-  payments: PaymentRecord[],
-) =>
-  order.status === "awaiting_start" &&
-  !payments.some(
-    (payment) => payment.status === "pending" || payment.status === "succeeded",
-  );
 export const canConfirmMockPayment = (
   order: Pick<ServiceOrderRecord, "id" | "status">,
   payment: PaymentRecord,

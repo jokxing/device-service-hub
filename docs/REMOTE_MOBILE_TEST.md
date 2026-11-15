@@ -20,6 +20,23 @@
 
 Cloudflare Quick Tunnel 只转发该受限入口，不直连 3001 或 4174。临时域名由 Cloudflare 提供，停止或重建隧道可能导致原地址失效；进程存活也不保证临时隧道持续可用，测试前须检查实际 HTTPS 连通性。公开示例、日志和截图中不保存实际域名或密码；实际地址在 `.local/remote-mobile/endpoint.json`。
 
+## 报价与订单受限入口
+
+仅开放以下原生适配，复用原 NestJS 用例与数据范围，不转发管理员操作。路径均以 `/api/mobile` 为前缀。
+
+| 方法 | 路径 | 职责 |
+| --- | --- | --- |
+| GET / POST | `/tasks/:id/quote` | 当前维修员读取或提交报价 |
+| POST | `/tasks/:id/quote/revisions` | 从最新被拒绝报价修订 |
+| GET | `/tickets/:id/quote` | 本人查看报价 |
+| POST | `/tickets/:id/quote/accept`、`/tickets/:id/quote/reject` | 本人决定具体报价版本 |
+| GET | `/orders`、`/orders/:id`、`/orders/by-ticket/:id` | 本人订单列表与详情 |
+| GET | `/tasks/:id/order` | 当前维修员读取任务订单 |
+| POST | `/orders/:id/start`、`/orders/:id/cancel` | 当前维修员开工、本人取消；分别由服务端鉴权 |
+| GET | `/orders/:id/payments` | 本人只读支付状态，供取消入口判断 |
+
+支付创建、模拟成功、退款写操作及支付宝路径仍返回 404。RN 已有本地模拟操作界面不代表远程接口开放；本轮异地验收只走报价和维修履约，不操作支付按钮。此增量只更新受限入口，地址不变时现有 APK 无需重装，不延长内测窗口。
+
 ## Android APK 构建边界
 
 `build:mobile:apk` 通过项目局部 JDK、Android SDK 和 Gradle 生成 release APK，包含 JS/Hermes bundle，运行不依赖 Expo Go、Metro 或 ADB reverse。构建架构为 arm64-v8a 与 x86_64，独立内测签名不用于商店发布。
@@ -44,6 +61,8 @@ Windows 通过 `scripts/npm-local.ps1 run <脚本名>` 执行。构建先准备�
 | `test:remote-mobile` | 临时回显服务验证路由、浏览器拒绝、账号白名单、Multipart 保真、限额与错误处理 |
 | `verify:remote-mobile` | 本机真实 API 验证独立账号、设备归属、文字报修和退出 |
 | `verify:remote-mobile:public` | 对私有配置中的临时 HTTPS 入口执行同一真实业务检查 |
+| `verify:remote-orders` | 本机真实 API 验证报价协商、唯一订单、取消与履约，以及金融写操作拒绝 |
+| `verify:remote-orders:public` | 经现有临时 HTTPS 入口执行报价订单检查，不新建隧道 |
 | `build:mobile:apk` | 本地内测签名与 release APK |
 | `verify:mobile-apk:android` | 已安装 APK 的独立原生、HTTPS 和文字闭环验收 |
 | `remote:mobile:disable` | 仅停用这两个专用账号并撤销其会话，保留工单记录 |
@@ -54,6 +73,8 @@ Windows 通过 `scripts/npm-local.ps1 run <脚本名>` 执行。构建先准备�
 
 ## 验证记录
 
+2026-11-14 报价订单入口增量：`test:remote-mobile`、`verify:remote-orders` 和 `verify:remote-orders:public` 通过。后两项分别经本机临时网关和现有临时 HTTPS，使用独立账号完成报价提交/同意图重放、拒绝修订、指定版次确认并生成唯一订单、列表/详情/只读支付查询、开工/结果/完成确认、待开工取消重放；同时检查错误角色、非法金额字段、未知订单与金融写操作拒绝。仅清理本轮 UUID 临时工单。全仓构建、原 API 与原生鉴权回归通过；无数据库迁移，没有更换账号、延长窗口、新建隧道或重新打包。此为接口与传输验收，新增流程的实体手机操作尚待验证，不记为真机界面已通过。
+
 2026-11-08：受限入口单元检查、本机真实 API 与临时 HTTPS 实际访问通过；既有 `verify:api`、`verify:mobile-api` 和 `verify:connected-ui` 通过。Expo 严格类型/SDK 依赖检查及 Android/Web 静态导出通过。
 
 Gradle release 组装成功，APK 约 73.3 MiB，签名验证通过；包名 `com.deviceservicehub.app`，版本 0.1.0，最低 API 24、目标 API 36，包含 arm64-v8a 与 x86_64。安装包未声明麦克风或悬浮窗权限。产物复制、构建信息和 SHA256 校验已完成，Windows PowerShell 校验与模拟器已安装包哈希一致。
@@ -63,3 +84,7 @@ MuMu Android 15 独立 APK 验收通过：冷启动、原生登录、独立设�
 截图：[APK 登录](screenshots/mobile-apk-login.png)、[独立设备](screenshots/mobile-apk-devices.png)、[文字报修](screenshots/mobile-apk-repair.png)、[任务结果](screenshots/mobile-apk-task-result.png)、[完成确认](screenshots/mobile-apk-completed.png)。截图中的工单为本轮临时验收数据。
 
 参考：[Cloudflare Quick Tunnels](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/)、[Expo 本地构建](https://docs.expo.dev/guides/local-app-production/)、[Android 命令行工具](https://developer.android.com/studio#command-line-tools-only)、[Microsoft OpenJDK](https://learn.microsoft.com/java/openjdk/download)、[Gradle 发行包校验](https://gradle.org/release-checksums/)。
+
+## 本地 Android SDK 安装包
+
+原生支付宝联调使用独立 `build:mobile:apk:local`，固定本机 API、使用 ADB reverse 3001，输出 `device-service-hub-local-sdk.apk` 与 `build-info-local.json`。无需临时域名、远程账号有效窗或 Metro；不能把该安装包当作异地 HTTPS 内测包。异地默认构建和原受限网关继续保留原边界，未新增支付宝路由。

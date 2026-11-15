@@ -290,6 +290,11 @@ enum PaymentChannel {
   mock
 }
 
+enum AlipayCheckoutKind {
+  page
+  app
+}
+
 model AlipaySandboxPayment {
   id String @id @default(uuid())
   orderId String
@@ -299,6 +304,7 @@ model AlipaySandboxPayment {
   status PaymentStatus @default(pending)
   appId String
   sellerId String
+  checkoutKind AlipayCheckoutKind @default(page)
   tradeNo String? @unique
   createdAt DateTime @default(now())
   expiresAt DateTime

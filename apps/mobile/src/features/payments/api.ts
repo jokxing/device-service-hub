@@ -1,5 +1,4 @@
 import type {
-  CreateMockPaymentInput,
   PaymentRecord,
   RequestMockRefundInput,
 } from "@device-service-hub/contracts";
@@ -7,26 +6,21 @@ import type {
   AuthenticatedRead,
   AuthenticatedPost,
 } from "../../shared/api/http";
-export const readMyPayments = (
+export interface MyPaymentsSnapshot {
+  payments: PaymentRecord[];
+  blockCancellation: boolean;
+}
+export const readMyPayments = async (
   request: AuthenticatedRead,
   orderId: string,
   signal?: AbortSignal,
-) =>
-  request<{ payments: PaymentRecord[] }>(
+) => {
+  const result = await request<MyPaymentsSnapshot>(
     `/mobile/orders/${encodeURIComponent(orderId)}/payments`,
     signal,
   );
-export const createMockPayment = (
-  post: AuthenticatedPost,
-  orderId: string,
-  input: CreateMockPaymentInput,
-  signal?: AbortSignal,
-) =>
-  post<PaymentRecord>(
-    `/mobile/orders/${encodeURIComponent(orderId)}/payments`,
-    input,
-    signal,
-  );
+  return { ...result, blockCancellation: result.blockCancellation !== false };
+};
 export const confirmMockPayment = (
   post: AuthenticatedPost,
   orderId: string,

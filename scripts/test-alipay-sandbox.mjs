@@ -16,6 +16,48 @@ const pair = generateKeyPairSync("rsa", {
   privateKeyEncoding: { type: "pkcs1", format: "pem" },
   publicKeyEncoding: { type: "spki", format: "pem" },
 });
+test("APP checkout signs original parameters before percent encoding and never returns a web redirect", () => {
+  const original = configModule.getAlipaySandboxConfig;
+  configModule.getAlipaySandboxConfig = () => ({
+    appId: "test",
+    sellerId: "seller",
+    privateKey: pair.privateKey,
+    notifyUrl: "https://example.com/notify",
+  });
+  try {
+    const params = Object.fromEntries(
+      new URLSearchParams(
+        new AlipaySandboxGateway().appCheckout(
+          "payment-id",
+          5,
+          new Date("2026-11-15T10:00:00Z"),
+        ),
+      ),
+    );
+    const signature = params.sign;
+    delete params.sign;
+    const canonical = Object.keys(params)
+      .sort()
+      .map((key) => `${key}=${params[key]}`)
+      .join("&");
+    assert.ok(
+      verify(
+        "RSA-SHA256",
+        Buffer.from(canonical),
+        pair.publicKey,
+        Buffer.from(signature, "base64"),
+      ),
+    );
+    assert.equal(params.method, "alipay.trade.app.pay");
+    assert.equal(params.return_url, undefined);
+    assert.equal(params.notify_url, "https://example.com/notify");
+    const business = JSON.parse(params.biz_content);
+    assert.equal(business.total_amount, "0.05");
+    assert.equal(business.product_code, "QUICK_MSECURITY_PAY");
+  } finally {
+    configModule.getAlipaySandboxConfig = original;
+  }
+});
 test("close gateway signs the fixed sandbox method and verifies the close response node", async () => {
   const originalFetch = globalThis.fetch;
   const originalConfig = configModule.getAlipaySandboxConfig;
