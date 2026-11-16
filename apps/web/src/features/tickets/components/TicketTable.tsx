@@ -1,3 +1,4 @@
+import cellStyles from "../../../shared/components/RecordCells.module.css";
 import ticketStyles from "../tickets.module.css";
 import { Avatar, Button, Empty, Table } from "antd";
 import type { TableColumnsType } from "antd";
@@ -33,11 +34,11 @@ export default function TicketTable({
       width: 330,
       render: (_, ticket) => (
         <button
-          className={ticketStyles["ticket-link"]}
+          className={cellStyles["ticket-link"]}
           onClick={() => onView(ticket.id)}
         >
-          <span className={ticketStyles["ticket-number"]}>{ticket.id}</span>
-          <span className={ticketStyles["ticket-title"]}>{ticket.title}</span>
+          <span className={cellStyles["ticket-number"]}>{ticket.id}</span>
+          <span className={cellStyles["ticket-title"]}>{ticket.title}</span>
         </button>
       ),
     },
@@ -48,8 +49,8 @@ export default function TicketTable({
       render: (_, ticket) => {
         const device = devices.find((item) => item.id === ticket.deviceId);
         return (
-          <div className={ticketStyles["device-cell"]}>
-            <span className={ticketStyles["device-mini"]}>
+          <div className={cellStyles["device-cell"]}>
+            <span className={cellStyles["device-mini"]}>
               <DesktopOutlined />
             </span>
             <div>
@@ -107,7 +108,7 @@ export default function TicketTable({
       dataIndex: "created",
       width: 135,
       render: (value: string) => (
-        <span className={ticketStyles["date-text"]}>
+        <span className={cellStyles["date-text"]}>
           {formatShortDateTime(value)}
         </span>
       ),

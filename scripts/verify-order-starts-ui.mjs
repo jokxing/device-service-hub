@@ -129,7 +129,11 @@ try {
   await dialog.waitFor({ state: "hidden" });
   await page
     .getByLabel("订单开工记录")
-    .getByText("开工人：" + tech.name, { exact: true })
+    .getByText(tech.name, { exact: true })
+    .waitFor();
+  await page
+    .getByLabel("订单开工记录")
+    .getByText("开工人", { exact: true })
     .waitFor();
   assert.equal(bodies.length, 2);
   assert.deepEqual(bodies[0], bodies[1]);

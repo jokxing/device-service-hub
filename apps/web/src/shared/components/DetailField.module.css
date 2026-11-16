@@ -1,0 +1,12 @@
+.field small {
+  display: block;
+  font-size: var(--font-size-secondary);
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.field strong {
+  display: block;
+  font-size: var(--font-size-secondary);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}

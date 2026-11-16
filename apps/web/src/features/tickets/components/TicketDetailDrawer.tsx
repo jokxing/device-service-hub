@@ -1,3 +1,4 @@
+import cellStyles from "../../../shared/components/RecordCells.module.css";
 import ticketStyles from "../tickets.module.css";
 import { useState } from "react";
 import { Alert, Drawer, Tag, Timeline } from "antd";
@@ -33,9 +34,7 @@ export default function TicketDetailDrawer({
         {selected && (
           <>
             <div className={ticketStyles["detail-title"]}>
-              <span className={ticketStyles["ticket-number"]}>
-                {selected.id}
-              </span>
+              <span className={cellStyles["ticket-number"]}>{selected.id}</span>
               <h2>{selected.title}</h2>
               <StatusTag status={selected.status} />
               <Tag color={selected.priority === "urgent" ? "red" : "default"}>

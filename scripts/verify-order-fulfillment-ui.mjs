@@ -268,7 +268,12 @@ try {
   await order().getByText("已完成", { exact: true }).waitFor();
   assert.deepEqual(decisions[0], decisions[1]);
   assert.equal(decisions[0].expectedVersion, 6);
-  await order().getByText("未接入支付", { exact: true }).waitFor();
+  await order()
+    .getByText(
+      "本次维修已由报修用户确认完成。以上保留原订单金额快照，维修完成不代表已付款。",
+      { exact: true },
+    )
+    .waitFor();
   await order()
     .getByText("订单金额：¥59.98（人民币）", { exact: true })
     .waitFor();

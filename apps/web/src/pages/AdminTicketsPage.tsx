@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { Alert, Button, Spin } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import type { AdminTicketRecord } from "@device-service-hub/contracts";
 import { useSession } from "../features/auth/sessionContext";
 import { useApiResource } from "../shared/hooks/useApiResource";
@@ -32,7 +33,11 @@ function AdminTicketsContent() {
         title="全部工单"
         count={data?.total}
         extra={
-          <Button onClick={refresh} loading={loading}>
+          <Button
+            icon={<ReloadOutlined aria-hidden />}
+            onClick={refresh}
+            loading={loading}
+          >
             刷新
           </Button>
         }

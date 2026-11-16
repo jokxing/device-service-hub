@@ -22,6 +22,7 @@ export default function TicketStatusFilter({
         value={value ?? "all"}
         options={[{ value: "all", label: "全部状态" }, ...STATUS_OPTIONS]}
         onChange={(next) => onChange(next === "all" ? undefined : next)}
+        getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
       />
       <span className="muted">{description}</span>
     </div>

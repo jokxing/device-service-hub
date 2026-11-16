@@ -29,6 +29,7 @@ export default function MutationModal({
       title={title}
       okText={okText}
       cancelText="取消"
+      width="min(520px, calc(100vw - 32px))"
       style={scrollBody ? { top: 24 } : undefined}
       styles={
         scrollBody

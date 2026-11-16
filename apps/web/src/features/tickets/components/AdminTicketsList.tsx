@@ -1,12 +1,15 @@
-import ResponsiveRecordList from "../../../shared/components/ResponsiveRecordList";
-import { Button, Space } from "antd";
+import cellStyles from "../../../shared/components/RecordCells.module.css";
+import { Avatar, Button, Space } from "antd";
+import { DesktopOutlined } from "@ant-design/icons";
 import type {
   AdminTicketPage,
   AdminTicketRecord,
 } from "@device-service-hub/contracts";
 import CompactRecordCard from "../../../shared/components/CompactRecordCard";
+import ResponsiveRecordList from "../../../shared/components/ResponsiveRecordList";
 import { formatDateTime } from "../../../shared/utils/date";
 import { PRIORITY_LABELS } from "../constants";
+import ticketStyles from "../tickets.module.css";
 import StatusTag from "./StatusTag";
 
 interface Props {
@@ -15,6 +18,39 @@ interface Props {
   onView: (id: string) => void;
   onAssign: (ticket: AdminTicketRecord) => void;
 }
+
+function PersonCell({ name }: { name: string }) {
+  return (
+    <span className={ticketStyles.person}>
+      <Avatar
+        aria-hidden
+        size={23}
+        style={{ background: "#edf2fb", color: "#64748b", fontSize: 10 }}
+      >
+        {name.slice(-2)}
+      </Avatar>
+      <span>{name}</span>
+    </span>
+  );
+}
+
+function PriorityCell({
+  priority,
+}: {
+  priority: AdminTicketRecord["priority"];
+}) {
+  return (
+    <span
+      className={[ticketStyles.priority, ticketStyles[priority]]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <span />
+      {PRIORITY_LABELS[priority]}
+    </span>
+  );
+}
+
 export default function AdminTicketsList({
   data,
   onPageChange,
@@ -49,7 +85,7 @@ export default function AdminTicketsList({
       listLabel="管理工单列表"
       unitLabel="工单"
       emptyText="暂无符合条件的工单"
-      scrollX={1050}
+      scrollX={1120}
       renderCard={(ticket) => (
         <CompactRecordCard
           title={ticket.title}
@@ -64,7 +100,7 @@ export default function AdminTicketsList({
             },
             {
               label: "优先级",
-              value: PRIORITY_LABELS[ticket.priority],
+              value: <PriorityCell priority={ticket.priority} />,
             },
             {
               label: "提交时间",
@@ -78,43 +114,72 @@ export default function AdminTicketsList({
         {
           title: "工单 / 问题",
           key: "title",
-          width: 270,
+          width: 280,
           render: (_, ticket) => (
-            <div>
-              <span className="muted">{ticket.code}</span>
-              <div>{ticket.title}</div>
-            </div>
+            <button
+              type="button"
+              className={cellStyles["ticket-link"]}
+              onClick={() => onView(ticket.id)}
+            >
+              <span className={cellStyles["ticket-number"]}>{ticket.code}</span>
+              <span className={cellStyles["ticket-title"]}>{ticket.title}</span>
+            </button>
           ),
         },
         {
-          title: "设备",
+          title: "关联设备",
           key: "device",
+          width: 200,
           render: (_, ticket) => (
-            <div>
-              {ticket.device.name}
-              <div className="muted">{ticket.device.code}</div>
+            <div className={cellStyles["device-cell"]}>
+              <span className={cellStyles["device-mini"]} aria-hidden="true">
+                <DesktopOutlined />
+              </span>
+              <div>
+                <div>{ticket.device.name}</div>
+                <small>{ticket.device.code}</small>
+              </div>
             </div>
           ),
         },
         {
           title: "报修用户",
           key: "reporter",
-          render: (_, ticket) => ticket.reporter.name,
+          width: 120,
+          render: (_, ticket) => <PersonCell name={ticket.reporter.name} />,
         },
         {
           title: "状态",
           key: "status",
+          width: 110,
           render: (_, ticket) => <StatusTag status={ticket.status} />,
-        },
-        {
-          title: "维修人员",
-          key: "assignee",
-          render: (_, ticket) => ticket.assignee?.name ?? "待分派",
         },
         {
           title: "优先级",
           key: "priority",
-          render: (_, ticket) => PRIORITY_LABELS[ticket.priority],
+          width: 90,
+          render: (_, ticket) => <PriorityCell priority={ticket.priority} />,
+        },
+        {
+          title: "维修人员",
+          key: "assignee",
+          width: 120,
+          render: (_, ticket) =>
+            ticket.assignee ? (
+              <PersonCell name={ticket.assignee.name} />
+            ) : (
+              <span className="muted">待分派</span>
+            ),
+        },
+        {
+          title: "提交时间",
+          key: "createdAt",
+          width: 165,
+          render: (_, ticket) => (
+            <span className={cellStyles["date-text"]}>
+              {formatDateTime(new Date(ticket.createdAt))}
+            </span>
+          ),
         },
         {
           title: "操作",

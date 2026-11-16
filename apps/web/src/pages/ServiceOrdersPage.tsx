@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { Alert, Button, Select, Spin } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import { ORDER_STATUSES } from "@device-service-hub/contracts/order-rules";
 import { useSession } from "../features/auth/sessionContext";
 import { useApiResource } from "../shared/hooks/useApiResource";
@@ -49,12 +50,16 @@ function OrdersContent() {
         title="订单列表"
         count={data?.total}
         extra={
-          <Button onClick={refresh} loading={loading}>
+          <Button
+            icon={<ReloadOutlined aria-hidden />}
+            onClick={refresh}
+            loading={loading}
+          >
             刷新
           </Button>
         }
       >
-        <div className={styles.content}>
+        <div className={styles.filterBar}>
           <Select
             aria-label="订单状态"
             placeholder="全部订单状态"
@@ -65,8 +70,11 @@ function OrdersContent() {
               value,
               label: ORDER_STATUS_META[value].label,
             }))}
-            style={{ minWidth: 180 }}
+            getPopupContainer={(trigger) =>
+              trigger.parentElement ?? document.body
+            }
           />
+          <span className="muted">按确认后的订单状态筛选</span>
         </div>
         {error ? (
           <Alert type="error" showIcon title={error} className="m-5" />

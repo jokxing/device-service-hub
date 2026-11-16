@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { Alert, Button, Spin } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import { Link, useParams } from "react-router-dom";
 import { useSession } from "../features/auth/sessionContext";
 import { useApiResource } from "../shared/hooks/useApiResource";
@@ -43,20 +44,29 @@ function OrderDetailContent() {
         <>
           <ContentCard
             title={data.code}
-            extra={<Button onClick={refresh}>刷新订单</Button>}
+            extra={
+              <Button
+                icon={<ReloadOutlined aria-hidden />}
+                onClick={refresh}
+                loading={loading}
+              >
+                刷新订单
+              </Button>
+            }
           >
             <div className={styles.content}>
               <OrderSummary order={data} />
-              <QuoteItems items={data.items} />
+              <section className={styles.notePanel} aria-label="报价条目">
+                <h3>报价条目</h3>
+                <QuoteItems items={data.items} />
+              </section>
             </div>
           </ContentCard>
           {user?.role === "admin" && (
-            <>
-              <AdminSandboxPayments
-                key={`sandbox:${data.id}`}
-                orderId={data.id}
-              />
-            </>
+            <AdminSandboxPayments
+              key={`sandbox:${data.id}`}
+              orderId={data.id}
+            />
           )}
           <div className="mt-5">
             <ContentCard title="关联工单与处理记录">

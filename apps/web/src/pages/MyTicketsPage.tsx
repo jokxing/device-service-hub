@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { Alert, Button, Spin } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import { useSearchParams } from "react-router-dom";
 import { useSession } from "../features/auth/sessionContext";
 import { useApiResource } from "../shared/hooks/useApiResource";
@@ -28,7 +29,11 @@ export default function MyTicketsPage() {
         title="报修记录"
         count={data?.total}
         extra={
-          <Button loading={loading} onClick={refresh}>
+          <Button
+            icon={<ReloadOutlined aria-hidden />}
+            loading={loading}
+            onClick={refresh}
+          >
             刷新
           </Button>
         }

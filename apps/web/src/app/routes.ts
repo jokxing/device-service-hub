@@ -24,8 +24,28 @@ export const PAGE_META = {
   },
 } as const;
 
+export const SERVICE_PAGE_TITLES = [
+  { match: ROUTES.serviceOrders + "/", title: "订单详情" },
+  { match: ROUTES.serviceOrders, title: "服务订单" },
+  { match: ROUTES.serviceTasks + "/", title: "任务详情" },
+  { match: ROUTES.serviceTasks, title: "我的任务" },
+  { match: ROUTES.serviceAdminTickets, title: "工单分派" },
+  { match: ROUTES.serviceTickets + "/", title: "报修详情" },
+  { match: ROUTES.serviceTickets, title: "我的报修" },
+  { match: ROUTES.serviceDevices, title: "设备台账" },
+] as const;
+
 export function getPageMeta(pathname: string) {
   return (
     PAGE_META[pathname as keyof typeof PAGE_META] ?? PAGE_META[ROUTES.tickets]
   );
+}
+
+export function getServicePageTitle(pathname: string) {
+  const entry = SERVICE_PAGE_TITLES.find((item) =>
+    item.match.endsWith("/")
+      ? pathname.startsWith(item.match)
+      : pathname === item.match || pathname.startsWith(item.match + "/"),
+  );
+  return entry?.title ?? "设备台账";
 }

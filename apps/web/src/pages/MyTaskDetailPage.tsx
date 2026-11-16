@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { Alert, Button, Space, Spin } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 import type { TaskTicketRecord } from "@device-service-hub/contracts";
 import { ROUTES } from "../app/routes";
@@ -40,7 +41,11 @@ function MyTaskDetailContent() {
         title={data?.code ?? "维修任务"}
         extra={
           <Space wrap>
-            <Button onClick={refresh} loading={loading}>
+            <Button
+              icon={<ReloadOutlined aria-hidden />}
+              onClick={refresh}
+              loading={loading}
+            >
               刷新
             </Button>
             {data && canAcceptTask(data) && (
@@ -68,9 +73,12 @@ function MyTaskDetailContent() {
           </Spin>
         ) : (
           <div className={styles.record}>
-            <p className="muted">
-              服务方式：{data.serviceMode === "quoted" ? "需报价" : "直接处理"}
-            </p>
+            <div className={styles.serviceMode}>
+              <small>服务方式</small>
+              <strong>
+                {data.serviceMode === "quoted" ? "需报价" : "直接处理"}
+              </strong>
+            </div>
             <TicketRecordDetails ticket={data} />
           </div>
         )}

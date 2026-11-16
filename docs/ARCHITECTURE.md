@@ -24,7 +24,7 @@
 
 React 后台、Next.js 用户门户、RN 和微前端已按 [产品与架构演进路线](ROADMAP.md)完成当前本地交付范围。各应用保留独立入口，共用 NestJS 业务后端；后续功能按实际业务需求增量交付。
 
-服务订单使用 /service/orders 与 /service/orders/:id，管理员/维修员分别读取平台及当前分派范围。列表复用 ResponsiveRecordList/CompactRecordCard，订单状态标签归 features/orders；URL 筛选分页由 useOrderListQuery 管理，普通翻页与越界替换分别处理。详情复用 OrderSummary、QuoteItems 和 TicketRecordDetails，维修记录保持只读，不复制工单命令；模拟支付创建、确认、查询及退款交互由独立 features/payments 组织；后台仅管理员可记录模拟退款成功，门户本人申请并回看结果，业务事务留在 NestJS。门户独立实现 UI，报修用户的新订单入口以门户为主。
+服务订单使用 /service/orders 与 /service/orders/:id，管理员/维修员分别读取平台及当前分派范围。列表复用 ResponsiveRecordList/CompactRecordCard 与工单同款链接/设备列样式，订单状态标签带色点归 features/orders；筛选条与刷新按钮对齐其他服务页，URL 筛选分页由 useOrderListQuery 管理，普通翻页与越界替换分别处理。详情 OrderSummary 使用 detailGrid 与开工/取消 notePanel（保留 aria-label 与「开工人：」文案），报价条目独立面板，关联工单复用 TicketRecordDetails；维修记录保持只读，不复制工单命令。支付与退款由独立 features/payments 组织；后台仅管理员可查看沙箱记录并处理退款，门户本人申请并回看结果，业务事务留在 NestJS。门户独立实现 UI，报修用户的新订单入口以门户为主。
 
 ## 目录职责
 
@@ -97,7 +97,7 @@ App → DemoProvider → AppLayout → 页面 → 业务组件
 - 设备表格与详情组件复用展示结构，演示数据和真实响应在类型上分开，不伪造尚未实现的维修记录。
 - 前后端实际共用的传输类型位于 `packages/contracts`；根入口只包含类型声明，`device-tags` 子入口提供 Web 与 RN 共用的纯标签编解码；不依赖数据库或浏览器运行时。
 - ServiceLayout 管理真实身份和服务导航，增加 `/service/tickets` 及本人详情路由；字段组件在演示/真实表单之间复用，提交逻辑保持独立。通用读取请求通过 `shared/hooks/useApiResource.ts` 取消过期请求，401 处理由调用方传入。
-- ServiceLayout 统一真实服务页面的横向边距与区块间距；ServicePageHeader 共用标题、说明和可选返回链接。布局响应式样式留在 CSS Modules，不能用全局 main/nav 规则造成重复内边距。
+- ServiceLayout 采用与演示工作台一致的侧边栏 + 顶部栏外壳，复用 `layout.module.css` 的壳层视觉，侧栏菜单按登录角色展示；不依赖 DemoProvider、演示账号或演示统计。窄屏隐藏固定侧栏，改由顶栏「菜单」打开左侧抽屉导航，避免占宽且让切换入口可见；路由变化后关闭抽屉。ServicePageHeader 共用标题、说明和可选返回链接；页面横向边距由布局 content 区统一负责。布局响应式样式留在 CSS Modules，不能用全局 main/nav 规则造成重复内边距。
 - 真实服务布局不展示常驻的本地数据库连接或开发能力说明横幅；能力边界记录在文档。操作结果、错误与必要业务提示保留，独立入口与微前端共用同一布局。
 - 设备列表和本人报修列表在 Ant Design `md` 断点以下（小于 768px）改用卡片；桌面保留表格，同一时间只渲染一种布局。CompactRecordCard 共用信息层级、字段排版和操作区域，业务数据和回调仍留在所属模块；本人分页继续由 URL 和服务端控制。
 
@@ -130,3 +130,7 @@ App → DemoProvider → AppLayout → 页面 → 业务组件
 - 缓存与浏览器临时数据保存在项目内 `.local` 目录，目录已配置忽略。
 
 Web 演示阶段的构建、5 项关键规则及浏览器回归已通过；真实 API 验证范围记录在 `API_SETUP.md`，RN 原生认证、设备查询及公开页面浏览器验证记录在 `MOBILE.md`，不混用验证结论。尚未进行实体业务设备通信验证。
+
+### 服务页面视觉复用
+
+工单与订单列表的编号、标题、设备单元格和日期排版共用 `shared/components/RecordCells.module.css`，业务模块不再互相引用列表样式。详情标签和值共用 `shared/components/DetailField`；详情网格、业务字段、状态及操作仍由各业务模块组织。桌面和移动服务导航共用角色菜单定义，保留各自的呈现结构。

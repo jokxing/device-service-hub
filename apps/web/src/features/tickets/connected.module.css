@@ -4,6 +4,25 @@
   gap: 16px;
   overflow-wrap: anywhere;
 }
+.serviceMode {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid #e9eef5;
+  border-radius: 8px;
+  background: #f7f9fc;
+}
+.serviceMode small {
+  color: var(--text-secondary);
+  font-size: var(--font-size-secondary);
+}
+.serviceMode strong {
+  font-size: var(--font-size-secondary);
+  font-weight: 500;
+  color: #364156;
+}
 .confirmationResult {
   max-height: 200px;
   overflow: auto;
@@ -29,17 +48,29 @@
   text-decoration: underline;
 }
 .toolbar {
+  position: relative;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 0 22px 20px;
+  padding: 4px 22px 18px;
+  border-bottom: 1px solid #edf0f5;
+  margin-bottom: 4px;
 }
 .toolbar > :global(.ant-select) {
   min-width: 150px;
+  height: 32px;
+}
+.toolbar > :global(.ant-select) :global(.ant-select-selector) {
+  font-size: var(--font-size-body);
 }
 @media (max-width: 760px) {
   .toolbar {
-    padding: 0 15px 16px;
+    padding: 0 15px 14px;
+    gap: 8px;
+  }
+  .toolbar > :global(.ant-select) {
+    min-width: 0;
+    width: 100%;
   }
 }

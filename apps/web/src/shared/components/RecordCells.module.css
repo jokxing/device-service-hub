@@ -1,0 +1,67 @@
+.ticket-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 0;
+  background: none;
+  max-width: 100%;
+}
+
+.ticket-number {
+  font-size: var(--font-size-caption);
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  font-family: Consolas, monospace;
+}
+
+.ticket-title {
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  color: #364156;
+}
+
+.ticket-link:hover .ticket-title {
+  color: #2563eb;
+}
+
+.device-cell {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  font-size: var(--font-size-body);
+  color: #5e6a7e;
+}
+
+.device-mini {
+  width: 29px;
+  height: 29px;
+  background: #f4f6fa;
+  border: 1px solid #edf0f5;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: #9aa8bf;
+  font-size: var(--font-size-body);
+  flex-shrink: 0;
+}
+
+.device-cell small {
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 5px;
+}
+
+.date-text {
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 1600px) {
+  .ticket-title {
+    font-size: var(--font-size-secondary);
+  }
+}

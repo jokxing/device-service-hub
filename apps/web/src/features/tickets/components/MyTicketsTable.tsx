@@ -1,18 +1,23 @@
-import ResponsiveRecordList from "../../../shared/components/ResponsiveRecordList";
+import cellStyles from "../../../shared/components/RecordCells.module.css";
+import { Avatar } from "antd";
+import { DesktopOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import type { TicketPage, TicketRecord } from "@device-service-hub/contracts";
 import { ROUTES } from "../../../app/routes";
-import { formatDateTime } from "../../../shared/utils/date";
-import { PRIORITY_LABELS } from "../constants";
-import StatusTag from "./StatusTag";
-import styles from "../connected.module.css";
 import CompactRecordCard from "../../../shared/components/CompactRecordCard";
 import cardStyles from "../../../shared/components/CompactRecordCard.module.css";
+import ResponsiveRecordList from "../../../shared/components/ResponsiveRecordList";
+import { formatDateTime } from "../../../shared/utils/date";
+import { PRIORITY_LABELS } from "../constants";
+import styles from "../connected.module.css";
+import ticketStyles from "../tickets.module.css";
+import StatusTag from "./StatusTag";
 
 interface Props {
   data: TicketPage;
   onPageChange: (page: number) => void;
 }
+
 export default function MyTicketsTable({ data, onPageChange }: Props) {
   return (
     <ResponsiveRecordList<TicketRecord>
@@ -37,7 +42,19 @@ export default function MyTicketsTable({ data, onPageChange }: Props) {
             },
             {
               label: "优先级",
-              value: PRIORITY_LABELS[ticket.priority],
+              value: (
+                <span
+                  className={[
+                    ticketStyles.priority,
+                    ticketStyles[ticket.priority],
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  <span />
+                  {PRIORITY_LABELS[ticket.priority]}
+                </span>
+              ),
             },
             {
               label: "提交时间",
@@ -60,51 +77,85 @@ export default function MyTicketsTable({ data, onPageChange }: Props) {
           key: "title",
           width: 300,
           render: (_, ticket) => (
-            <div>
-              <Link
-                className={styles.link}
-                to={ROUTES.serviceTickets + "/" + ticket.id}
-              >
-                {ticket.code}
-              </Link>
-              <div className="mt-1">{ticket.title}</div>
-            </div>
+            <Link
+              className={cellStyles["ticket-link"]}
+              to={ROUTES.serviceTickets + "/" + ticket.id}
+            >
+              <span className={cellStyles["ticket-number"]}>{ticket.code}</span>
+              <span className={cellStyles["ticket-title"]}>{ticket.title}</span>
+            </Link>
           ),
         },
         {
-          title: "设备",
+          title: "关联设备",
           key: "device",
+          width: 200,
           render: (_, ticket) => (
-            <div>
-              {ticket.device.name}
-              <div className="muted">{ticket.device.code}</div>
+            <div className={cellStyles["device-cell"]}>
+              <span className={cellStyles["device-mini"]} aria-hidden="true">
+                <DesktopOutlined />
+              </span>
+              <div>
+                <div>{ticket.device.name}</div>
+                <small>{ticket.device.code}</small>
+              </div>
             </div>
           ),
         },
         {
           title: "状态",
           dataIndex: "status",
-          width: 100,
+          width: 110,
           render: (status) => <StatusTag status={status} />,
         },
         {
           title: "优先级",
           dataIndex: "priority",
           width: 90,
-          render: (priority: TicketRecord["priority"]) =>
-            PRIORITY_LABELS[priority],
+          render: (priority: TicketRecord["priority"]) => (
+            <span
+              className={[ticketStyles.priority, ticketStyles[priority]]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              <span />
+              {PRIORITY_LABELS[priority]}
+            </span>
+          ),
         },
         {
           title: "维修人员",
           key: "assignee",
           width: 120,
-          render: (_, ticket) => ticket.assignee?.name ?? "待分派",
+          render: (_, ticket) =>
+            ticket.assignee ? (
+              <span className={ticketStyles.person}>
+                <Avatar
+                  aria-hidden
+                  size={23}
+                  style={{
+                    background: "#edf2fb",
+                    color: "#64748b",
+                    fontSize: 10,
+                  }}
+                >
+                  {ticket.assignee.name.slice(-2)}
+                </Avatar>
+                <span>{ticket.assignee.name}</span>
+              </span>
+            ) : (
+              <span className="muted">待分派</span>
+            ),
         },
         {
           title: "提交时间",
           dataIndex: "createdAt",
           width: 175,
-          render: (value: string) => formatDateTime(new Date(value)),
+          render: (value: string) => (
+            <span className={cellStyles["date-text"]}>
+              {formatDateTime(new Date(value))}
+            </span>
+          ),
         },
         {
           title: "操作",

@@ -1,5 +1,6 @@
-import ResponsiveRecordList from "../../../shared/components/ResponsiveRecordList";
+import cellStyles from "../../../shared/components/RecordCells.module.css";
 import { Button, Space } from "antd";
+import { DesktopOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import type {
   TaskTicketPage,
@@ -8,17 +9,37 @@ import type {
 import { ROUTES } from "../../../app/routes";
 import CompactRecordCard from "../../../shared/components/CompactRecordCard";
 import cardStyles from "../../../shared/components/CompactRecordCard.module.css";
+import ResponsiveRecordList from "../../../shared/components/ResponsiveRecordList";
 import { formatDateTime } from "../../../shared/utils/date";
 import { PRIORITY_LABELS } from "../constants";
+import styles from "../connected.module.css";
+import ticketStyles from "../tickets.module.css";
 import { canAcceptTask } from "../taskRules";
 import StatusTag from "./StatusTag";
-import styles from "../connected.module.css";
 
 interface Props {
   data: TaskTicketPage;
   onPageChange: (page: number) => void;
   onAccept: (task: TaskTicketRecord) => void;
 }
+
+function PriorityCell({
+  priority,
+}: {
+  priority: TaskTicketRecord["priority"];
+}) {
+  return (
+    <span
+      className={[ticketStyles.priority, ticketStyles[priority]]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <span />
+      {PRIORITY_LABELS[priority]}
+    </span>
+  );
+}
+
 export default function TaskTicketsList({
   data,
   onPageChange,
@@ -53,7 +74,7 @@ export default function TaskTicketsList({
       listLabel="维修任务列表"
       unitLabel="任务"
       emptyText="暂无分派给你的任务"
-      scrollX={1050}
+      scrollX={1080}
       renderCard={(task) => (
         <CompactRecordCard
           title={task.title}
@@ -62,7 +83,10 @@ export default function TaskTicketsList({
           fields={[
             { label: "设备", value: task.device.name },
             { label: "位置", value: task.device.location },
-            { label: "优先级", value: PRIORITY_LABELS[task.priority] },
+            {
+              label: "优先级",
+              value: <PriorityCell priority={task.priority} />,
+            },
             {
               label: "分派时间",
               value: task.assignedAt
@@ -77,44 +101,62 @@ export default function TaskTicketsList({
         {
           title: "工单 / 问题",
           key: "title",
-          width: 260,
+          width: 280,
           render: (_, task) => (
-            <div>
-              <span className="muted">{task.code}</span>
-              <div>{task.title}</div>
-            </div>
+            <Link
+              className={cellStyles["ticket-link"]}
+              to={ROUTES.serviceTasks + "/" + task.id}
+            >
+              <span className={cellStyles["ticket-number"]}>{task.code}</span>
+              <span className={cellStyles["ticket-title"]}>{task.title}</span>
+            </Link>
           ),
         },
         {
-          title: "设备",
+          title: "关联设备",
           key: "device",
+          width: 200,
           render: (_, task) => (
-            <div>
-              {task.device.name}
-              <div className="muted">{task.device.code}</div>
+            <div className={cellStyles["device-cell"]}>
+              <span className={cellStyles["device-mini"]} aria-hidden="true">
+                <DesktopOutlined />
+              </span>
+              <div>
+                <div>{task.device.name}</div>
+                <small>{task.device.code}</small>
+              </div>
             </div>
           ),
         },
         {
           title: "位置",
           key: "location",
+          width: 160,
           render: (_, task) => task.device.location,
         },
         {
           title: "状态",
           key: "status",
+          width: 110,
           render: (_, task) => <StatusTag status={task.status} />,
         },
         {
           title: "优先级",
           key: "priority",
-          render: (_, task) => PRIORITY_LABELS[task.priority],
+          width: 90,
+          render: (_, task) => <PriorityCell priority={task.priority} />,
         },
         {
           title: "分派时间",
           key: "assignedAt",
-          render: (_, task) =>
-            task.assignedAt ? formatDateTime(new Date(task.assignedAt)) : "—",
+          width: 165,
+          render: (_, task) => (
+            <span className={cellStyles["date-text"]}>
+              {task.assignedAt
+                ? formatDateTime(new Date(task.assignedAt))
+                : "—"}
+            </span>
+          ),
         },
         {
           title: "操作",

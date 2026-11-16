@@ -1,15 +1,14 @@
 import { useCallback, useState } from "react";
 import { Alert, Button, Space, Spin } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import type { ReporterTicketRecord } from "@device-service-hub/contracts";
 import { useParams } from "react-router-dom";
 import { ROUTES } from "../app/routes";
 import { useSession } from "../features/auth/sessionContext";
 import { useApiResource } from "../shared/hooks/useApiResource";
-
 import ContentCard from "../shared/components/ContentCard";
 import ServicePageHeader from "../shared/components/ServicePageHeader";
 import { connectedTicketsApi } from "../features/tickets/api";
-
 import TicketRecordDetails from "../features/tickets/components/TicketRecordDetails";
 import ConfirmTicketModal from "../features/tickets/components/ConfirmTicketModal";
 import { canConfirmTicket } from "../features/tickets/reporterRules";
@@ -36,7 +35,11 @@ function MyTicketDetailContent() {
         title={data?.code ?? "报修记录"}
         extra={
           <Space wrap>
-            <Button onClick={refresh} loading={loading}>
+            <Button
+              icon={<ReloadOutlined aria-hidden />}
+              onClick={refresh}
+              loading={loading}
+            >
               刷新
             </Button>
             {data && canConfirmTicket(data) && (
