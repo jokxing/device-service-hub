@@ -1,7 +1,8 @@
 import PageHeader from "../../../../../shared/components/PageHeader";
+import ContentCard from "../../../../../shared/components/ContentCard";
 import { getDevice } from "../../../../../features/devices/server/queries";
 import RepairForm from "../../../../../features/tickets/components/RepairForm";
-import styles from "../../../../../shared/components/PortalPage.module.css";
+import deviceStyles from "../../../../../features/devices/devices.module.css";
 
 export const metadata = { title: "提交报修" };
 export default async function RepairPage({
@@ -21,13 +22,29 @@ export default async function RepairPage({
           label: "返回设备详情",
         }}
       />
-      <section className={styles.card} aria-label="设备报修">
-        {device.enabled ? (
-          <RepairForm device={device} />
-        ) : (
-          <p role="status">设备已停用，暂时无法发起新报修。</p>
-        )}
-      </section>
+      <ContentCard title="设备报修">
+        <div className={deviceStyles.repairBody} aria-label="设备报修">
+          <div className={deviceStyles.repairDevice}>
+            <div>
+              <small>报修设备</small>
+              <strong>
+                {device.code} · {device.name}
+              </strong>
+            </div>
+            <div>
+              <small>安装位置</small>
+              <strong>{device.location}</strong>
+            </div>
+          </div>
+          {device.enabled ? (
+            <RepairForm device={device} />
+          ) : (
+            <p className={deviceStyles.disabledNotice} role="status">
+              设备已停用，暂时无法发起新报修。
+            </p>
+          )}
+        </div>
+      </ContentCard>
     </>
   );
 }

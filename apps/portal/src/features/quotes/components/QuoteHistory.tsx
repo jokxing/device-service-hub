@@ -7,8 +7,8 @@ import styles from "../quotes.module.css";
 export default function QuoteHistory({ quotes }: { quotes: QuoteRecord[] }) {
   if (!quotes.length) return null;
   return (
-    <section aria-label="历史报价" className={styles.section}>
-      <h2>历史报价</h2>
+    <section aria-label="历史报价" className={styles.history}>
+      <h2 className={styles.historyTitle}>历史报价</h2>
       <Collapse
         items={quotes.map((quote) => ({
           key: quote.id,

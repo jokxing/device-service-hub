@@ -237,7 +237,7 @@ try {
   const html = await response.text();
   assert.ok(html.includes(target.order.code));
   assert.ok(!html.includes(cookie.value));
-  await page.getByRole("link", { name: "我的订单", exact: true }).waitFor();
+  await page.getByRole("heading", { name: "我的订单", exact: true }).waitFor();
   const card = page
     .getByRole("list", { name: "本人订单列表", exact: true })
     .locator("li")

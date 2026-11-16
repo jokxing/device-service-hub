@@ -174,25 +174,34 @@ try {
     path: path.join(screenshots, "portal-devices-mobile.png"),
     fullPage: true,
   });
-  await navigation.getByRole("link", { name: "我的报修", exact: true }).click();
+  await page.getByRole("button", { name: "打开门户导航", exact: true }).click();
+  const mobileNav = page.getByRole("navigation", {
+    name: "门户导航",
+    exact: true,
+  });
+  await mobileNav.screenshot({
+    path: path.join(screenshots, "portal-navigation-mobile.png"),
+  });
+  await mobileNav.getByRole("link", { name: "我的报修", exact: true }).click();
   await page.getByRole("heading", { name: "我的报修", exact: true }).waitFor();
+  await page.getByRole("button", { name: "打开门户导航", exact: true }).click();
   assert.equal(
-    await navigation
+    await page
+      .getByRole("navigation", { name: "门户导航", exact: true })
       .getByRole("link", { name: "我的报修", exact: true })
       .getAttribute("aria-current"),
     "true",
   );
-  assert.equal(await navigation.locator(".ant-menu-item-selected").count(), 1);
   assert.equal(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
     true,
   );
-  await navigation.screenshot({
-    path: path.join(screenshots, "portal-navigation-mobile.png"),
-  });
-  await navigation.getByRole("link", { name: "我的设备", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "门户导航", exact: true })
+    .getByRole("link", { name: "我的设备", exact: true })
+    .click();
   await page.getByRole("heading", { name: "我的设备", exact: true }).waitFor();
 
   const csrfLogout = await context.request.post(origin + "/api/auth/logout", {

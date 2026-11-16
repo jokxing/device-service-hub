@@ -66,7 +66,11 @@ export default async function MyOrderDetailPage({
           mockPayments={payments}
         />
         <TicketDetails ticket={order.ticket} />
-        <Link href={`/tickets/${order.ticketId}`} prefetch={false}>
+        <Link
+          className={styles.ticketLink}
+          href={`/tickets/${order.ticketId}`}
+          prefetch={false}
+        >
           前往关联报修，查看或处理当前进度 →
         </Link>
       </div>

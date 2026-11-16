@@ -30,6 +30,7 @@ export default function OrderFilter({
           const query = orderListQuery(1, value);
           router.push("/orders" + (query ? "?" + query : ""));
         }}
+        getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
       />
     </div>
   );

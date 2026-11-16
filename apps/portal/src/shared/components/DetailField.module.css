@@ -1,0 +1,14 @@
+.field small {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.field strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #364156;
+  overflow-wrap: anywhere;
+}

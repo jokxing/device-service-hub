@@ -42,7 +42,7 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
     );
   }
   return (
-    <>
+    <div className={styles.repairForm}>
       {error && (
         <Alert
           type="error"
@@ -59,14 +59,6 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
         onFinish={submit}
         disabled={submitting}
       >
-        <Form.Item label="报修设备">
-          <Input
-            autoComplete="off"
-            aria-label="报修设备"
-            readOnly
-            value={`${device.code} · ${device.name}`}
-          />
-        </Form.Item>
         <Form.Item
           name="title"
           label="问题标题"
@@ -107,6 +99,9 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
               value,
               label,
             }))}
+            getPopupContainer={(trigger) =>
+              trigger.parentElement ?? document.body
+            }
           />
         </Form.Item>
         <div className={styles.actions}>
@@ -119,7 +114,11 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
           >
             提交报修
           </Button>
-          <Link href="/tickets" prefetch={false}>
+          <Link
+            className={styles.secondaryLink}
+            href="/tickets"
+            prefetch={false}
+          >
             查看我的报修
           </Link>
         </div>
@@ -127,6 +126,6 @@ export default function RepairForm({ device }: { device: DeviceSummary }) {
       <p className={styles.hint}>
         当前支持文字报修，提交后等待管理员分派。图片上传尚未开放；结果不明时请先查看本人记录，避免刷新后重复报修。
       </p>
-    </>
+    </div>
   );
 }

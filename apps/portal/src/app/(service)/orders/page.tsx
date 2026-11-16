@@ -7,8 +7,11 @@ import { getMyOrders } from "../../../features/orders/server/queries";
 import OrderCard from "../../../features/orders/components/OrderCard";
 import OrderFilter from "../../../features/orders/components/OrderFilter";
 import { readPage } from "../../../shared/utils/pagination";
-import styles from "../../../shared/components/PortalPage.module.css";
+import ContentCard from "../../../shared/components/ContentCard";
+import PageHeader from "../../../shared/components/PageHeader";
+import RefreshButton from "../../../shared/components/RefreshButton";
 import RecordPagination from "../../../shared/components/RecordPagination";
+import styles from "../../../features/orders/orders.module.css";
 
 export const metadata = { title: "我的订单" };
 export default async function MyOrdersPage({
@@ -32,28 +35,36 @@ export default async function MyOrdersPage({
   if (page > pages) redirect(href(pages));
   return (
     <>
-      <h1 className={styles.heading}>我的订单</h1>
-      <p className={styles.description}>
-        共 {data.total} 条本人服务订单，查看金额快照与处理进度。
-      </p>
-      <OrderFilter status={status} />
-      {data.items.length ? (
-        <ul className={styles.grid} aria-label="本人订单列表">
-          {data.items.map((order) => (
-            <li key={order.id}>
-              <OrderCard order={order} search={search} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <section className={styles.card}>暂无符合条件的本人订单。</section>
-      )}
-      <RecordPagination
-        page={page}
-        pages={pages}
-        label="订单分页"
-        hrefForPage={href}
+      <PageHeader
+        title="我的订单"
+        description={`共 ${data.total} 条本人服务订单，查看金额快照与处理进度。`}
       />
+      <ContentCard
+        title="订单记录"
+        count={data.total}
+        extra={<RefreshButton />}
+      >
+        <div className={styles.filterBar}>
+          <OrderFilter status={status} />
+        </div>
+        {data.items.length ? (
+          <ul className={styles.list} aria-label="本人订单列表">
+            {data.items.map((order) => (
+              <li key={order.id}>
+                <OrderCard order={order} search={search} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className={styles.empty}>暂无符合条件的本人订单。</div>
+        )}
+        <RecordPagination
+          page={page}
+          pages={pages}
+          label="订单分页"
+          hrefForPage={href}
+        />
+      </ContentCard>
     </>
   );
 }

@@ -14,7 +14,7 @@
 
 相关增量执行 `verify:orders`、`verify:portal-quotes`，并回归 `verify:portal`、`verify:portal-tickets` 和 `verify:portal-confirmations`；共享种子账号套件串行运行。
 
-订单列表 /orders 和独立详情 /orders/[id] 已接入，只读取本人数据；列表为服务端分页和状态筛选，详情复用 OrderSnapshot/TicketDetails，原维修操作通过关联报修入口完成，模拟支付在独立支付区域创建。筛选/页码保存在 URL，越界重定向保留筛选；共享 RecordPagination 与原报修页共用。订单查询和会话配置仍留 server-only，执行 verify:order-queries、verify:order-queries-ui 及原门户回归。
+订单列表 /orders 和独立详情 /orders/[id] 已接入，只读取本人数据；列表为 PageHeader/ContentCard、状态色标卡片与服务端分页筛选；详情 OrderSnapshot 使用信息格/报价条目面板/金额与状态说明，并复用 TicketDetails 与支付区（保留测试环境标记）。原维修操作通过关联报修入口完成。筛选/页码保存在 URL，越界重定向保留筛选；共享 RecordPagination 与原报修页共用。订单查询和会话配置仍留 server-only，执行 verify:order-queries、verify:order-queries-ui 及原门户回归。
 
 独立订单详情已增加 features/payments 的本地模拟支付单入口。Server Components 通过 reporterGet 读取本人记录，Client Component 使用原 MutationModal/useApiMutation 创建；app/api/orders/[id]/payments 只调用 reporterPost。仅待开工订单可创建，金额来自 NestJS 订单快照；创建不代表付款，不接真实渠道。关闭/成功重读当前 URL，保留订单列表筛选上下文。验证使用 verify:mock-payments、verify:mock-payments-ui。
 
@@ -68,7 +68,7 @@ apps/portal/
    │  ├─ api.ts、rules.ts、constants.ts、types.ts（取消请求、入口规则与类型）
    │  └─ components/、server/（订单快照、取消表单、查询与转发）
    └─ shared/
-      ├─ components/（公共页头与布局样式）
+      ├─ components/（PortalServiceChrome、PageHeader、ContentCard、门户导航与布局样式）
       ├─ api/、hooks/（客户端请求与提交生命周期）
       ├─ utils/（日期与页码）
       └─ server/（内部请求、Cookie 配置与来源/JSON 检查）
@@ -96,10 +96,12 @@ apps/portal/
 
 | 门户入口 | 职责 |
 | --- | --- |
-| `/devices/[id]/repair` | 服务端读取授权设备，停用时不展示提交表单 |
+| `/devices` | 服务端授权设备列表；公共壳 + PageHeader/ContentCard，卡片展示编号、启用状态、类别与位置；刷新调用 `router.refresh` |
+| `/devices/[id]` | 服务端授权设备详情；PageHeader 返回、ContentCard + detailGrid 展示类别/型号/位置/状态，启用时可“发起报修” |
+| `/devices/[id]/repair` | 服务端读取授权设备；PageHeader + ContentCard 展示设备摘要与文字报修表单，停用时仅提示不可提交 |
 | POST `/api/tickets` | 检查来源与会话，仅转交已有 NestJS 创建接口，不生成新提交编号、不添加报修人或状态 |
-| `/tickets` | 服务端本人记录与 URL 分页，桌面双列卡片、手机单列；非法页码回退、超出末页重定向 |
-| `/tickets/[id]` | 服务端本人详情，展示报修内容、处理进度与已有操作记录；可直达和刷新 |
+| `/tickets` | 服务端本人记录与 URL 分页；PageHeader/ContentCard、双列卡片与状态色点、手机单列；非法页码回退、超出末页重定向 |
+| `/tickets/[id]` | 服务端本人详情；ContentCard + detailGrid、优先级/状态色标、问题与处理说明面板；报价/历史报价/订单快照与确认动作挂接本页，报价状态色标与卡片壳对齐 |
 | POST `/api/tickets/[id]/confirm` | 转交既有确认命令，保留 requestId、expectedVersion 和服务端状态码 |
 
 - `RepairForm` 只管理输入、内容归一化和当前提交意图。标题 60 字符、描述 500 字符，优先级为普通/紧急；与既有接口约束一致，后端 DTO 仍负责运行时校验。
@@ -108,9 +110,10 @@ apps/portal/
 - 没有自动重试写请求。请求取消不代表数据库回滚；刷新或重新打开表单会丢失原提交意图，结果不明时先查看本人记录。本轮不增加持久草稿、离线同步或附件。
 - 创建成功整页替换至本人详情，避免沿用提交前的 Router 数据；提交时会话失效整页转至登录。本人记录查询不依赖设备当前授权，因此撤销设备授权不影响已有本人报修回看。
 - `features/auth/server/resources.ts` 组合身份与资源异常处理，供设备/工单读取使用；`shared/server/request.ts` 供登录/报修校验来源与 JSON。权限规则不移入通用传输层。
-- `PageHeader` 共用标题与返回按钮，ServiceLayout 统一横向边距。返回按钮在桌面标题右侧，手机换行；不通过全局选择器给页面重复添加边距。
-- `PortalNavigation` 使用 Ant Design 横向 Menu，根据当前路径控制选中项，设备详情/报修表单归属“我的设备”，本人记录/详情归属“我的报修”。保持 Next Link 导航，只有导航本身为客户端组件。
-- 门户导航与设备服务导航统一为透明背景、底部分隔线、灰色未选中文字与蓝色选中指示线；不包白色圆角卡片。Menu 外观优先使用 Provider Token，局部间距由门户布局 CSS Module 管理。
+- `PageHeader` 共用 eyebrow 标题、蓝色句点与返回按钮；返回文案保持 `← {label}`。列表页可只传标题说明。
+- `(service)/layout` 通过 Server Component 读取报修用户，再交给客户端 `PortalServiceChrome` 组装侧栏、顶栏与窄屏抽屉；主内容仍为传入的 Server Components，不把整页改为客户端请求。
+- 桌面固定侧栏提供品牌区、用户门户导航（我的设备 / 我的报修 / 我的订单）、环境标记与姓名；顶栏显示面包屑、门户标记与“退出登录”。窄屏隐藏侧栏，用“打开门户导航”抽屉进入相同链接，退出按钮保留在顶栏。
+- 导航为门户内实现的 Next Link，不跨应用导入 Web 布局或 CSS；`aria-label="门户导航"` 与链接文案保持不变。设备详情/报修归属“我的设备”，本人记录/详情归属“我的报修”，订单列表/详情归属“我的订单”。
 
 ## 报修用户确认完成
 
@@ -169,3 +172,7 @@ npm run verify:portal-confirmations  # 门户确认、防重、冲突与账号�
 本轮已通过全仓库 build、verify:alipay-closures-ui、verify:alipay-refunds-ui、verify:alipay-sandbox-ui、verify:portal 与 verify:ui，并检查手机截图；未执行实际渠道交易。Windows 下运行中的门户曾造成构建目录 EPERM，停止本项目门户后构建通过并恢复服务。
 
 受保护写操作通过 features/auth/useAuthenticatedMutation 复用通用 useApiMutation，并统一在 401 时完整替换到登录页。业务文案、提交意图、版本和成功回调仍由业务组件负责；登录表单继续使用通用 Hook，退出成功复用同一登录导航函数。shared 不反向依赖 auth，不把权限策略塞入 HTTP 传输层。
+
+门户视觉复用：详情字段使用 `shared/components/DetailField`，设备、报修与订单共用 `DetailGrid.module.css`；工单、报价和订单状态标签共用 `StatusBadge`，业务状态文案及颜色映射留各模块。桌面侧栏和移动抽屉共用门户品牌及用户摘要。以上复用均在门户内部，服务端鉴权和查询继续保留原边界。
+
+本次公共组件整理已通过根构建、`verify:portal`、`verify:portal-tickets` 和 `verify:order-queries-ui`，并核对设备详情窄屏与报价桌面截图。`verify:portal-quotes` 两次均在写入 `service-quote-accepted.png` 时遇到 Windows 文件错误中断，本轮不记为整套通过。

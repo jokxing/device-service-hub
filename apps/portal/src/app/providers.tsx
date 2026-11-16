@@ -9,21 +9,9 @@ export default function Providers({ children }: PropsWithChildren) {
     <ConfigProvider
       locale={zhCN}
       theme={{
-        components: {
-          Menu: {
-            itemBg: "transparent",
-            itemColor: "#64748b",
-            horizontalItemSelectedColor: "#2563eb",
-            horizontalItemHoverColor: "#2563eb",
-            horizontalItemBorderRadius: 0,
-            horizontalLineHeight: "46px",
-            itemPaddingInline: 2,
-            activeBarHeight: 2,
-          },
-        },
         token: {
           colorPrimary: "#2563eb",
-          fontSize: 15,
+          fontSize: 14,
           fontSizeSM: 13,
           colorText: "#263247",
           colorTextSecondary: "#64748b",

@@ -4,7 +4,7 @@
 
 本文件解释现有结构与设计取舍；AI 协作执行规则见根目录 [AGENTS.md](../AGENTS.md)，避免重复维护多套规范。
 
-本文件主体描述 `apps/web` 的 Vite 后台。`apps/portal` 使用 Next.js App Router，当前提供登录、授权设备查询、文字报修、本人记录和完成确认；Server/Client Components、Cookie、提交防重与缓存边界单独维护在 [PORTAL.md](PORTAL.md)，不将 React Router 和后台布局搬入门户。
+本文件主体描述 `apps/web` 的 Vite 后台。`apps/portal` 使用 Next.js App Router，当前提供登录、授权设备查询、文字报修、本人记录和完成确认；Server/Client Components、Cookie、提交防重与缓存边界单独维护在 [PORTAL.md](PORTAL.md)。门户公共壳在门户内对齐真实服务入口的侧栏/顶栏/窄屏抽屉视觉，不跨应用导入 Web 布局、Hook 或 CSS。
 
 `apps/shell` 已通过 qiankun 加载现有后台。`main.tsx` 和 `micro.ts` 共用 `app/createApplication.tsx` 的 Provider 与根节点管理；独立路由不带前缀，挂载时使用 `/tickets` basename。独立构建、沙箱/浮层、身份与卸载边界见 [MICRO_FRONTENDS.md](MICRO_FRONTENDS.md)，不向门户或 RN 引入 qiankun。
 

@@ -16,7 +16,7 @@ export default function TicketActions({
   const allowed = canConfirmTicket(ticket);
   return (
     <>
-      <div className={styles.actions}>
+      <div className={styles.detailActions}>
         {allowed && (
           <Button type="primary" onClick={() => setOpen(true)}>
             确认完成
