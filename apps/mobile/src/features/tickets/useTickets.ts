@@ -9,6 +9,7 @@ export function useMyTickets(page: number) {
       (signal: AbortSignal) => listMyTickets(request, page, signal),
       [request, page],
     ),
+    { keepPreviousData: true },
   );
 }
 export function useMyTicket(id: string) {

@@ -13,6 +13,7 @@ export function useOrders(query: string) {
       },
       [request, user?.id, user?.role, query],
     ),
+    { keepPreviousData: true },
   );
 }
 export function useOrder(id: string) {

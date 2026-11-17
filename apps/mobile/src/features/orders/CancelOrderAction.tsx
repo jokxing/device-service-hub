@@ -19,6 +19,7 @@ import { useApiMutation } from "../../shared/hooks/useApiMutation";
 import { typography } from "../../shared/styles/typography";
 import { colors, fontSizes, spacing, radii } from "../../shared/theme";
 import { cancelMyOrder } from "./api";
+
 function Cancellation({
   ticket,
   order,
@@ -28,8 +29,8 @@ function Cancellation({
   order: ServiceOrderRecord;
   onClose: () => void;
 }) {
-  const { post } = useNativeSession(),
-    mutation = useApiMutation();
+  const { post } = useNativeSession();
+  const mutation = useApiMutation();
   const [reason, setReason] = useState("");
   const intent = useRef<{ reason: string; requestId: string } | null>(null);
   return (
@@ -58,47 +59,44 @@ function Cancellation({
         }, onClose)
       }
     >
-      <View style={styles.content}>
-        <View style={styles.summary}>
-          <Text style={typography.text}>
-            {order.code} · 关联工单 {ticket.code}
-          </Text>
-          <Text style={typography.text}>设备名称：{ticket.device.name}</Text>
-          <Text style={typography.text}>
-            原订单金额：¥{formatCents(order.totalCents)}（人民币）
-          </Text>
-        </View>
-        <View style={styles.field}>
-          <Text style={typography.text}>取消原因</Text>
-          <TextInput
-            autoComplete="off"
-            importantForAutofill="no"
-            accessibilityLabel="取消原因"
-            multiline
-            textAlignVertical="top"
-            style={styles.input}
-            value={reason}
-            onChangeText={setReason}
-            maxLength={ORDER_LIMITS.cancellationReason}
-            editable={!mutation.pending}
-            placeholder="请说明不再继续本次维修的原因"
-          />
-          <Text style={typography.muted}>
-            {reason.length} / {ORDER_LIMITS.cancellationReason}
-          </Text>
-        </View>
-        <View style={styles.summary}>
-          <Text style={typography.text}>
-            取消后订单与工单同时结束，不能恢复或继续维修；保留原报价、金额快照和取消记录。已模拟成功的订单不能直接取消，请在订单详情申请模拟退款。
-          </Text>
-          <Text style={typography.muted}>
-            结果不明时保持原原因重试；关闭后刷新核对，取消请求不等于事务回滚。
-          </Text>
-        </View>
+      <View style={styles.summary}>
+        <Text style={typography.text}>
+          {order.code} · 关联工单 {ticket.code}
+        </Text>
+        <Text style={typography.text}>设备名称：{ticket.device.name}</Text>
+        <Text style={typography.text}>
+          原订单金额：¥{formatCents(order.totalCents)}（人民币）
+        </Text>
       </View>
+      <Text style={typography.muted}>
+        取消后订单与工单同时结束，不能恢复；保留原报价、金额快照和取消记录。已模拟成功请到订单详情申请模拟退款。
+      </Text>
+      <View style={styles.field}>
+        <Text style={typography.text}>取消原因</Text>
+        <TextInput
+          autoComplete="off"
+          importantForAutofill="no"
+          accessibilityLabel="取消原因"
+          multiline
+          textAlignVertical="top"
+          style={styles.input}
+          value={reason}
+          onChangeText={setReason}
+          maxLength={ORDER_LIMITS.cancellationReason}
+          editable={!mutation.pending}
+          placeholder="请说明不再继续本次维修的原因"
+        />
+        <Text style={typography.muted}>
+          {reason.length} / {ORDER_LIMITS.cancellationReason}
+        </Text>
+      </View>
+      <Text style={typography.muted}>
+        结果不明时保持原原因重试；关闭后刷新核对，取消请求不等于事务回滚。
+      </Text>
     </MutationModal>
   );
 }
+
 export default function CancelOrderAction({
   ticket,
   payments,
@@ -121,7 +119,12 @@ export default function CancelOrderAction({
     return null;
   return (
     <>
-      <ActionButton title="取消订单" secondary onPress={() => setOpen(true)} />
+      <ActionButton
+        title="取消订单"
+        secondary
+        compact
+        onPress={() => setOpen(true)}
+      />
       {open && (
         <Cancellation
           ticket={ticket}
@@ -135,10 +138,10 @@ export default function CancelOrderAction({
     </>
   );
 }
+
 const styles = StyleSheet.create({
-  content: { gap: spacing.sm },
-  summary: { gap: spacing.xs },
-  field: { gap: spacing.xxs },
+  summary: { gap: spacing.xxs },
+  field: { gap: spacing.xs },
   input: {
     backgroundColor: colors.surface,
     color: colors.text,

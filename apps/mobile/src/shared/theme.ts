@@ -7,6 +7,9 @@ export const colors = {
   muted: "#64748b",
   border: "#e4e8ef",
   danger: "#b91c1c",
+  dangerSoft: "#fef3f2",
+  success: "#1b7554",
+  successSoft: "#edf8f2",
   scrim: "rgba(15, 23, 42, 0.45)",
 } as const;
 export const spacing = {
@@ -37,4 +40,7 @@ export const radii = {
   control: 10,
   card: 14,
 } as const;
-export const controlSizes = { minHeight: 48 } as const;
+export const controlSizes = {
+  minHeight: 48,
+  compactHeight: 40,
+} as const;

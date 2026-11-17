@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from "react";
 import { formatDateTime } from "../../shared/utils/date";
 import { Text } from "react-native";
 import type { ServiceOrderRecord } from "@device-service-hub/contracts";
@@ -5,11 +6,13 @@ import { formatCents } from "@device-service-hub/contracts/quote-rules";
 import ContentCard from "../../shared/components/ContentCard";
 import { typography } from "../../shared/styles/typography";
 import { ORDER_STATUS_LABELS } from "./constants";
+
 export default function OrderSnapshot({
   order,
-}: {
+  children,
+}: PropsWithChildren<{
   order: ServiceOrderRecord;
-}) {
+}>) {
   return (
     <ContentCard title="服务订单">
       <Text style={typography.text}>
@@ -42,6 +45,7 @@ export default function OrderSnapshot({
       <Text style={typography.muted}>
         以上为确认时的订单快照，维修完成不代表付款。支付结果请查看订单支付记录。
       </Text>
+      {children}
     </ContentCard>
   );
 }

@@ -24,7 +24,8 @@ export const ROLE_GUIDES: ReadonlyArray<{
   {
     role: "reporter",
     title: ROLE_LABELS.reporter,
-    description: "查看授权设备、提交报修、跟进本人记录并确认维修完成。",
+    description:
+      "查看授权设备、扫码核对、提交报修与现场照片，跟进本人记录、订单并确认维修完成。",
   },
   {
     role: "admin",

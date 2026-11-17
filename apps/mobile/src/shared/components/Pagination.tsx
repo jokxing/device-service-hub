@@ -19,6 +19,7 @@ export default function Pagination({
         <ActionButton
           title="上一页"
           secondary
+          compact
           disabled={loading || page <= 1}
           onPress={() => onPageChange(page - 1)}
         />
@@ -27,6 +28,7 @@ export default function Pagination({
         <ActionButton
           title="下一页"
           secondary
+          compact
           disabled={
             loading ||
             !pagination ||

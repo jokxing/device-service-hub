@@ -3,8 +3,7 @@ import { AppState, Linking, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useFocusEffect } from "expo-router";
 import ActionButton from "../../../shared/components/ActionButton";
-import { typography } from "../../../shared/styles/typography";
-import { colors, radii, spacing } from "../../../shared/theme";
+import { colors, fontSizes, lineHeights, radii, spacing } from "../../../shared/theme";
 import type { DeviceCameraProps } from "./types";
 
 export default function DeviceCamera({ paused, onCode }: DeviceCameraProps) {
@@ -49,7 +48,7 @@ export default function DeviceCamera({ paused, onCode }: DeviceCameraProps) {
     enabled && permission?.granted && focused && active && !paused && !failure;
   return (
     <View style={styles.section}>
-      {preview && (
+      {preview ? (
         <View style={styles.preview}>
           <CameraView
             style={StyleSheet.absoluteFill}
@@ -62,8 +61,8 @@ export default function DeviceCamera({ paused, onCode }: DeviceCameraProps) {
             }
           />
         </View>
-      )}
-      <Text style={typography.muted}>
+      ) : null}
+      <Text style={styles.hint}>
         {failure ||
           (paused
             ? "识别已暂停，可手动输入或重新扫码。"
@@ -73,25 +72,27 @@ export default function DeviceCamera({ paused, onCode }: DeviceCameraProps) {
                 : "正在启动相机…"
               : "仅识别本平台设备二维码，不会自动打开外部链接。")}
       </Text>
-      {!paused && !preview && (
+      {!paused && !preview ? (
         <ActionButton
           title={enabled ? "重试相机" : "开启相机扫码"}
           secondary
+          compact
           pending={requesting}
           onPress={() => void start()}
         />
-      )}
-      {permission && !permission.granted && !permission.canAskAgain && (
+      ) : null}
+      {permission && !permission.granted && !permission.canAskAgain ? (
         <ActionButton
           title="打开系统设置"
           secondary
+          compact
           onPress={() => {
             void Linking.openSettings().catch(() =>
               setFailure("无法打开设置，请手动开启相机权限。"),
             );
           }}
         />
-      )}
+      ) : null}
     </View>
   );
 }
@@ -99,9 +100,14 @@ const styles = StyleSheet.create({
   section: { gap: spacing.sm },
   preview: {
     width: "100%",
-    height: 260,
+    height: 220,
     borderRadius: radii.card,
     backgroundColor: colors.text,
     overflow: "hidden",
+  },
+  hint: {
+    color: colors.muted,
+    fontSize: fontSizes.caption,
+    lineHeight: lineHeights.caption,
   },
 });

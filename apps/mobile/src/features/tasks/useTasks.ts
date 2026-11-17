@@ -10,6 +10,7 @@ export function useTasks(page: number, status?: TicketStatus) {
       (signal: AbortSignal) => listTasks(request, page, status, signal),
       [request, page, status],
     ),
+    { keepPreviousData: true },
   );
 }
 export function useTask(id: string) {

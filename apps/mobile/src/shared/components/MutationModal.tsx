@@ -49,18 +49,22 @@ export default function MutationModal({
                 {error}
               </Text>
             )}
-            <ActionButton
-              title={submitText}
-              pending={pending}
-              disabled={submitDisabled}
-              onPress={onSubmit}
-            />
-            <ActionButton
-              title="取消"
-              secondary
-              disabled={pending}
-              onPress={onClose}
-            />
+            <View style={styles.actionRow}>
+              <ActionButton
+                title="取消"
+                secondary
+                fill
+                disabled={pending}
+                onPress={onClose}
+              />
+              <ActionButton
+                title={submitText}
+                fill
+                pending={pending}
+                disabled={submitDisabled}
+                onPress={onSubmit}
+              />
+            </View>
           </View>
         </View>
       </SafeAreaView>
@@ -84,12 +88,21 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   body: { flexGrow: 0, flexShrink: 1 },
-  content: { padding: spacing.lg, gap: spacing.lg },
+  content: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    gap: spacing.sm,
+  },
   actions: {
     flexShrink: 0,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  actionRow: {
+    flexDirection: "row",
     gap: spacing.sm,
   },
   title: { color: colors.text, fontSize: fontSizes.section, fontWeight: "600" },

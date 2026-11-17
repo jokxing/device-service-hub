@@ -57,7 +57,7 @@ try {
     1,
   );
   android.capture("mobile-android-ticket-detail.png");
-  await ui.tap("返回我的报修");
+  await ui.launch("tickets", 3002);
   await ui.waitFor(title);
   android.capture("mobile-android-my-tickets.png");
   await ui.launch("tickets/" + ticket.id, 3002);

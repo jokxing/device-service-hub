@@ -66,7 +66,55 @@ apps/mobile/
 - 公共颜色、字号、行高、间距、圆角与控件尺寸统一使用 theme；页面特有尺寸保留在局部 StyleSheet。业务模块按实际规模增加 `components/`、`hooks/` 等子目录，不为后续设想预建目录。
 - 新增报修、任务、账号功能分别放入对应 feature，路由放入 app；只依赖其他模块明确提供的入口。跨端继续只共享契约与适用的纯规则，不从后台或门户导入组件、存储和导航。
 
-`Screen` 的可选 footer 用于页面末尾操作：短内容时靠底，长内容时随页面滚动，保留安全区和底部间距。设备页将退出操作置于此处，与设备查询操作分开。
+`Screen` 的可选 footer 用于页面末尾操作：短内容时靠底，长内容时随页面滚动，保留安全区和底部间距。`Screen` 支持 `dense` 收紧边距；`ActionButton` 支持 `compact`；`ContentCard` 可带 eyebrow/extra；`LoadFeedback` 可带重试。这些为可选参数，旧调用保持兼容。我的设备与我的任务均将「退出登录」放在导航栏右上角（`SessionHeaderAction`），主列表不展示返回箭头。
+
+“我的设备”页：顶部账号摘要，扫码为主操作，报修/订单/任务为次级入口，设备列表区旁放置刷新，卡片展示编号、启用状态与位置摘要，详情为文字入口；加载/空态/错误可重试，不改变鉴权与接口行为。
+
+本轮视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-ui`、`verify:mobile-auth-android`、`verify:mobile-android` 通过。模拟器 Expo Go 登录后核对账号摘要、扫码主按钮、次级导航芯片、授权设备列表/状态徽章、详情文字入口、刷新与退出；截图见 [我的设备](screenshots/mobile-android-devices.png)。`check:mobile` 仍因既有 Expo 小版本差异（expo install --check）未升依赖而告警失败，类型检查本身通过。本轮未重建 APK、未做真机或 RN Web 登录业务验收；RN Web 仅跑了公开页 `verify:mobile-ui`。
+
+“我的报修”页：区块标题与紧凑刷新并列，去掉多余全宽返回按钮（依赖导航返回）；空态与错误重试完善。共用 `TicketCard` 改为编号 eyebrow、状态徽章与文字详情入口，任务列表同步受益但不改任务页布局；`Pagination` 翻页按钮改为 compact。
+
+报修列表视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-ui`、`verify:mobile-tickets-android` 通过。模拟器 Expo Go 核对本人报修区、刷新、状态徽章、详情入口、跨账号隔离及报修提交流程；截图见 [我的报修](screenshots/mobile-android-my-tickets.png)。未改详情页布局，未重建 APK，未做真机验收。
+
+“我的订单”页：区块标题与紧凑刷新并列；状态筛选改为选中高亮的芯片（仍走 URL page/status）；卡片用报修标题 eyebrow、订单号、状态徽章、金额与文字详情入口；空态区分全部/筛选，错误可重试。未改订单详情、支付或取消流程。
+
+订单列表视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-ui` 通过；模拟器 Expo Go 登录后核对本人订单区、筛选芯片、刷新与详情入口，截图见 [我的订单](screenshots/mobile-android-my-orders.png)、[筛选](screenshots/mobile-android-my-orders-filtered.png)。未重建 APK，未做真机验收。
+
+“我的任务”页：账号摘要卡片、本人任务区与紧凑刷新并列；状态筛选改为共用 `FilterChip`；空态区分全部/筛选，错误可重试；列表复用已收紧的 `TicketCard`（查看任务详情）。订单页筛选同步改为该公共芯片。未改任务详情、接单或结果提交流程。
+
+任务列表视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-ui`、`verify:mobile-tasks-android` 通过；模拟器 Expo Go 核对账号摘要、筛选芯片、刷新与任务卡片，截图见 [我的任务](screenshots/mobile-android-my-tasks.png)、[筛选](screenshots/mobile-android-my-tasks-filtered.png)。未重建 APK，未做真机验收。
+
+登录页：隐藏 Stack 顶栏，页面自带安全区；与首页一致的品牌 eyebrow、主标题「登录设备服务」、说明与强调条；表单区保留账号/密码标签与登录按钮，Web 仍仅预览提示。会话恢复反馈页同步收紧文案与重试入口。不改变 SecureStore、鉴权跳转或账号切换清理。
+
+报修详情：顶栏右侧提供「刷新报修详情」图标按钮刷新整页；去掉页内全宽刷新与「返回我的报修」，返回依赖导航返回。报价区「刷新报价与订单」只重读报价/订单/支付局部，确认/拒绝/取消仍回写整页。`useApiResource` 刷新时保留旧数据，仅在请求函数变更时清空，避免内容塌陷导致 ScrollView 回顶。
+
+订单详情同样改为顶栏「刷新订单详情」图标，去掉页内刷新与「返回我的订单」；「取消订单」放回「服务订单」卡片内，与报修详情报价区一致。
+
+取消订单：入口改为卡片内紧凑次级按钮；弹窗摘要行距收紧，说明与原因输入对齐退款/拒绝报价表单密度；底部取消/确认同一行。保留原校验、UUID 意图与关闭重读语义。视觉验收：`tsc --noEmit`、`verify:mobile-order-cancellations-android` 通过；未重建 APK。
+
+扫码查看设备：说明 +「相机扫码」「手动输入」分区卡片；保留开启相机/重新扫码/查看设备与原无障碍标签；维修员仅提示不可用，去掉返回任务大按钮。不改扫码协议、去重与权限校验。
+
+扫码视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-ui`、`verify:device-scan-android` 通过；模拟器 Expo Go 手动输入查询与权限拒绝已核对，截图见 [扫码页](screenshots/mobile-android-device-scan.png)。光学识别与实体相机未在本轮重验；未重建 APK。
+
+设备详情：顶栏「刷新详情」图标；卡片用编号 eyebrow、启用/停用徽章与类别/型号/位置摘要；报修用户且启用时保留主按钮「发起文字报修」，停用给出说明。去掉页内刷新按钮。
+
+设备详情视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-auth-android` 通过；模拟器核对详情卡片与报修入口，截图见 [设备详情](screenshots/mobile-android-device-detail.png)。未重建 APK，未做真机验收。
+
+首页：收紧品牌区与流程卡片，主 CTA「进入设备服务」保留，须知改为次级紧凑按钮；能力说明更新为已支持扫码与现场照片，管理员分派仍指向 Web。
+
+首页视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-ui`、`verify:mobile-android` 通过；截图见 [首页](screenshots/mobile-android-home.png)。未重建 APK，未做真机验收。
+
+报修须知：收紧分区卡片与角色说明字号层级；能力说明与首页一致，已支持扫码与现场照片；保留「提交前准备」「服务角色与访问范围」「维修完成后」标题。
+
+须知视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-ui`、`verify:mobile-android` 通过；截图见 [须知](screenshots/mobile-android-guide.png)、[Web 须知](screenshots/mobile-web-guide.png)。未重建 APK，未做真机验收。
+
+提交报修：设备摘要卡片 +「报修内容」表单区；优先级改为芯片；保留问题标题/描述无障碍标签与「提交报修」；去掉「查看我的报修」大按钮。不改 UUID 防重与离页取消语义。
+
+提交报修视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-tickets-android` 通过；截图见 [报修表单](screenshots/mobile-android-repair.png)。未重建 APK，未做真机验收。
+
+任务详情：与报修详情一致，使用系统返回箭头；顶栏右侧「刷新任务详情」刷新整页。去掉页内全宽刷新/返回。报价/订单分区局部刷新按钮放在对应卡片内；接单与结果提交成功仍回写整页。
+
+登录视觉验收：`tsc --noEmit`、`build:mobile`、`verify:mobile-ui`、`verify:mobile-auth-android` 通过；模拟器 Expo Go 核对登录文案、错误密码拒绝、会话恢复与退出，截图见 [账号登录](screenshots/mobile-android-login.png)。未重建 APK，未做真机验收。
 
 ## 启动与构建
 
@@ -143,7 +191,7 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 
 ## 本人确认完成
 
-公共 MutationModal 的正文独立滚动；错误提示、提交和取消按钮放在固定操作区，底部使用 spacing.xl 留白，避免长表单将按钮裁切在圆角边缘。接单、确认和结果表单统一沿用此布局。
+公共 MutationModal 的正文独立滚动；错误提示在上，取消与提交按钮同一行并排；正文区边距与段落间距收紧，避免长表单将按钮裁切在圆角边缘。接单、确认、取消订单和结果表单统一沿用此布局。
 
 - POST `/api/mobile/tickets/:id/confirm` 复用 ConfirmTicketDto 与 TicketConfirmationsService，不增加表、迁移或通用状态修改接口。请求仅带 UUID v4 requestId 与 expectedVersion；状态和确认人、时间由服务端事务写入。
 - `ConfirmTicketAction` 组织入口与业务意图，公共 `MutationModal` 只处理展示、提交状态和关闭；原生 [Modal](https://reactnative.dev/docs/modal) 的 Android 返回关闭也受 pending 限制。内容可滚动，样式沿用公共主题。
@@ -158,7 +206,7 @@ MuMu Android 15 的 uiautomator 可能在写完 XML 后以 135/139 退出。验�
 - 原生接口为 GET `/api/mobile/tasks`、GET `/api/mobile/tasks/:id`、POST `/api/mobile/tasks/:id/accept`；复用 TaskTicketsService、StatusTicketsQueryDto 和 AcceptTicketDto，不增加表或迁移。列表与计数共用当前 assigneeId 条件；旧接单意图重放仍检查当前归属。
 - 任务只展示必要设备摘要，不扩大独立设备台账权限。非维修角色被服务端拒绝；跨维修人员和不存在的任务统一返回 404。
 - 只有待接单且未接单的任务显示接单动作。窗口内保留原 requestId/expectedVersion，取消不修改状态，关闭后重新查询；成功读取实际处理中状态与接单人、时间。处理中任务已接通文字处理结果提交。
-- 任务卡片和详情使用工单模块的只读 TicketCard、TicketRecordDetails；动作和 API 留在 tasks。任务导航栏使用 SessionHeaderAction，设备页保留 SessionFooter；两者调用同一会话退出逻辑。共用文字样式、LoadFeedback、useApiResource 与 useApiMutation。公共提交 Hook 只处理防重复点击、取消和卸载清理，业务意图不进入公共层。
+- 任务卡片和详情使用工单模块的只读 TicketCard、TicketRecordDetails；动作和 API 留在 tasks。任务与设备主列表导航栏共用 SessionHeaderAction 退出。共用文字样式、LoadFeedback、useApiResource 与 useApiMutation。公共提交 Hook 只处理防重复点击、取消和卸载清理，业务意图不进入公共层。
 
 ## 文字处理结果
 
@@ -420,3 +468,9 @@ RN 在未点击刷新、未注入退款渠道结果的情况下自动同步了�
 本人报修、本人任务和本人订单共用 `shared/components/Pagination.tsx`。分页组件接收当前页、服务端总数/每页数量、加载状态及翻页回调，仅负责上一页/下一页和边界禁用；列表请求、业务摘要、筛选重置、订单 URL 页码及越界纠正继续由业务页面负责。不新增分页状态 Hook；上一页/下一页采用同一行等宽按钮，间距使用共享主题。
 
 分页抽取验证：`check:mobile`、`build:mobile`、根 `build`、`verify:mobile-ui`、`verify:shared-ui`、`verify:mobile-android` 均通过。模拟器额外只读核对本人订单第 1 页→第 2 页→第 1 页、首页上一页禁用、末页下一页禁用及状态筛选回第 1 页，并查看分页截图；本轮未重建 APK 或进行真机验证。
+
+订单列表返回同步：本人订单列表在重新获得导航焦点时读取当前筛选与页码，避免详情取消后保留旧状态。`scripts/verify-mobile-order-list-sync-android.mjs` 使用专用临时订单覆盖详情实际取消、Android 返回列表后自动显示已取消，不点击刷新按钮，并定向清理临时记录。本轮模拟器已通过该流程；独立 APK 尚未重打包。
+
+列表复用整理：报修、任务、订单标题与刷新区域共用 `RecordListHeader`，返回重读共用 `useRefreshOnFocus`，首次展示仍由原读取 Hook 负责；返回保持业务筛选和页码。`useApiResource` 默认清空旧结果，仅三类只读列表显式启用 `keepPreviousData`，只在同一查询刷新期间保留内容；查询/账号变化或读取失败清理旧数据，详情和支付读取不启用该选项。
+
+本轮检查通过：`check:mobile`、`build:mobile`、根 `build`、`verify:mobile-ui`、`verify:mobile-android`、`verify:mobile-confirmations-android`；另用专用临时记录验证报修完成/订单取消后 Android 返回列表自动同步，均未点击刷新，并核对报修返回截图。初次订单测试在登录辅助步骤超时，改为复用正常会话后重跑通过。未重新打包独立 APK，未进行真机验证。

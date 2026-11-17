@@ -7,18 +7,24 @@ import ActionButton from "../../shared/components/ActionButton";
 import { typography } from "../../shared/styles/typography";
 import { useTaskQuote } from "./useTaskQuote";
 import SubmitQuoteAction from "./SubmitQuoteAction";
+
 export default function TaskQuoteSection({
   task,
-  reload,
+  reload: reloadTask,
 }: {
   task: TaskTicketRecord;
   reload: () => void;
 }) {
-  const { data, loading, error } = useTaskQuote(task.id);
+  const { data, loading, error, reload } = useTaskQuote(task.id);
   const quote = data?.quote;
   return (
     <ContentCard title="维修报价">
-      <LoadFeedback loading={loading} error={error} />
+      <LoadFeedback
+        loading={loading && !data}
+        error={error}
+        onRetry={reload}
+        retryLabel="刷新报价"
+      />
       {data &&
         (quote ? (
           <>
@@ -30,7 +36,7 @@ export default function TaskQuoteSection({
                 <SubmitQuoteAction
                   task={task}
                   baseQuote={quote}
-                  reload={reload}
+                  reload={reloadTask}
                 />
               )}
             {quote.status === "rejected" && (
@@ -42,17 +48,18 @@ export default function TaskQuoteSection({
         ) : (
           <>
             <Text style={typography.muted}>尚未提交报价</Text>
-            {task.status === "processing" && !task.result && (
-              <SubmitQuoteAction task={task} reload={reload} />
-            )}
+            {task.status === "processing" && !task.result ? (
+              <SubmitQuoteAction task={task} reload={reloadTask} />
+            ) : null}
           </>
         ))}
       <Text style={typography.muted}>
         报价须经用户确认；生成服务订单后，在本任务开工并提交处理结果。
       </Text>
       <ActionButton
-        title="刷新报价与任务"
+        title="刷新报价"
         secondary
+        compact
         disabled={loading}
         onPress={reload}
       />

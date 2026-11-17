@@ -98,7 +98,7 @@ try {
   await ui.waitFor(order.code);
   await ui.waitFor("报价版本：第 2 版");
   android.capture("mobile-order-detail-android.png");
-  await ui.tap("返回我的订单");
+  await ui.launch("orders", 3002);
   await ui.waitFor("全部订单");
   await ui.tap("已取消");
   await ui.waitFor("刷新订单");

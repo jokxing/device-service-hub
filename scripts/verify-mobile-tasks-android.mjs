@@ -71,24 +71,33 @@ try {
     );
   }
   assertHeaderLogout();
-  // Repeated custom returns must preserve the original filtered list, not stack copies.
+  // System back should return to the same filtered list (focus refresh), not stack copies.
   for (let attempt = 0; attempt < 2; attempt++) {
     await ui.tap("查看任务详情");
     await ui.waitFor(task.title);
     const readsBefore = listReads.length;
-    await ui.tap("返回我的任务");
+    android.run(["shell", "input", "keyevent", "4"]);
+    await ui.waitFor("刷新任务");
     await ui.waitFor(task.title);
-    assert.ok(
-      listReads.length > readsBefore &&
-        listReads.at(-1).includes("status=assigned"),
-      "Returning must refresh the existing filtered list",
-    );
+    let refreshed = false;
+    for (let wait = 0; wait < 15; wait++) {
+      if (
+        listReads.length > readsBefore &&
+        listReads.at(-1).includes("status=assigned")
+      ) {
+        refreshed = true;
+        break;
+      }
+      await ui.pause();
+    }
+    assert.ok(refreshed, "Returning must refresh the existing filtered list");
     assertHeaderLogout();
   }
   android.run(["shell", "input", "keyevent", "4"]);
   await ui.pause();
   assert.equal(
-    android.hierarchy().includes("当前筛选"),
+    android.hierarchy().includes("本人任务") &&
+      android.hierarchy().includes("刷新任务"),
     false,
     "Android Back must not reveal another copy of the task list",
   );
@@ -107,15 +116,15 @@ try {
   await ui.tap("确认接单");
   await ui.waitFor("网关未收到接单结果");
   await ui.tap("确认接单");
-  await ui.waitFor("处理中");
+  await ui.waitFor("接单：");
   assert.equal(attempts.length, 2);
   assert.deepEqual(attempts[0], attempts[1]);
   assert.deepEqual(await audit(task.id), { status: "processing", count: 1 });
   android.capture("mobile-android-task-accepted.png");
   await openTask(task);
-  await ui.waitFor("处理中");
-  await ui.tap("返回我的任务");
-  await ui.waitFor(task.title);
+  await ui.waitFor("接单：");
+  await ui.launch("tasks", 3002);
+  await ui.waitFor("刷新任务");
   await ui.tap("待接单");
   await ui.waitFor(stale.title);
   assert.equal(android.hierarchy().includes(task.title), false);
@@ -130,13 +139,13 @@ try {
   await ui.tap("确认接单");
   await ui.waitFor("任务已变化或已接单");
   await ui.tap("取消");
-  await ui.waitFor("处理中");
+  await ui.waitFor("接单：");
   await ui.openLogin(3002);
   await ui.login(other.id, process.env.SEED_ACCOUNT_PASSWORD, "我的任务");
   await ui.waitFor(otherTask.title);
   assert.equal(android.hierarchy().includes(task.title), false);
   await openTaskDenied();
-  await ui.tap("返回我的任务");
+  await ui.launch("tasks", 3002);
   await ui.waitFor(otherTask.title);
   await ui.reveal("下一页");
   assertHeaderLogout();

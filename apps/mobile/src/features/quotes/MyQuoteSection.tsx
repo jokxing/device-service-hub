@@ -14,17 +14,22 @@ import AcceptQuoteAction from "./AcceptQuoteAction";
 import OrderSnapshot from "../orders/OrderSnapshot";
 export default function MyQuoteSection({
   ticket,
-  reload,
+  reload: reloadTicket,
 }: {
   ticket: ReporterTicketRecord;
   reload: () => void;
 }) {
   const router = useRouter();
-  const { data, error, loading } = useMyQuote(ticket.id);
+  const { data, error, loading, reload } = useMyQuote(ticket.id);
   return (
     <>
       <ContentCard title="维修报价">
-        <LoadFeedback loading={loading} error={error} />
+        <LoadFeedback
+          loading={loading && !data}
+          error={error}
+          onRetry={reload}
+          retryLabel="刷新报价与订单"
+        />
         {data &&
           (data.quote ? (
             <>
@@ -34,12 +39,12 @@ export default function MyQuoteSection({
                   <AcceptQuoteAction
                     ticket={ticket}
                     quote={data.quote}
-                    reload={reload}
+                    reload={reloadTicket}
                   />
                   <RejectQuoteAction
                     ticket={ticket}
                     quote={data.quote}
-                    reload={reload}
+                    reload={reloadTicket}
                   />
                 </>
               )}
@@ -48,28 +53,31 @@ export default function MyQuoteSection({
             <Text style={typography.muted}>尚未提交报价</Text>
           ))}
         <ActionButton
-          title="刷新报价与报修"
+          title="刷新报价与订单"
           secondary
+          compact
           disabled={loading}
           onPress={reload}
         />
       </ContentCard>
       {data?.order && (
         <>
-          <OrderSnapshot order={data.order} />
-          <CancelOrderAction
-            key={`${data.order.id}:${ticket.version}`}
-            ticket={ticket}
-            payments={data.payments}
-            blockCancellation={loading || !!error || data.blockCancellation}
-            order={data.order}
-            reload={reload}
-          />
-          <ActionButton
-            title="查看订单详情"
-            secondary
-            onPress={() => router.push(`/orders/${data.order!.id}`)}
-          />
+          <OrderSnapshot order={data.order}>
+            <CancelOrderAction
+              key={`${data.order.id}:${ticket.version}`}
+              ticket={ticket}
+              payments={data.payments}
+              blockCancellation={loading || !!error || data.blockCancellation}
+              order={data.order}
+              reload={reloadTicket}
+            />
+            <ActionButton
+              title="查看订单详情"
+              secondary
+              compact
+              onPress={() => router.push(`/orders/${data.order!.id}`)}
+            />
+          </OrderSnapshot>
         </>
       )}
     </>

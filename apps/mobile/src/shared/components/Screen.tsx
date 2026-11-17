@@ -7,7 +7,12 @@ export default function Screen({
   children,
   safeTop = false,
   footer,
-}: PropsWithChildren<{ safeTop?: boolean; footer?: ReactNode }>) {
+  dense = false,
+}: PropsWithChildren<{
+  safeTop?: boolean;
+  footer?: ReactNode;
+  dense?: boolean;
+}>) {
   return (
     <SafeAreaView
       style={styles.safe}
@@ -20,7 +25,11 @@ export default function Screen({
       <ScrollView
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
-        contentContainerStyle={[styles.content, footer != null && styles.fill]}
+        contentContainerStyle={[
+          styles.content,
+          dense && styles.dense,
+          footer != null && styles.fill,
+        ]}
       >
         {children}
         {footer != null && <View style={styles.footer}>{footer}</View>}
@@ -28,10 +37,11 @@ export default function Screen({
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   fill: { flexGrow: 1 },
-  footer: { marginTop: "auto", gap: spacing.sm },
+  footer: { marginTop: "auto", gap: spacing.sm, paddingTop: spacing.md },
   content: {
     width: "100%",
     maxWidth: 640,
@@ -39,5 +49,10 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.lg,
     paddingBottom: spacing.xxl,
+  },
+  dense: {
+    padding: spacing.md,
+    gap: spacing.md,
+    paddingBottom: spacing.xl,
   },
 });

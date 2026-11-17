@@ -14,7 +14,14 @@ export default function ServiceLayout() {
         name="orders/[id]"
         options={{ title: "订单详情", headerBackTitle: "返回" }}
       />
-      <Stack.Screen name="devices/index" options={{ title: "我的设备" }} />
+      <Stack.Screen
+        name="devices/index"
+        options={{
+          title: "我的设备",
+          headerBackVisible: false,
+          headerRight: () => <SessionHeaderAction />,
+        }}
+      />
       <Stack.Screen
         name="devices/scan"
         options={{ title: "扫码查看设备", headerBackTitle: "返回" }}
