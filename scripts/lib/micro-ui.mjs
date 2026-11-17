@@ -4,6 +4,19 @@ export async function assertShellContentScroll(page, screenshotPath) {
   const nav = page.getByRole("navigation", { name: "协同台导航", exact: true });
   const content = page.getByRole("main", { name: "协同台内容", exact: true });
   const before = await nav.boundingBox();
+  const sidebar = page.locator("[data-service-sidebar]:visible");
+  if (await sidebar.count()) {
+    const bounds = await sidebar.boundingBox();
+    assert.ok(
+      bounds.y >= before.y + before.height - 1,
+      "Child sidebar starts below shell navigation",
+    );
+    assert.ok(
+      bounds.y + bounds.height <= page.viewportSize().height + 1,
+      "Child sidebar fits remaining shell viewport",
+    );
+  }
+
   const overflow = await content.evaluate(
     (el) => el.scrollHeight > el.clientHeight,
   );

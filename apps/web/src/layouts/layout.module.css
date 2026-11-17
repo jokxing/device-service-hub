@@ -781,3 +781,24 @@
     gap: 8px;
   }
 }
+
+/* Embedded layouts stay inside the shell's scroll region. */
+:global([data-micro-application="tickets"]) .app-shell {
+  min-height: var(--micro-viewport-height, 100dvh);
+  overflow: visible;
+  align-items: flex-start;
+}
+
+:global([data-micro-application="tickets"]) .sidebar {
+  position: sticky;
+  top: 0;
+  bottom: auto;
+  height: var(--micro-viewport-height, 100dvh);
+  flex-shrink: 0;
+}
+
+:global([data-micro-application="tickets"]) .main-shell {
+  margin-left: 0;
+  flex: 1;
+  width: 0;
+}

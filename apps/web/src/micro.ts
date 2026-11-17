@@ -19,6 +19,7 @@ export async function mount({
   );
   if (!root || instances.has(root))
     throw new Error("Invalid ticket application container");
+  root.dataset.microApplication = "tickets";
   instances.set(root, createApplication(root, basePath));
 }
 
@@ -29,4 +30,5 @@ export async function unmount({ container }: MicroProps): Promise<void> {
   if (!root) return;
   instances.get(root)?.();
   instances.delete(root);
+  delete root.dataset.microApplication;
 }

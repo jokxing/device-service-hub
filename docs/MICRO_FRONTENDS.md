@@ -123,3 +123,9 @@ HTTP 检查另覆盖缺失资源 404、目录外路径拒绝、HEAD、代理请�
 首步演示回归曾出现一次 useContext 错误，单独重跑通过，根因未复现；未将其归因为已修复的缓存问题。此次 Vue 验证过程中 API 曾暂时不可用，恢复后完整重跑通过，没有向业务请求添加自动重试。
 
 截图：[Vue 设备台账](screenshots/micro-vue-devices.png)、[设备详情](screenshots/micro-vue-device-detail.png)、[窄屏](screenshots/micro-vue-devices-mobile.png)、[跨应用详情](screenshots/micro-device-navigation.png)、[Vue 加载失败](screenshots/micro-vue-load-failure.png)、[React 后台](screenshots/micro-tickets-desktop.png)。
+
+### 子应用侧栏定位边界
+
+React 挂载时在根节点标记 `data-micro-application="tickets"`，卸载时移除。仅嵌入模式使用剩余视口高度与容器内 sticky 侧栏，主内容取消独立入口固定侧栏的左侧占位；独立 Web 布局保持原定位。避免新版侧栏 fixed 到浏览器顶部，覆盖协同台头部及导航。统一微前端回归增加侧栏必须位于主导航下方且高度不超过剩余视口的断言，并保留滚动及生命周期验证。
+
+本轮 `build:micro:unified`、`verify:micro-unified`、`test:micro-navigation`、`verify:ui` 通过，已核对 React 桌面与 390px 窄屏截图。
